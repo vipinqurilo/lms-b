@@ -2,12 +2,22 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  userId:{type:String},
+  userName: { type: String,default:""},
+  firstName: { type: String,  },
+  lastName: { type: String,  },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['student', 'instructor', 'admin'], default: 'student' },
-  number: { type: String },
-  bio: { type: String },
+  phone: { type: {countryCode: { type: String }, number: { type: String }} },
+  country: { type: String, required: true ,default:'South Africa'},
+  gender:{type:String,enum: ['male', 'female']},
+  role: { type: String, enum: ['student', 'teacher', 'admin'], default: 'student' },
+  bio: { type: String,default:"" },
+  profilePhoto: { type: String },
+  studentProfile:{ type: mongoose.Schema.Types.ObjectId, ref: 'StudentProfile' },
+  teacherProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'TeacherProfile' },
+  socialLinks:[{name:{type:String},url:{type:String}}],
+  userStatus: { type: String, enum: ['active', 'inactive','in review'], default: 'active' },
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
