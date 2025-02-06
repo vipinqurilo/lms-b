@@ -10,15 +10,16 @@ const CourseSchema = new mongoose.Schema({
     courseImage:{type:String,required:true},
     courseVideo:{type:String,required:true},
     coursePrice:{type:Number,required:true},
+    idDelete:{type:Boolean,required:true},
     // courseDuration:{type:String,required:true},
     status:{type:String,required:true},
     courseInstructor:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
     courseContent:[{
         moduleTitle:{type:String,required:true},
         lessons:[{
-            lessonTitle:{type:String,required:true},
-            video:{type:String,required:true},
-            duration:{type:String,required:true}
+            lessonTitle:{type:String},
+            video:{type:String},
+            duration:{type:String}
         }]
     }]
 }, { timestamps: true });

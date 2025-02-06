@@ -2,7 +2,6 @@ const CourseModel = require("../model/CourseModel");
 const path = require("path");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");
-const UserModel = require("../model/UserModel");
 
 // Function to get video duration using get-video-duration library
 const getVideoDuration = async (videoPath) => {
@@ -18,7 +17,10 @@ const getVideoDuration = async (videoPath) => {
 exports.addCourse = async (req, res) => {
   try {
     const data = req.body;
+    const id = req.user.id;
     console.log(data);
+    console.log(id);
+    console.log(req.user);
 
     // Get file information from the request
     const courseVideo = req.files["courseVideo"]
@@ -42,6 +44,7 @@ exports.addCourse = async (req, res) => {
 
     // Prepare course data object
     const courseObj = {
+      courseInstructor: id,
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
@@ -49,8 +52,8 @@ exports.addCourse = async (req, res) => {
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
-      courseInstructor: data.courseInstructor,
       courseDuration: videoDuration,
+      idDelete: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -87,7 +90,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
     try {
-        let course = await CourseModel.find({},{courseVideo:0}).limit(6).sort({createdAt:-1});
+        let course = await CourseModel.find({idDelete:false},{courseVideo:0}).limit(6).sort({createdAt:-1}).populate("courseSubCategory");
         course.map((item) => {
             item.courseImage = `https://6g2n7ff0-8000.inc1.devtunnels.ms/public/${item.courseImage}`;
             // item.courseVideo = `http://localhost:8000/public/${item.courseVideo}`;
@@ -127,7 +130,7 @@ exports.getSingleCourse = async (req, res) => {
 exports.getcourseFilter = async (req, res) => {
     try {
         const {id} = req.params;
-        const course = await CourseModel.find({courseCategory : id });
+        const course = await CourseModel.find({courseCategory : id , idDelete:false}).populate("courseSubCategory");
         res.json({
             status:"success",
             message:"course fetched successfully",
@@ -145,8 +148,8 @@ exports.getcourseFilter = async (req, res) => {
 
 exports.getCourseInstructor = async (req, res) => {
     try {
-        const {id} = req.params;
-        const course = await CourseModel.find({ courseInstructor: id });
+        const id = req.user.id;
+        const course = await CourseModel.find({ courseInstructor: id, idDelete: false }).populate("courseSubCategory");
         res.json({
             status:"success",
             message:"course fetched successfully",
@@ -163,14 +166,13 @@ exports.getCourseInstructor = async (req, res) => {
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-      const courseSubCategory = await CourseModel.find({status:"pending"}).populate("courseSubCategory","name").populate({path:"user",model:UserModel}).exec();
+      const courseSubCategory = await CourseModel.find({status:"pending",idDelete:false}).populate("courseSubCategory","name").exec();
       res.json({
           status:"success",
           message:"course sub category fetched successfully",
           data:courseSubCategory
       })
   } catch (error) {
-    console.log(error)
       res.json({
           status:"failed",
           message:"something went wrong",
@@ -224,5 +226,78 @@ exports.addSingleImage = async (req, res) => {
     })
   } catch (error) {
     console.log(error);
+  }
+}
+
+exports.updateCourseInstrustor = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const data = req.body;
+      const objData = {
+        courseInstructor: id,
+      courseTitle: data.courseTitle,
+      courseDescription: data.courseDescription,
+      courseCategory: data.courseCategory,
+      courseSubCategory: data.courseSubCategory,
+      courseImage: data.courseImage,
+      courseVideo: data.courseVideo,
+      coursePrice: data.coursePrice,
+      courseDuration: videoDuration,
+      courseContent: JSON.parse(data.courseContent),
+      courseLearning: JSON.parse(data.courseLearning),
+      courseRequirements: JSON.parse(data.courseRequirements),
+      status:"pending",
+      }
+      const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, { new: true });
+      if(!updateStatus) return res.json({ status: "failed", message: "status not updated" })
+      res.json({
+          status: "success",
+          message: "status updated successfully",
+          data: updateStatus
+      })
+  } catch (error) {
+      res.json({
+          status: "failed",
+          message: "something went wrong",
+          error: error.message
+      })
+  }
+} 
+
+
+exports.deleteCourse = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const updateStatus = await CourseModel.findByIdAndUpdate(id, { idDelete: true }, { new: true });
+      if(!updateStatus) return res.json({ status: "failed", message: "status not updated" })
+      res.json({
+          status: "success",
+          message: "status updated successfully",
+          data: updateStatus
+      })
+  } catch (error) {
+      res.json({
+          status: "failed",
+          message: "something went wrong",
+          error: error.message
+      })
+  }
+}
+
+
+exports.filterByStatus = async (req, res) => {
+  try {
+      const courseSubCategory = await CourseModel.find({status:req.params.status,idDelete:false}).populate("courseSubCategory").exec();
+      res.json({
+          status:"success",
+          message:"course sub category fetched successfully",
+          data:courseSubCategory
+      })
+  } catch (error) {
+      res.json({
+          status:"failed",
+          message:"something went wrong",
+          error:error.message
+      })
   }
 }

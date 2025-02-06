@@ -4,6 +4,8 @@ const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
 const subCategoryRouter = require("./src/route/subCategoryRoute");
+const WhishlistModel = require("./src/route/wishlistRoute");
+const OrderRoute = require("./src/route/orderRoute");
 
 const app = express();
 app.use(express.json());
@@ -16,5 +18,7 @@ app.use("/api/auth",authController);
 app.use("/api/course",courseRouter);
 app.use("/api/category",categoryRouter);
 app.use("/api/subcategory",subCategoryRouter);
+app.use("/api/whishlist",WhishlistModel);
+app.use('/api/order',OrderRoute)
 
 module.exports = app;
