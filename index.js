@@ -24,8 +24,4 @@ server.listen(PORT, () => {
 }).on('error', (err) => {
   console.error(`Failed to start server: ${err.message}`);
 });
-
-
-// CLOUD_NAME =dqzb4ltbm ; //dg9kok5c0
-// CLOUDINARY_API_KEY = 474852615849796; 461129199678296  // 
-// CLOUDINARY_API_SECRET =bjYDET9EgpaKpWzji_Vlmk2f6TA;// xWLGQ8GaFarx0PjS1BUeLJ_5KRE
+ 
