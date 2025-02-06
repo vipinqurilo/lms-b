@@ -242,7 +242,7 @@ exports.updateCourseInstrustor = async (req, res) => {
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
-      courseDuration: videoDuration,
+      // courseDuration: videoDuration,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -299,5 +299,23 @@ exports.filterByStatus = async (req, res) => {
           message:"something went wrong",
           error:error.message
       })
+  }
+}
+
+exports.filterHomePage = async (req, res) => {
+  try {
+      const categoryId = req.params.categoryId;
+      const courseSubCategory = await CourseModel.find({courseCategory : categoryId , idDelete:false}).populate("courseSubCategory").exec();
+      res.json({
+          status:"success",
+          message:"course sub category fetched successfully",
+          data:courseSubCategory
+      })
+  } catch (error) {
+    res.json({
+        status:"failed",
+        message:"something went wrong",
+        error:error.message
+    })
   }
 }

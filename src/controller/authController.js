@@ -83,9 +83,7 @@ exports.changePassword=async (req,res)=>{
         const isValid=isValidPassword(oldPassword,user.password);
         if(!isValid)
             return res.status(400).json({success:false,message:"Password is incorrect"})
-
-        const hashedPassword= getPasswordHash(newPassword);
-        console.log(hashedPassword,"hased")
+        const hashedPassword= bcrypt.hashSync(newPassword,10);
         user.password=hashedPassword;
         await user.save();
          res.json({success:"true",message:"Password has been updated sucessfully"})

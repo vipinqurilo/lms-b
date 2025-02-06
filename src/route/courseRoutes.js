@@ -1,5 +1,5 @@
 const express = require("express");
-const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus } = require("../controller/courseController");
+const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus, filterHomePage } = require("../controller/courseController");
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -19,6 +19,7 @@ courseRouter.get('/front',getCourse)
 courseRouter.get('/front/:id',getSingleCourse)
 courseRouter.post('/singleVideo',uploadMulter.single("video"),addSingleVideo)
 courseRouter.post('/singleImage',uploadMulter.single("courseImage"),addSingleImage)
+courseRouter.get("/home/:categoryId",filterHomePage)
 
 // instructor routes
 

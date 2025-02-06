@@ -46,3 +46,20 @@ exports.filterCourseCategory = async (req, res) => {
     }
 }
 
+
+exports.getAllCourseCategory = async (req, res) => {
+    try {
+        const courseSubCategory = await CourseCategoryModel.find({},{name:1})
+        res.json({
+            status:"success",
+            message:"course sub category fetched successfully",
+            data:courseSubCategory
+        })
+    } catch (error) {
+        res.json({
+            status:"failed",
+            message:"something went wrong",
+            error:error.message
+        })
+    }
+}
