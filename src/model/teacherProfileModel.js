@@ -5,7 +5,7 @@ const teacherProfileSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     experience: [experienceSchema],
     education:[educationSchema],
-    subjectsTaught: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subcategory", required: true }],//Array of subjects (subcategories)
+    subjectsTaught: [{ type: mongoose.Schema.Types.ObjectId, ref: "CourseSubCategory", required: true }],//Array of subjects (subcategories)
     languagesSpoken: [{ type: mongoose.Schema.Types.ObjectId, ref: "Language", required: true }],
     tutionSlots: {
       type: [Number],

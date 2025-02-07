@@ -13,7 +13,7 @@ exports.getTutors = async (req, res) => {
       query.$or = [
         { "user.firstName": { $regex: search, $options: "i" } },
         { "user.lastName": { $regex: search, $options: "i" } },
-      ];
+      ];  
     if (subjects && subjects.length > 0) {
       const subjectIds = subjects
         .split(",")

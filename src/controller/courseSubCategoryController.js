@@ -3,7 +3,7 @@ const CourseSubCategoryModel = require("../model/courseSubCategoryModel");
 
 exports.courseSubCategoryAdd = async (req, res) => {
     try {
-        const { name, courseCategory } = req.body;
+        const { name,pricePerHour, courseCategory } = req.body;
 
         // Ensure the category exists
         let findCategory = await CourseCategoryModel.findById(courseCategory);
@@ -13,13 +13,13 @@ exports.courseSubCategoryAdd = async (req, res) => {
                 message: "Course category not found",
             });
         }
-
+   
         // Create the subcategory first to get its ID
         const courseSubCategoryAdd = await CourseSubCategoryModel.create({
             name,
+            pricePerHour:pricePerHour||100,
             courseCategory,
         });
-
         // Push the ObjectId (not the entire object)
         findCategory.courseSubCategory.push(courseSubCategoryAdd._id);
         await findCategory.save(); // Wait for save completion

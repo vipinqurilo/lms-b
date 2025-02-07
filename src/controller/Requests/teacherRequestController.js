@@ -1,19 +1,24 @@
 const TeacherRequestModel = require("../../model/teacherRequestModel");
 const TeacherProfileModel = require("../../model/teacherProfileModel");
+const CalendarModel=require("../../model/calenderModel");
 const UserModel = require("../../model/UserModel");
+const {defaultAvailability} = require("../../utils/calendar");
 exports.createTeacherRequest = async (req, res) => {
   try {
     const {
       personalInfo,
       profilePhoto,
       bio,
+      education,
       experience,
       subjectsTaught,
       languagesSpoken,
-      addresses,
-      tuitionSlots,
     } = req.body;
     const userId = req.user.id;
+    const teacherProfile=await TeacherProfileModel.findOne({userId});
+    if(teacherProfile){
+      return res.status(400).json({ message: "You are already a teacher." });
+    }
     // Check if the user already has a pending request
     const existingRequest = await TeacherRequestModel.findOne({
       userId,
@@ -23,6 +28,7 @@ exports.createTeacherRequest = async (req, res) => {
         .status(400)
         .json({ message: "Your request is already under review or approved." });
     }
+
     // Create new teacher request
     const newRequest = new TeacherRequestModel({
       userId,
@@ -31,9 +37,7 @@ exports.createTeacherRequest = async (req, res) => {
       bio,
       experience,
       subjectsTaught,
-      languagesSpoken,
-      addresses,
-      tuitionSlots,
+      languagesSpoken
     });
     const user = await UserModel.findOneAndUpdate({ id: userId }, personalInfo);
     await newRequest.save();
@@ -91,20 +95,17 @@ exports.approvedTeacherRequest = async (req, res) => {
     // Create Teacher Profile
     const teacherProfile = new TeacherProfileModel({
       userId: request.userId._id,
+      education:request.education,
       experience: request.experience,
       subjectsTaught: request.subjectsTaught,
       languagesSpoken: request.languagesSpoken,
     });
-    const datatoInsert = {
-      ...request.personalInfo,
-      teacherProfile: request.userId._id,
-      bio: request.bio,
-      profilePhoto: request.profilePhoto,
-      teacherProfile: request.userId._id,
-    };
+    const calendar=await CalendarModel.create({userId:request.userId._id,availability:defaultAvailability})
+    teacherProfile.calendar=calendar._id;
+    await teacherProfile.save();
     await UserModel.findOneAndUpdate(
       { _id: request.userId._id },
-      datatoInsert,
+      {teacherProfile:teacherProfile._id},
       { new: true }
     );
     res.status(200).json({success:true, message: "Teacher request approved successfully." });

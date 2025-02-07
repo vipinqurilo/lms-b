@@ -6,7 +6,10 @@ const UserModel = require("../../model/UserModel");
 exports.getTeacherProfile=async(req,res)=>{
     try {
         const teacherId=req.params.teacherId
-        const teacherProfile= await TeacherProfileModel.findById(teacherId).populate({path:"userId",select:"email phone firstName lastName gender country bio profilePhoto"}).populate({path:"calendar",select:"availability"}).select(" -createdAt -updatedAt -_id -__v -paymentInfo").lean();
+        const teacherProfile= await TeacherProfileModel.findById(teacherId).populate({path:"userId",select:"email phone firstName lastName gender country bio profilePhoto"}).populate({path:"calendar",select:"availability"}).select(" -createdAt -updatedAt -_id -__v -paymentInfo").populate("subjectsTaught",{name:1,pricePerHour:1}).populate("languagesSpoken",{name:1}).lean();
+        if(!teacherProfile)
+            return  res.status(404).json({success:false,message:"User not found"})
+        
         res.json({
             success:true,
             message:"Teacher Profile fetched successfully",
