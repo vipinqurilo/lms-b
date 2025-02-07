@@ -11,6 +11,8 @@ const bookingRouter = require("./src/route/bookingRoute");
 const subcategoryRouter = require("./src/route/subCategoryRoute");
 const wishListRouter = require("./src/route/wishlistRoute");
 const orderRouter= require("./src/route/orderRoute");
+const reviewRoute = require("./src/route/reviewRoute");
+const ticketRouter = require("./src/route/ticketRoute");
 
 const app = express();
 app.use(express.json());
@@ -34,4 +36,7 @@ app.use("/api/tutors",tutorRouter);
 app.use("/api/subcategory",subcategoryRouter);
 app.use("/api/whishlist",wishListRouter);
 app.use('/api/order',orderRouter)
+app.use('/api/review',reviewRoute)
+app.use('/api/ticket',ticketRouter)
+
 module.exports = app;
