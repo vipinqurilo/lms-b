@@ -5,7 +5,7 @@ exports.addOrder = async(req,res)=>{
         const {course} = req.body
         const id = req.user.id
         const findOrder = await OrderModel.find({studentId:id,course:course})
-        if(findOrder)return res.json({status:"fail",message:"Order Alredy Buy"})
+        if(!findOrder)return res.json({status:"fail",message:"Order Alredy Buy"})
         function generateRandomCode() {
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             let code = "";
