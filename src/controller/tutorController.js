@@ -58,6 +58,22 @@ exports.getTutors = async (req, res) => {
       },
       {
         $lookup: {
+          from: "languages", // Collection name in MongoDB
+          localField: "languagesSpoken",
+          foreignField: "_id",
+          as: "languagesSpoken",
+        },
+      },
+      {
+        $lookup: {
+          from: "coursesubcategories", // Collection name in MongoDB
+          localField: "subjectsTaught",
+          foreignField: "_id",
+          as: "subjectsTaught",
+        },
+      },
+      {
+        $lookup: {
           from: "users", // Collection name in MongoDB
           localField: "userId",
           foreignField: "_id",
@@ -66,15 +82,25 @@ exports.getTutors = async (req, res) => {
       },
       {
         $unwind: {
+          path: "$languagesSpoken", // Unwind the subjects array
+        },
+      },
+      {
+        $unwind: {
+          path: "$subjectsTaught", // Unwind the subjects array
+        },
+      },
+      {
+        $unwind: {
           path: "$user", // Unwind the subjects array
-          preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
+        
         },
       },
 
       {
         $unwind: {
           path: "$calendar", // Unwind the subjects array
-          preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
+          
         },
       },
       {
@@ -93,6 +119,12 @@ exports.getTutors = async (req, res) => {
             country: 1,
             phone: 1,
             bio: 1,
+          },
+          subjectsTaught: {
+            name: 1,
+          },
+          languagesSpoken: {
+            name: 1,
           },
           calendar: {
             availability: 1,
