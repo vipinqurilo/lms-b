@@ -132,3 +132,27 @@ exports.courseSubCategoryEdit = async (req, res) => {
     });
   }
 };
+
+exports.getAllSubcategories = async (req, res) => {
+  try {
+    const subcategories = await CourseSubCategoryModel.find().populate(
+      "courseCategory"
+    );
+    if (!subcategories || subcategories.length === 0) {
+      return res.status(404).json({
+        message: "No subcategories found",
+      });
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "subcategories fetched successfully",
+      data: subcategories,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "failed",
+      error: error.message,
+    });
+  }
+};
