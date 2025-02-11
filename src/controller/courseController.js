@@ -18,9 +18,6 @@ exports.addCourse = async (req, res) => {
   try {
     const data = req.body;
     const id = req.user.id;
-    console.log(data);
-    console.log(id);
-    console.log(req.user);
 
     // Get file information from the request
     const courseVideo = req.files["courseVideo"]
@@ -256,6 +253,7 @@ exports.updateCourseInstrustor = async (req, res) => {
           data: updateStatus
       })
   } catch (error) {
+    console.log(error ,"error")
       res.json({
           status: "failed",
           message: "something went wrong",

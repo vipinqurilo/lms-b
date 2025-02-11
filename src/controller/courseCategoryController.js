@@ -33,7 +33,11 @@ exports.courseCategoryAdd = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedCategory = await CourseCategoryModel.findByIdAndDelete(id);
+    const deletedCategory = await CourseCategoryModel.findByIdAndUpdate(
+      id,
+      { deletedAt: new Date() },
+      { new: true }
+    );
 
     if (!deletedCategory) {
       return res.status(404).json({
@@ -109,10 +113,12 @@ exports.filterCourseCategory = async (req, res) => {
 
 exports.getAllCourseCategory = async (req, res) => {
   try {
-    const courseSubCategory = await CourseCategoryModel.find({}, { name: 1 });
+    const courseSubCategory = await CourseCategoryModel.find({
+      deletedAt: null,
+    })
     res.json({
       status: "success",
-      message: "course sub category fetched successfully",
+      message: "course category fetched successfully",
       data: courseSubCategory,
     });
   } catch (error) {

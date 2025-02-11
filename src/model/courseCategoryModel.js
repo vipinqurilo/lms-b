@@ -6,7 +6,9 @@ const CourseCategorySchema = new mongoose.Schema({
         type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CourseSubCategory' }], 
         default: [], 
         required: true 
-      }}, { timestamps: true });
+      },
+    deletedAt:{type:Date, default:null}
+    }, { timestamps: true });
 
 const CourseCategoryModel = mongoose.model('CourseCategory', CourseCategorySchema);
 module.exports = CourseCategoryModel;
