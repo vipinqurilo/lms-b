@@ -54,7 +54,7 @@ exports.addCourse = async (req, res) => {
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
-      status:"pending",
+      status: "pending",
     };
 
     // Save course to the database
@@ -82,121 +82,138 @@ exports.addCourse = async (req, res) => {
   }
 };
 
-
-
-
 exports.getCourse = async (req, res) => {
-    try {
-        let course = await CourseModel.find({idDelete:false},{courseVideo:0}).limit(6).sort({createdAt:-1}).populate("courseSubCategory");
-        course.map((item) => {
-            item.courseImage = `https://6g2n7ff0-8000.inc1.devtunnels.ms/public/${item.courseImage}`;
-            // item.courseVideo = `http://localhost:8000/public/${item.courseVideo}`;
-        })
-        res.json({
-            status:"success",
-            message:"course fetched successfully",
-            data:course
-        })
-    } catch (error) {
-        res.json({
-            status:"failed",
-            message:"something went wrong",
-            error:error.message
-        })
-    }
-}
+  try {
+    let course = await CourseModel.find({ idDelete: false }, { courseVideo: 0 })
+      .limit(6)
+      .sort({ createdAt: -1 })
+      .populate("courseSubCategory");
+    course.map((item) => {
+      item.courseImage = `https://6g2n7ff0-8000.inc1.devtunnels.ms/public/${item.courseImage}`;
+      // item.courseVideo = `http://localhost:8000/public/${item.courseVideo}`;
+    });
+    res.json({
+      status: "success",
+      message: "course fetched successfully",
+      data: course,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
+  }
+};
 
 exports.getSingleCourse = async (req, res) => {
-    try {
-        const {id} = req.params;
-        const course = await CourseModel.findById(id);
-        res.json({
-            status:"success",
-            message:"course fetched successfully",
-            data:course
-        })
-    } catch (error) {
-        res.json({
-            status:"failed",
-            message:"something went wrong",
-            error:error.message
-        })
-    }
-}
+  try {
+    const { id } = req.params;
+    const course = await CourseModel.findById(id);
+    res.json({
+      status: "success",
+      message: "course fetched successfully",
+      data: course,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
+  }
+};
 
 exports.getcourseFilter = async (req, res) => {
-    try {
-        const {id} = req.params;
-        const course = await CourseModel.find({courseCategory : id , idDelete:false}).populate("courseSubCategory");
-        res.json({
-            status:"success",
-            message:"course fetched successfully",
-            data:course
-        })
-    } catch (error) {
-        res.json({
-            status:"failed",
-            message:"something went wrong",
-            error:error.message
-        })
-    }
-}
-
+  try {
+    const { id } = req.params;
+    const course = await CourseModel.find({
+      courseCategory: id,
+      idDelete: false,
+    }).populate("courseSubCategory");
+    res.json({
+      status: "success",
+      message: "course fetched successfully",
+      data: course,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
+  }
+};
 
 exports.getCourseInstructor = async (req, res) => {
-    try {
-        const id = req.user.id;
-        const course = await CourseModel.find({ courseInstructor: id, idDelete: false }).populate("courseSubCategory");
-        res.json({
-            status:"success",
-            message:"course fetched successfully",
-            data:course
-        })
-    } catch (error) {
-        res.json({
-            status:"failed",
-            message:"something went wrong",
-            error:error.message
-        })
-    }
-}
+  try {
+    const id = req.user.id;
+    const course = await CourseModel.find({
+      courseInstructor: id,
+      idDelete: false,
+    }).populate("courseSubCategory");
+    res.json({
+      status: "success",
+      message: "course fetched successfully",
+      data: course,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
+  }
+};
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-      const courseSubCategory = await CourseModel.find({status:"pending",idDelete:false}).populate("courseSubCategory","name").exec();
-      res.json({
-          status:"success",
-          message:"course sub category fetched successfully",
-          data:courseSubCategory
-      })
+    const { status = "pending" } = req.query;
+
+    const courseSubCategory = await CourseModel.find({
+      status: status,
+      idDelete: false,
+    })
+      .populate("courseSubCategory", "name")
+      .exec();
+    res.json({
+      status: "success",
+      message: "course sub category fetched successfully",
+      data: courseSubCategory,
+    });
   } catch (error) {
-      res.json({
-          status:"failed",
-          message:"something went wrong",
-          error:error.message
-      })
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-}
+};
 
 exports.updateStatusByAdmin = async (req, res) => {
   try {
-      const { id } = req.params;
-      const { status } = req.body;
-      const updateStatus = await CourseModel.findByIdAndUpdate(id, { status: status }, { new: true });
-      if(!updateStatus) return res.json({ status: "failed", message: "status not updated" })
-      res.json({
-          status: "success",
-          message: "status updated successfully",
-          data: updateStatus
-      })
+    const { id } = req.params;
+    const { status } = req.body;
+    const updateStatus = await CourseModel.findByIdAndUpdate(
+      id,
+      { status: status },
+      { new: true }
+    );
+    if (!updateStatus)
+      return res.json({ status: "failed", message: "status not updated" });
+    res.json({
+      status: "success",
+      message: "status updated successfully",
+      data: updateStatus,
+    });
   } catch (error) {
-      res.json({
-          status: "failed",
-          message: "something went wrong",
-          error: error.message
-      })
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-}
+};
 
 exports.addSingleVideo = async (req, res) => {
   try {
@@ -204,13 +221,12 @@ exports.addSingleVideo = async (req, res) => {
     res.json({
       status: "success",
       message: "video uploaded successfully",
-      data: videoUrl
-    })
-
+      data: videoUrl,
+    });
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 exports.addSingleImage = async (req, res) => {
   try {
@@ -219,19 +235,19 @@ exports.addSingleImage = async (req, res) => {
     res.json({
       status: "success",
       message: "image uploaded successfully",
-      data: imageUrl
-    })
+      data: imageUrl,
+    });
   } catch (error) {
     console.log(error);
   }
-}
+};
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
-      const { id } = req.params;
-      const data = req.body;
-      const objData = {
-        courseInstructor: id,
+    const { id } = req.params;
+    const data = req.body;
+    const objData = {
+      courseInstructor: id,
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
@@ -243,77 +259,93 @@ exports.updateCourseInstrustor = async (req, res) => {
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
-      status:"pending",
-      }
-      const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, { new: true });
-      if(!updateStatus) return res.json({ status: "failed", message: "status not updated" })
-      res.json({
-          status: "success",
-          message: "status updated successfully",
-          data: updateStatus
-      })
+      status: "pending",
+    };
+    const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, {
+      new: true,
+    });
+    if (!updateStatus)
+      return res.json({ status: "failed", message: "status not updated" });
+    res.json({
+      status: "success",
+      message: "status updated successfully",
+      data: updateStatus,
+    });
   } catch (error) {
-    console.log(error ,"error")
-      res.json({
-          status: "failed",
-          message: "something went wrong",
-          error: error.message
-      })
+    console.log(error, "error");
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-} 
-
+};
 
 exports.deleteCourse = async (req, res) => {
   try {
-      const { id } = req.params;
-      const updateStatus = await CourseModel.findByIdAndUpdate(id, { idDelete: true }, { new: true });
-      if(!updateStatus) return res.json({ status: "failed", message: "status not updated" })
-      res.json({
-          status: "success",
-          message: "status updated successfully",
-          data: updateStatus
-      })
+    const { id } = req.params;
+    const updateStatus = await CourseModel.findByIdAndUpdate(
+      id,
+      { idDelete: true },
+      { new: true }
+    );
+    if (!updateStatus)
+      return res.json({ status: "failed", message: "status not updated" });
+    res.json({
+      status: "success",
+      message: "status updated successfully",
+      data: updateStatus,
+    });
   } catch (error) {
-      res.json({
-          status: "failed",
-          message: "something went wrong",
-          error: error.message
-      })
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-}
-
+};
 
 exports.filterByStatus = async (req, res) => {
   try {
-      const courseSubCategory = await CourseModel.find({status:req.params.status,idDelete:false}).populate("courseSubCategory").exec();
-      res.json({
-          status:"success",
-          message:"course sub category fetched successfully",
-          data:courseSubCategory
-      })
+    const courseSubCategory = await CourseModel.find({
+      status: req.params.status,
+      idDelete: false,
+    })
+      .populate("courseSubCategory")
+      .exec();
+    res.json({
+      status: "success",
+      message: "course sub category fetched successfully",
+      data: courseSubCategory,
+    });
   } catch (error) {
-      res.json({
-          status:"failed",
-          message:"something went wrong",
-          error:error.message
-      })
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-}
+};
 
 exports.filterHomePage = async (req, res) => {
   try {
-      const categoryId = req.params.categoryId;
-      const courseSubCategory = await CourseModel.find({courseCategory : categoryId , idDelete:false}).populate("courseSubCategory").exec();
-      res.json({
-          status:"success",
-          message:"course sub category fetched successfully",
-          data:courseSubCategory
-      })
+    const categoryId = req.params.categoryId;
+    const courseSubCategory = await CourseModel.find({
+      courseCategory: categoryId,
+      idDelete: false,
+    })
+      .populate("courseSubCategory")
+      .exec();
+    res.json({
+      status: "success",
+      message: "course sub category fetched successfully",
+      data: courseSubCategory,
+    });
   } catch (error) {
     res.json({
-        status:"failed",
-        message:"something went wrong",
-        error:error.message
-    })
+      status: "failed",
+      message: "something went wrong",
+      error: error.message,
+    });
   }
-}
+};
