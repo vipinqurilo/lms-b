@@ -94,7 +94,7 @@ exports.editCategory = async (req, res) => {
 
 exports.filterCourseCategory = async (req, res) => {
   try {
-    const courseSubCategory = await CourseCategoryModel.find({})
+    const courseSubCategory = await CourseCategoryModel.find({deletedAt:null})
       .populate("courseSubCategory", "name")
       .exec();
     res.json({

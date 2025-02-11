@@ -50,11 +50,13 @@ exports.courseSubCategoryDelete = async (req, res) => {
       });
     }
 
+    await CourseSubCategoryModel.findByIdAndUpdate(id, {
+      deletedAt: new Date(),
+    });
+
     await CourseCategoryModel.findByIdAndUpdate(subCategory.courseCategory, {
       $pull: { courseSubCategory: id },
     });
-
-    await CourseSubCategoryModel.findByIdAndDelete(id);
 
     res.json({
       status: "succss",
@@ -71,7 +73,9 @@ exports.courseSubCategoryDelete = async (req, res) => {
 
 exports.filterCourseSubCategory = async (req, res) => {
   try {
-    const courseSubCategory = await CourseSubCategoryModel.find({})
+    const courseSubCategory = await CourseSubCategoryModel.find({
+      deletedAt: null,
+    })
       .populate("courseCategory")
       .exec();
 
@@ -135,9 +139,9 @@ exports.courseSubCategoryEdit = async (req, res) => {
 
 exports.getAllSubcategories = async (req, res) => {
   try {
-    const subcategories = await CourseSubCategoryModel.find().populate(
-      "courseCategory"
-    );
+    const subcategories = await CourseSubCategoryModel.find({
+      deletedAt: null,
+    }).populate("courseCategory");
     if (!subcategories || subcategories.length === 0) {
       return res.status(404).json({
         message: "No subcategories found",
