@@ -23,8 +23,8 @@ exports.registerUser = async (req, res) => {
         if(userAdd) {
             res.json({
                 status:"success",
-                message:"user added successfully",
-                data:userAdd
+                message:"User registered successfully",
+               
             })
         }else{
             res.json({
@@ -48,7 +48,13 @@ exports.userLogin = async (req, res) => {
         if(user) {
             const match = isValidPassword(data.password, user.password);
             if(match) {
-                const token = jwt.sign({ email: user.email, role: user.role,id:user._id,name:user.firstName+" "+user.lastName,profilePhoto:user.profilePhoto }, process.env.JWT_SECRET);
+                if(user.userStatus=="inactive"){
+                    return res.json({
+                        status:"failed",
+                        message:"user is inactive",
+                    })
+                }
+                const token = jwt.sign({ email: user.email, role: user.role,id:user._id}, process.env.JWT_SECRET);
                 res.json({
                     status:"success",
                     message:"login successfully",

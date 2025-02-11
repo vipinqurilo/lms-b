@@ -40,10 +40,11 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     });
-    const user = await UserModel.findOneAndUpdate({ id: userId }, personalInfo);
+     await UserModel.findOneAndUpdate({ id: userId }, personalInfo);
     res.status(201).json({
       success: true,
       message: "Your request has been submitted for approval.",
+      data: newRequest
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -93,14 +94,24 @@ exports.getTeacherRequests = async (req, res) => {
   }
 };
 
-exports.getTeacherRequestsByUserId = async (req, res) => {
+exports.getTeacherRequestsById = async (req, res) => {
   try {
-    const teacherRequests = await TeacherRequestModel.find({ userId: req.user.id });
+    console.log(req.user.role)
+    const query={}
+    if(req.user.role=="admin"&&req.params.requestId)
+      query._id=req.params.requestId;
+    if(req.user.role=="teacher")
+      query.userId=req.user.id;
+    console.log(query);
+    const teacherRequest = await TeacherRequestModel.findOne(query);
+    if(!teacherRequest)
+      return res.status(404).json({message:"Teacher request not found"});
     res.json({
       success: true,
-      data: teacherRequests,
-      message: "Teacher requests fetched successfully",
+      data: teacherRequest,
+      message: "Teacher request found successfully",
     });
+
   } catch (error) {
     console.log(error);
     res.json({
@@ -110,25 +121,32 @@ exports.getTeacherRequestsByUserId = async (req, res) => {
     });
   }
 }
-// exports.editTeacherRequest = async (req, res) => {
-//     try{
-//         const requestId = req.params.requestId;
-//         const { personalInfo, profilePhoto, bio, experience, education, subjectsTaught, languagesSpoken } = req.body;
-//         const request = await TeacherRequestModel.findById(requestId);
-//         if (!request) {
-//             return res.status(404).json({ message: "Teacher request not found" });
-//         }
+exports.editTeacherRequest = async (req, res) => {
+    try{
+       const data=req.body;
+       const requestId=req.params.requestId;
+        const editRequest = await TeacherRequestModel.findOneAndUpdate({_id:requestId},data,{new:true});
+        editRequest.approvalStatus="in review";
+        await editRequest.save();
+        if (!editRequest) {
+            return res.status(404).json({success: false, message: "Teacher request not found" });
+        }
+        res.json({
+            success: true,
+            data: editRequest,
+            message: "Teacher request updated successfully",
+        });
         
-//     }
-//     catch(error){
-//         console.log(error);
-//         res.json({
-//             success: false,
-//             message: "Something went wrong",
-//             error: error.message,
-//         });
-//     }
-// }
+    }
+    catch(error){
+        console.log(error);
+        res.json({
+            success: false,
+            message: "Something went wrong",
+            error: error.message,
+        });
+    }
+}
 exports.approvedTeacherRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
@@ -169,7 +187,7 @@ exports.approvedTeacherRequest = async (req, res) => {
     await teacherProfile.save();
     await UserModel.findOneAndUpdate(
       { _id: request.userId._id },
-      { teacherProfile: teacherProfile._id },
+      { teacherProfile: teacherProfile._id,userStatus:"active" },
       { new: true }
     );
     res

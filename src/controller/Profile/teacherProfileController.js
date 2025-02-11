@@ -117,10 +117,9 @@ exports.editEducation=async(req,res)=>{
 exports.getAvailabilityCalendar=async(req,res)=>{
     try {
         const userId=req.user.id;
-        const teacherProfile=await TeacherProfileModel.findOne({userId});
-        if(!teacherProfile)
-            return res.json({success:false,message:"Teacher Profile not found"})
-        const teacherCalendar=await CalenderModel.findOne({userId}).select("availability").lean();
+        const teacherCalendar=await CalenderModel.findOne({userId});
+        if(!teacherCalendar)
+            return res.json({success:false,message:"Availablity Calendar not found"})
         res.json({  
             success:true,
             message:"Availablity Calendar fetched successfully",
@@ -142,15 +141,18 @@ exports.editAvailabilityCalendar=async(req,res)=>{
         if(!teacherProfile)
             return res.json({success:false,message:"Teacher Profile not found"})
         const {availability}=req.body;
-        const teacherCalendar=await CalenderModel.findOneAndUpdate({userId},{availability},{new:true})
+        let teacherCalendar=await CalenderModel.findOneAndUpdate({userId},{availability},{new:true}).lean()
+        console.log(teacherCalendar,"sdf");
         if(!teacherCalendar){
-            const newTeacherCalendar =await CalenderModel.create({userId,availability});
-            teacherProfile.calendar=newTeacherCalendar._id
+            teacherCalendar =await CalenderModel.create({userId,availability});
+            teacherProfile.calendar=teacherCalendar._id
             await teacherProfile.save();
         }
         res.json({  
             success:true,
             message:"Availablity Calendar Updated successfully",
+            data:teacherCalendar
+      
         })
     } catch (error) {
         console.log(error);

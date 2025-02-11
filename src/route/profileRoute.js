@@ -18,8 +18,8 @@ router.put("/subjects",authorizeRoles("teacher"),editSubjects);
 router.put("/languages",authorizeRoles("teacher"),editLanguages)
 router.put("/experience",authorizeRoles("teacher"),editExperience);
 router.put("/education",authorizeRoles("teacher"),editEducation);
-router.put("/availablity-calendar",authorizeRoles("teacher"),editAvailabilityCalendar);
-router.get("/availablity-calendar",authorizeRoles("teacher"),getAvailabilityCalendar);
+router.put("/availability-calendar",authorizeRoles("teacher"),editAvailabilityCalendar);
+router.get("/availability-calendar",authorizeRoles("teacher"),getAvailabilityCalendar);
 router.put("/payment-info",authorizeRoles("teacher"),editPaymentInfo);
 router.put("/social-links",authorizeRoles("teacher,student,teacher"),editSocialLinks);
 router.patch('/change-password',changePassword);

@@ -123,6 +123,7 @@ exports.getTutors = async (req, res) => {
           calendar: {
             availability: 1,
           },
+          tutionSlots:1
         },
       },
     ]);
