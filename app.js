@@ -13,6 +13,7 @@ const wishListRouter = require("./src/route/wishlistRoute");
 const orderRouter= require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
+const userRoutes = require("./src/route/userRoutes");
 
 const app = express();
 app.use(express.json());
@@ -38,5 +39,6 @@ app.use("/api/whishlist",wishListRouter);
 app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
+app.use('/api/users',userRoutes)
 
 module.exports = app;

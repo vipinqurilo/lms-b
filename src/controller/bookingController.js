@@ -39,85 +39,23 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-// exports.getBookings = async (req, res) => {
-//   try {
-    
-//     let { search, status, startDate, endDate } = req.query;
-//     let query = {
-//       status: "Scheduled",
-//     };
-//     if (status && status !== "") query.status = status;
-//     if (search && search != "")
-//       query.$or = [
-//         { "teacher.firstName": { $regex: search, $options: "i" } },
-//         { "teacher.lastName": { $regex: search, $options: "i" } },
-//       ];
-
-//     // Handle filtering by days and timeSlots
-
-//     console.log(query);
-//     const tutors = await BookingModel.aggregate([
-//       {
-//         $lookup: {
-//           from: "users", // Collection name in MongoDB
-//           localField: "teacherId",
-//           foreignField: "_id",
-//           as: "teacher",
-//         },
-//       },
-//       {
-//         $lookup:{
-//           from:"users",
-//           localField:"studentId",
-//           foreignField:"_id",
-//           as:"student"
-//         }
-//       },
-//       {
-//         $unwind:{
-//           path:"$teacher",
-//           preserveNullAndEmptyArrays: true
-//         }
-//       },
-//       {
-//         $unwind: {
-//           path: "$student", // Unwind the subjects array
-//           preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
-//         },
-//       },
-
-//       {
-//         $match: query,
-//       },
-     
-//     ]);
-//     res.json({
-//       success: true,
-//       data: tutors,
-//       message: "Bookings found successfully",
-//     });
-//   } catch (e) {
-//     console.log(e);
-//     res.json({
-//       success: true,
-//       message: "Something went Wrong",
-//       error: e.message,
-//     });
-//   }
-// };
 
 exports.getBookings = async (req, res) => {
   try {
       const { role, id:userId } = req.user; // Extract user role and ID
       console.log(role,userId);
-      let { status, startDate, endDate, search, page = 1, limit = 10 } = req.query;
+      let { status, startDate, endDate,teacherId, search, page = 1, limit = 10 } = req.query;
       console.log(status,startDate,endDate,search)
       page = parseInt(page);
+
       limit = parseInt(limit);
       const skip = (page - 1) * limit;
 
       let query = {};
-
+      //Filter with Teacher Id
+      if (teacherId) {
+          query.teacherId = new mongoose.Types.ObjectId(teacherId);
+      } 
       // Role-based filtering
       if (role === 'teacher') {
           query.teacherId = new mongoose.Types.ObjectId(userId);

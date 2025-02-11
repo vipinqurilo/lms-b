@@ -114,6 +114,27 @@ exports.editEducation=async(req,res)=>{
         })
     }
 }
+exports.getAvailabilityCalendar=async(req,res)=>{
+    try {
+        const userId=req.user.id;
+        const teacherProfile=await TeacherProfileModel.findOne({userId});
+        if(!teacherProfile)
+            return res.json({success:false,message:"Teacher Profile not found"})
+        const teacherCalendar=await CalenderModel.findOne({userId}).select("availability").lean();
+        res.json({  
+            success:true,
+            message:"Availablity Calendar fetched successfully",
+            data:teacherCalendar
+        })
+    } catch (error) {
+        console.log(error);
+        res.json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message
+        })
+    }
+}
 exports.editAvailabilityCalendar=async(req,res)=>{
     try {
         const userId=req.user.id;

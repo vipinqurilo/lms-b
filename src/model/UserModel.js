@@ -13,11 +13,11 @@ const UserSchema = new mongoose.Schema({
   gender:{type:String,enum: ['male', 'female']},
   role: { type: String, enum: ['student', 'teacher', 'admin'], default: 'student' },
   bio: { type: String,default:"" },
-  profilePhoto: { type: String },
+  profilePhoto: { type: String,default:null },
   studentProfile:{ type: mongoose.Schema.Types.ObjectId, ref: 'StudentProfile' },
   teacherProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'TeacherProfile' },
   socialLinks:[{name:{type:String},url:{type:String}}],
-  userStatus: { type: String, enum: ['active', 'inactive','in review'], default: 'active' },
+  userStatus: { type: String, enum: ['active', 'inactive','pending'], default: 'active' },
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {

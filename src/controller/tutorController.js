@@ -80,16 +80,7 @@ exports.getTutors = async (req, res) => {
           as: "user",
         },
       },
-      {
-        $unwind: {
-          path: "$languagesSpoken", // Unwind the subjects array
-        },
-      },
-      {
-        $unwind: {
-          path: "$subjectsTaught", // Unwind the subjects array
-        },
-      },
+     
       {
         $unwind: {
           path: "$user", // Unwind the subjects array
@@ -109,6 +100,7 @@ exports.getTutors = async (req, res) => {
       {
         $project: {
           user: {
+            _id:1,
             email: 1,
             firstName: 1,
             lastName: 1,
@@ -122,9 +114,11 @@ exports.getTutors = async (req, res) => {
           },
           subjectsTaught: {
             name: 1,
+            _id:1,
           },
           languagesSpoken: {
             name: 1,
+            _id:1,
           },
           calendar: {
             availability: 1,
