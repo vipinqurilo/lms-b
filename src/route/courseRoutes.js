@@ -30,7 +30,7 @@ courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("ins
 
 // admin 
 
-courseRouter.get('/admin/get',authMiddleware,authorizeRoles("admin"),getAllCourseByAdmin)
+courseRouter.get('/admin/get',getAllCourseByAdmin)
 courseRouter.put('/admin-status/:id',authMiddleware,authorizeRoles("admin"),updateStatusByAdmin)
 
 

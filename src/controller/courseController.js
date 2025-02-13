@@ -29,6 +29,7 @@ exports.addCourse = async (req, res) => {
 
     // Build the path to the video file
     const videoPath = courseVideo
+
       ? path.join(__dirname, "..", "public", courseVideo) // Adjust path as necessary
       : null;
 
@@ -109,7 +110,7 @@ exports.getCourse = async (req, res) => {
 exports.getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await CourseModel.findById(id);
+    const course = await CourseModel.findById(id).populate("courseInstructor");
     res.json({
       status: "success",
       message: "course fetched successfully",
@@ -166,20 +167,25 @@ exports.getCourseInstructor = async (req, res) => {
   }
 };
 
+
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-    const { status = "pending" } = req.query;
-
+    const { status = "pending",categoryId } = req.query;
+    let setData = [];
     const courseSubCategory = await CourseModel.find({
       status: status,
-      idDelete: false,
     })
       .populate("courseSubCategory", "name")
       .exec();
+      setData = courseSubCategory
+      if(categoryId){
+        const dataSet = courseSubCategory.filter((item) => item.courseCategory == categoryId)
+        setData = dataSet
+      }
     res.json({
       status: "success",
       message: "course sub category fetched successfully",
-      data: courseSubCategory,
+      data: setData,
     });
   } catch (error) {
     res.json({
@@ -307,6 +313,7 @@ exports.deleteCourse = async (req, res) => {
 
 exports.filterByStatus = async (req, res) => {
   try {
+    console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
       idDelete: false,
