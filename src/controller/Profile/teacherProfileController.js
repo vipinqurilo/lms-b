@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const CalenderModel = require("../../model/calenderModel");
 const StudentProfileModel = require("../../model/studentProfileModel");
 const TeacherProfileModel = require("../../model/teacherProfileModel");
@@ -10,7 +11,7 @@ exports.getTeacherProfile=async(req,res)=>{
             // Match the teacher by ID
             {
               $match: {
-                _id: mongoose.Types.ObjectId(teacherId), // Convert teacherId to ObjectId
+                _id: new mongoose.Types.ObjectId(teacherId), // Convert teacherId to ObjectId
               },
             },
             // Lookup to populate userId
@@ -19,7 +20,7 @@ exports.getTeacherProfile=async(req,res)=>{
                 from: "users", // The collection name for the User model
                 localField: "userId",
                 foreignField: "_id",
-                as: "userId",
+                as: "user",
               },
             },
             // Unwind the userId array (since $lookup returns an array)
@@ -60,19 +61,6 @@ exports.getTeacherProfile=async(req,res)=>{
             // Project the desired fields
             {
               $project: {
-                createdAt: 0,
-                updatedAt: 0,
-                _id: 0,
-                __v: 0,
-                paymentInfo: 0,
-                "userId._id": 0,
-                "userId.__v": 0,
-                "calendar._id": 0,
-                "calendar.__v": 0,
-                "subjectsTaught._id": 0,
-                "subjectsTaught.__v": 0,
-                "languagesSpoken._id": 0,
-                "languagesSpoken.__v": 0,
                 userId: {
                   email: 1,
                   phone: 1,
@@ -99,6 +87,7 @@ exports.getTeacherProfile=async(req,res)=>{
           
           // Since aggregation returns an array, take the first element
           const result = teacherProfile[0];
+          console.log(result,"result")
         if(!teacherProfile)
             return  res.status(404).json({success:false,message:"User not found"})
         
