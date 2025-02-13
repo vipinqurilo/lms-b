@@ -14,6 +14,7 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     } = req.body;
+    
     const userId = req.user.id;
     const teacherProfile = await TeacherProfileModel.findOne({ userId });
     if (teacherProfile) {
@@ -30,7 +31,7 @@ exports.createTeacherRequest = async (req, res) => {
     }
 
     // Create new teacher request
-    const newRequest = new TeacherRequestModel({
+    const newRequest = await TeacherRequestModel.create({
       userId,
       personalInfo,
       profilePhoto,
@@ -40,6 +41,7 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     });
+    console.log(newRequest,"sdf");
      await UserModel.findOneAndUpdate({ id: userId }, personalInfo);
     res.status(201).json({
       success: true,

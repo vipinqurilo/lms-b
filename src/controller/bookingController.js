@@ -150,6 +150,7 @@ exports.getBookings = async (req, res) => {
                   "teacher.firstName": 1,
                   "teacher.lastName": 1,
                   "teacher.email": 1,
+                  "teacher.profilePhoto":1,
                   "subject.name": 1
               }
           },
@@ -161,10 +162,68 @@ exports.getBookings = async (req, res) => {
           { $skip: skip },
           { $limit: limit }
       ]);
-      console.log(bookings.length,"book")
-      // Total count for pagination
-      const totalBookings = await BookingModel.countDocuments(query);
 
+      // Total count for pagination
+      const countQuery = [
+        { $match: query },
+    
+        // Lookup student details
+        {
+            $lookup: {
+                from: "users",
+                localField: "studentId",
+                foreignField: "_id",
+                as: "student"
+            }
+        },
+        { $unwind: "$student" },
+    
+        // Lookup teacher details
+        {
+            $lookup: {
+                from: "users",
+                localField: "teacherId",
+                foreignField: "_id",
+                as: "teacher"
+            }
+        },
+        { $unwind: "$teacher" },
+    
+        // Lookup subject details
+        {
+            $lookup: {
+                from: "coursesubcategories",
+                localField: "subjectId",
+                foreignField: "_id",
+                as: "subject"
+            }
+        },
+        { $unwind: "$subject" },
+    
+        // Search filtering (same as your aggregation pipeline)
+        ...(search ? [{
+            $match: {
+                $or: role === 'teacher' ? [
+                    { "student.firstName": { $regex: search, $options: "i" } },
+                    { "student.lastName": { $regex: search, $options: "i" } }
+                ] : role === 'student' ? [
+                    { "teacher.firstName": { $regex: search, $options: "i" } },
+                    { "teacher.lastName": { $regex: search, $options: "i" } }
+                ] : [
+                    { "student.firstName": { $regex: search, $options: "i" } },
+                    { "student.lastName": { $regex: search, $options: "i" } },
+                    { "teacher.firstName": { $regex: search, $options: "i" } },
+                    { "teacher.lastName": { $regex: search, $options: "i" } }
+                ]
+            }
+        }] : []),
+    
+        // Count total matched records
+        { $count: "totalBookings" }
+    ];
+    
+    const totalResult = await BookingModel.aggregate(countQuery);
+    const totalBookings = totalResult.length > 0 ? totalResult[0].totalBookings : 0;
       res.json({
           success: true,
           data: bookings,

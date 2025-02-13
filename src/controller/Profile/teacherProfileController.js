@@ -6,14 +6,106 @@ const UserModel = require("../../model/UserModel");
 exports.getTeacherProfile=async(req,res)=>{
     try {
         const teacherId=req.params.teacherId
-        const teacherProfile= await TeacherProfileModel.findById(teacherId).populate({path:"userId",select:"email phone firstName lastName gender country bio profilePhoto"}).populate({path:"calendar",select:"availability"}).select(" -createdAt -updatedAt -_id -__v -paymentInfo").populate("subjectsTaught",{name:1,pricePerHour:1}).populate("languagesSpoken",{name:1}).lean();
+        const teacherProfile = await TeacherProfileModel.aggregate([
+            // Match the teacher by ID
+            {
+              $match: {
+                _id: mongoose.Types.ObjectId(teacherId), // Convert teacherId to ObjectId
+              },
+            },
+            // Lookup to populate userId
+            {
+              $lookup: {
+                from: "users", // The collection name for the User model
+                localField: "userId",
+                foreignField: "_id",
+                as: "userId",
+              },
+            },
+            // Unwind the userId array (since $lookup returns an array)
+            {
+              $unwind: "$userId",
+            },
+            // Lookup to populate calendar
+            {
+              $lookup: {
+                from: "calendars", // The collection name for the Calendar model
+                localField: "calendar",
+                foreignField: "_id",
+                as: "calendar",
+              },
+            },
+            // Unwind the calendar array
+            {
+              $unwind: "$calendar",
+            },
+            // Lookup to populate subjectsTaught
+            {
+              $lookup: {
+                from: "subjects", // The collection name for the Subject model
+                localField: "subjectsTaught",
+                foreignField: "_id",
+                as: "subjectsTaught",
+              },
+            },
+            // Lookup to populate languagesSpoken
+            {
+              $lookup: {
+                from: "languages", // The collection name for the Language model
+                localField: "languagesSpoken",
+                foreignField: "_id",
+                as: "languagesSpoken",
+              },
+            },
+            // Project the desired fields
+            {
+              $project: {
+                createdAt: 0,
+                updatedAt: 0,
+                _id: 0,
+                __v: 0,
+                paymentInfo: 0,
+                "userId._id": 0,
+                "userId.__v": 0,
+                "calendar._id": 0,
+                "calendar.__v": 0,
+                "subjectsTaught._id": 0,
+                "subjectsTaught.__v": 0,
+                "languagesSpoken._id": 0,
+                "languagesSpoken.__v": 0,
+                userId: {
+                  email: 1,
+                  phone: 1,
+                  firstName: 1,
+                  lastName: 1,
+                  gender: 1,
+                  country: 1,
+                  bio: 1,
+                  profilePhoto: 1,
+                },
+                calendar: {
+                  availability: 1,
+                },
+                subjectsTaught: {
+                  name: 1,
+                  pricePerHour: 1,
+                },
+                languagesSpoken: {
+                  name: 1,
+                },
+              },
+            },
+          ]);
+          
+          // Since aggregation returns an array, take the first element
+          const result = teacherProfile[0];
         if(!teacherProfile)
             return  res.status(404).json({success:false,message:"User not found"})
         
         res.json({
             success:true,
             message:"Teacher Profile fetched successfully",
-            data:teacherProfile
+            data:result
         })
     } catch (error) {
         console.log(error);

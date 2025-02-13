@@ -44,8 +44,8 @@ exports.registerUser = async (req, res) => {
 exports.userLogin = async (req, res) => {
     try {
         const data = req.body;
-        const user = await UserModel.findOne({ email: data.email });
-        if(user) {
+        console.log(data);
+        const user = await UserModel.findOne({ email: data.email })
             const match = isValidPassword(data.password, user.password);
             if(match) {
                 if(user.userStatus=="inactive"){
@@ -58,7 +58,11 @@ exports.userLogin = async (req, res) => {
                 res.json({
                     status:"success",
                     message:"login successfully",
-                    role:user.role,
+                    data:{
+                        _id:user._id,
+                        email:user.email,
+                        role:user.role
+                    },
                     token:token
                 })
             }else{
@@ -67,13 +71,9 @@ exports.userLogin = async (req, res) => {
                     message:"password not matched",
                 })
             }
-        }else{
-            res.json({
-                status:"failed",
-                message:"user not found",
-            })
-        }
-    } catch (error) {
+        
+    }
+    catch (error) {
         console.log(error);
         res.json({
             status:"failed",

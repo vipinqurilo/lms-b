@@ -19,7 +19,11 @@ const app = express();
 app.use(express.json());
 require('dotenv').config()
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+const corsOption={
+    origin:"*",
+    optionsSuccessStatus:200
+}
+app.use(cors(corsOption));
 app.use((req,res,next)=>{
     // console.log(req)
     next();
