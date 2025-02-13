@@ -5,13 +5,14 @@ const teacherProfileSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     experience: [experienceSchema],
     education:[educationSchema],
-    subjectsTaught: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subcategory", required: true }],//Array of subjects (subcategories)
+    subjectsTaught: [{ type: mongoose.Schema.Types.ObjectId, ref: "CourseSubCategory", required: true }],//Array of subjects (subcategories)
     languagesSpoken: [{ type: mongoose.Schema.Types.ObjectId, ref: "Language", required: true }],
     tutionSlots: {
       type: [Number],
       enum: [15, 30, 45, 60],
       default: [30, 60]
     },
+    introVideo:{type:String},
     courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     tutionBookings:[{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
     paymentInfo: {

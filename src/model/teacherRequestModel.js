@@ -14,13 +14,15 @@ const teacherRequestSchema = new mongoose.Schema({
         },
         idProof:{type:String,required:true}
     },
+
     profilePhoto:{type:String,required:true},
+    introVideo:{type:String},
     bio:{type:String,required:true},
     experience: [experienceSchema],
     education:[educationSchema],
     subjectsTaught: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subcategory", required: true }],
     languagesSpoken: [{ type: mongoose.Schema.Types.ObjectId, ref: "Language", required: true }],
-    approvalStatus:{type:String,enum: ["In Review", "Approved", "Rejected"], default: "In Review"},
+    approvalStatus:{type:String,enum: ["in review", "approved", "rejected"], default: "in review"},
     reason:{type:String}
   },{
     timestamps:true

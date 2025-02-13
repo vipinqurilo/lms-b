@@ -13,7 +13,7 @@ exports.getTutors = async (req, res) => {
       query.$or = [
         { "user.firstName": { $regex: search, $options: "i" } },
         { "user.lastName": { $regex: search, $options: "i" } },
-      ];
+      ];  
     if (subjects && subjects.length > 0) {
       const subjectIds = subjects
         .split(",")
@@ -58,23 +58,40 @@ exports.getTutors = async (req, res) => {
       },
       {
         $lookup: {
+          from: "languages", // Collection name in MongoDB
+          localField: "languagesSpoken",
+          foreignField: "_id",
+          as: "languagesSpoken",
+        },
+      },
+      {
+        $lookup: {
+          from: "coursesubcategories", // Collection name in MongoDB
+          localField: "subjectsTaught",
+          foreignField: "_id",
+          as: "subjectsTaught",
+        },
+      },
+      {
+        $lookup: {
           from: "users", // Collection name in MongoDB
           localField: "userId",
           foreignField: "_id",
           as: "user",
         },
       },
+     
       {
         $unwind: {
           path: "$user", // Unwind the subjects array
-          preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
+        
         },
       },
 
       {
         $unwind: {
           path: "$calendar", // Unwind the subjects array
-          preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
+          
         },
       },
       {
@@ -83,6 +100,7 @@ exports.getTutors = async (req, res) => {
       {
         $project: {
           user: {
+            _id:1,
             email: 1,
             firstName: 1,
             lastName: 1,
@@ -94,9 +112,19 @@ exports.getTutors = async (req, res) => {
             phone: 1,
             bio: 1,
           },
+          subjectsTaught: {
+            name: 1,
+            pricePerHour:1,
+            _id:1,
+          },
+          languagesSpoken: {
+            name: 1,
+            _id:1,
+          },
           calendar: {
             availability: 1,
           },
+          tutionSlots:1
         },
       },
     ]);

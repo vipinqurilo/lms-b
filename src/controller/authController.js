@@ -2,7 +2,8 @@ const UserModel = require("../model/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
-exports.userAdd = async (req, res) => {
+const StudentProfileModel = require("../model/studentProfileModel");
+exports.registerUser = async (req, res) => {
     try {
         const data = req.body;
         const userObj = {
@@ -11,13 +12,19 @@ exports.userAdd = async (req, res) => {
             email: data.email,
             password: data.password,
             role: data.role,
+            userStatus:data.role=="teacher"?"pending":"active"
         }
         const userAdd = await UserModel.create(userObj);
+        if(data.role=="student") {
+            const studentProfile = await StudentProfileModel.create({ userId: userAdd._id });
+            userAdd.studentProfile = studentProfile._id;
+            await userAdd.save();
+        }
         if(userAdd) {
             res.json({
                 status:"success",
-                message:"user added successfully",
-                data:userAdd
+                message:"User registered successfully",
+               
             })
         }else{
             res.json({
@@ -37,15 +44,26 @@ exports.userAdd = async (req, res) => {
 exports.userLogin = async (req, res) => {
     try {
         const data = req.body;
-        const user = await UserModel.findOne({ email: data.email });
-        if(user) {
+        console.log(data);
+        const user = await UserModel.findOne({ email: data.email })
             const match = isValidPassword(data.password, user.password);
             if(match) {
-                const token = jwt.sign({ email: user.email, role: user.role,id:user._id }, process.env.JWT_SECRET);
+                if(user.userStatus=="inactive"){
+                    return res.json({
+                        status:"failed",
+                        message:"user is inactive",
+                    })
+                }
+                const token = jwt.sign({ email: user.email, role: user.role,id:user._id}, process.env.JWT_SECRET);
                 res.json({
                     status:"success",
                     message:"login successfully",
-                    role:user.role,
+                    data:{
+                        _id:user._id,
+                        email:user.email,
+                        role:user.role,
+                        userStatus:user.userStatus
+                    },
                     token:token
                 })
             }else{
@@ -54,13 +72,9 @@ exports.userLogin = async (req, res) => {
                     message:"password not matched",
                 })
             }
-        }else{
-            res.json({
-                status:"failed",
-                message:"user not found",
-            })
-        }
-    } catch (error) {
+        
+    }
+    catch (error) {
         console.log(error);
         res.json({
             status:"failed",

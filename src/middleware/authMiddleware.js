@@ -14,7 +14,7 @@ exports.authMiddleware = async (req, res, next) => {
         }
     } catch (error) {
         res.json({
-            status: "failed",
+            status: "error",
             message: "unauthorized user",
         })
     }

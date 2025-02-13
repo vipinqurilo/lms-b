@@ -9,9 +9,8 @@ const CourseSubCategorySchema = new mongoose.Schema(
       required: true,
     },
     deletedAt: { type: Date, default: null },
-  },
-  { timestamps: true }
-);
+    pricePerHour: { type: Number, required: true },
+}, { timestamps: true });
 
 const CourseSubCategoryModel = mongoose.model(
   "CourseSubCategory",

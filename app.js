@@ -13,12 +13,17 @@ const wishListRouter = require("./src/route/wishlistRoute");
 const orderRouter= require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
+const userRoutes = require("./src/route/userRoutes");
 
 const app = express();
 app.use(express.json());
 require('dotenv').config()
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+const corsOption={
+    origin:"*",
+    optionsSuccessStatus:200
+}
+app.use(cors(corsOption));
 app.use((req,res,next)=>{
     // console.log(req)
     next();
@@ -38,5 +43,6 @@ app.use("/api/whishlist",wishListRouter);
 app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
+app.use('/api/users',userRoutes)
 
 module.exports = app;

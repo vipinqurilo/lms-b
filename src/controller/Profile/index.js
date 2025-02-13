@@ -8,7 +8,7 @@ exports.getMyProfile=async(req,res)=>{
         const role=req.user.role;
         console.log(role,"role")
         let profileData;
-        const personalInfo=await UserModel.findById(userId).select("-password -createdAt -updatedAt -_id -__v").lean()
+        const personalInfo=await UserModel.findById(userId).select("-password -createdAt -updatedAt  -__v").lean()
         if(role=="teacher")
         {
         const teacherProfile= await TeacherProfileModel.findOne({userId}).select(" -createdAt -updatedAt -_id -__v").lean();

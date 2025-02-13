@@ -1,6 +1,8 @@
 const BookingModel = require("../model/bookingModel");
 const StudentProfileModel = require("../model/studentProfileModel");
 const TeacherProfileModel = require("../model/teacherProfileModel");
+const mongoose=require('mongoose')
+const moment=require('moment');
 exports.createBooking = async (req, res) => {
   try {
     const data = req.body;
@@ -37,120 +39,202 @@ exports.createBooking = async (req, res) => {
   }
 };
 
+
 exports.getBookings = async (req, res) => {
   try {
-    
-    let { search, status, startDate, endDate } = req.query;
-    let query = {
-      status: "Scheduled",
-    };
-    if (status && status !== "") query.status = status;
-    if (search && search != "")
-      query.$or = [
-        { "teacher.firstName": { $regex: search, $options: "i" } },
-        { "teacher.lastName": { $regex: search, $options: "i" } },
-      ];
+      const { role, id:userId } = req.user; // Extract user role and ID
+      console.log(role,userId);
+      let { status, startDate, endDate,teacherId, search, page = 1, limit = 10 } = req.query;
+      console.log(status,startDate,endDate,search)
+      page = parseInt(page);
 
-    // Handle filtering by days and timeSlots
+      limit = parseInt(limit);
+      const skip = (page - 1) * limit;
 
-    console.log(query);
-    const tutors = await BookingModel.aggregate([
-      {
-        $lookup: {
-          from: "users", // Collection name in MongoDB
-          localField: "teacherId",
-          foreignField: "_id",
-          as: "teacher",
-        },
-      },
-      {
-        $unwind: {
-          path: "$teacher", // Unwind the subjects array
-          preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
-        },
-      },
+      let query = {};
+      //Filter with Teacher Id
+      if (teacherId) {
+          query.teacherId = new mongoose.Types.ObjectId(teacherId);
+      } 
+      // Role-based filtering
+      if (role === 'teacher') {
+          query.teacherId = new mongoose.Types.ObjectId(userId);
+      } else if (role === 'student') {
+          query.studentId = new mongoose.Types.ObjectId(userId);
+      }
 
-      {
-        $match: query,
-      },
-      {
-        $project: {
-          teacher: {
-            password: 0,
+      // Status filtering
+      if (status) {
+          query.status = status;
+      }
+
+      // Date range filtering
+      if (startDate || endDate) {
+          query.scheduledDate = {};
+          if (startDate) query.scheduledDate.$gte = new Date(moment( startDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
+          if (endDate) query.scheduledDate.$lte = new Date(moment( endDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
+      }
+      console.log(query);
+      const booking=await BookingModel.find(query);
+      console.log(booking)
+      // Aggregation pipeline
+      const bookings = await BookingModel.aggregate([
+          { $match: query },
+
+          // Lookup student details
+          {
+              $lookup: {
+                  from: "users",
+                  localField: "studentId",
+                  foreignField: "_id",
+                  as: "student"
+              }
           },
+          { $unwind: "$student" },
+
+          // // Lookup teacher details
+          {
+              $lookup: {
+                  from: "users",
+                  localField: "teacherId",
+                  foreignField: "_id",
+                  as: "teacher"
+              }
+          },
+          { $unwind: "$teacher" },
+
+          // // Lookup subject details
+          {
+              $lookup: {
+                  from: "coursesubcategories",
+                  localField: "subjectId",
+                  foreignField: "_id",
+                  as: "subject"
+              }
+          },
+          { $unwind: "$subject" },
+
+          // Search filtering (search by student for teacher & search by teacher for student)
+          ...(search ? [{
+              $match: {
+                  $or: role === 'teacher' ? [
+                      { "student.firstName": { $regex: search, $options: "i" } },
+                      { "student.lastName": { $regex: search, $options: "i" } }
+                  ] :role==='student'? [
+                      { "teacher.firstName": { $regex: search, $options: "i" } },
+                      { "teacher.lastName": { $regex: search, $options: "i" } }
+                  ]:[
+                    { "student.firstName": { $regex: search, $options: "i" } },
+                    { "student.lastName": { $regex: search, $options: "i" } },
+                    { "teacher.firstName": { $regex: search, $options: "i" } },
+                    { "teacher.lastName": { $regex: search, $options: "i" } }
+                  ]
+              }
+          }] : []),
+
+          // Project only necessary fields
+          {
+              $project: {
+                  _id: 1,
+                  status: 1,
+                  "scheduledDate": 1,
+                  "sessionStartTime": 1,
+                  "sessionEndTime": 1,
+                  "sessionDuration":1,
+                  "subject.name":1,
+                  "student.firstName": 1,
+                  "student.lastName": 1,
+                  "student.profilePhoto":1,
+                  "student.email": 1,
+                  "student.profilePhoto":1,
+                  "teacher.firstName": 1,
+                  "teacher.lastName": 1,
+                  "teacher.email": 1,
+                  "teacher.profilePhoto":1,
+                  "subject.name": 1
+              }
+          },
+
+          // Sort by timeSlot (earliest bookings first)
+          { $sort: { scheduledDate: 1 } },
+
+          // // Pagination
+          { $skip: skip },
+          { $limit: limit }
+      ]);
+
+      // Total count for pagination
+      const countQuery = [
+        { $match: query },
+    
+        // Lookup student details
+        {
+            $lookup: {
+                from: "users",
+                localField: "studentId",
+                foreignField: "_id",
+                as: "student"
+            }
         },
-      },
-    ]);
-    res.json({
-      success: true,
-      data: tutors,
-      message: "Bookings found successfully",
-    });
-  } catch (e) {
-    console.log(e);
-    res.json({
-      success: true,
-      message: "Something went Wrong",
-      error: e.message,
-    });
+        { $unwind: "$student" },
+    
+        // Lookup teacher details
+        {
+            $lookup: {
+                from: "users",
+                localField: "teacherId",
+                foreignField: "_id",
+                as: "teacher"
+            }
+        },
+        { $unwind: "$teacher" },
+    
+        // Lookup subject details
+        {
+            $lookup: {
+                from: "coursesubcategories",
+                localField: "subjectId",
+                foreignField: "_id",
+                as: "subject"
+            }
+        },
+        { $unwind: "$subject" },
+    
+        // Search filtering (same as your aggregation pipeline)
+        ...(search ? [{
+            $match: {
+                $or: role === 'teacher' ? [
+                    { "student.firstName": { $regex: search, $options: "i" } },
+                    { "student.lastName": { $regex: search, $options: "i" } }
+                ] : role === 'student' ? [
+                    { "teacher.firstName": { $regex: search, $options: "i" } },
+                    { "teacher.lastName": { $regex: search, $options: "i" } }
+                ] : [
+                    { "student.firstName": { $regex: search, $options: "i" } },
+                    { "student.lastName": { $regex: search, $options: "i" } },
+                    { "teacher.firstName": { $regex: search, $options: "i" } },
+                    { "teacher.lastName": { $regex: search, $options: "i" } }
+                ]
+            }
+        }] : []),
+    
+        // Count total matched records
+        { $count: "totalBookings" }
+    ];
+    
+    const totalResult = await BookingModel.aggregate(countQuery);
+    const totalBookings = totalResult.length > 0 ? totalResult[0].totalBookings : 0;
+      res.json({
+          success: true,
+          data: bookings,
+          total: totalBookings,
+          currentPage: page,
+          totalPages: Math.ceil(totalBookings / limit),
+          message: "Bookings retrieved successfully"
+      });
+
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({ success: false, message: "Something went wrong", error: error.message });
   }
 };
-
-exports.getBookingsForStudent = async (req, res) => {
-    try {
-      
-      let { search, status, startDate, endDate } = req.query;
-      let query = {
-        status: "Scheduled",
-      };
-      if (status && status !== "") query.status = status;
-      if (search && search != "")
-        query.$or = [
-          { "teacher.firstName": { $regex: search, $options: "i" } },
-          { "teacher.lastName": { $regex: search, $options: "i" } },
-        ];
-  
-      // Handle filtering by days and timeSlots
-  
-      console.log(query);
-      const tutors = await BookingModel.aggregate([
-        {
-          $lookup: {
-            from: "users", // Collection name in MongoDB
-            localField: "teacherId",
-            foreignField: "_id",
-            as: "teacher",
-          },
-        },
-        {
-          $unwind: {
-            path: "$teacher", // Unwind the subjects array
-            preserveNullAndEmptyArrays: true, // Ensure it doesn't drop docs if no subjects are found
-          },
-        },
-  
-        {
-          $match: query,
-        },
-        {
-          $project: {
-            teacher: {
-              password: 0,
-            },
-          },
-        },
-      ]);
-      res.json({
-        success: true,
-        data: tutors,
-        message: "Bookings found successfully",
-      });
-    } catch (e) {
-      console.log(e);
-      res.json({
-        success: true,
-        message: "Something went Wrong",
-        error: e.message,
-      });
-    }
-  };

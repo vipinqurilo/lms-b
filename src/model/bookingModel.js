@@ -3,7 +3,7 @@ const mongoose=require('mongoose');
 const bookingSchema=new mongoose.Schema({
     teacherId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
     studentId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
-    subject:{type:mongoose.Schema.Types.ObjectId,ref:'Subcategory',required:true},
+    subjectId:{type:mongoose.Schema.Types.ObjectId,ref:'Subcategory',required:true},
     scheduledDate:{type:Date,required:true},
     sessionStartTime:{type:Date,required:true},
     sessionEndTime:{type:Date,required:true},
