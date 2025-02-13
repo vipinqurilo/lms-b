@@ -25,7 +25,7 @@ exports.getTeacherProfile=async(req,res)=>{
             },
             // Unwind the userId array (since $lookup returns an array)
             {
-              $unwind: "$userId",
+              $unwind: "$user",
             },
             // Lookup to populate calendar
             {
@@ -43,7 +43,7 @@ exports.getTeacherProfile=async(req,res)=>{
             // Lookup to populate subjectsTaught
             {
               $lookup: {
-                from: "subjects", // The collection name for the Subject model
+                from: "coursesubcategories", // The collection name for the Subject model
                 localField: "subjectsTaught",
                 foreignField: "_id",
                 as: "subjectsTaught",
@@ -61,7 +61,7 @@ exports.getTeacherProfile=async(req,res)=>{
             // Project the desired fields
             {
               $project: {
-                userId: {
+                user: {
                   email: 1,
                   phone: 1,
                   firstName: 1,
@@ -71,6 +71,8 @@ exports.getTeacherProfile=async(req,res)=>{
                   bio: 1,
                   profilePhoto: 1,
                 },
+                experience: 1,
+                education: 1,
                 calendar: {
                   availability: 1,
                 },
@@ -81,6 +83,7 @@ exports.getTeacherProfile=async(req,res)=>{
                 languagesSpoken: {
                   name: 1,
                 },
+                tutionSlots:1,
               },
             },
           ]);

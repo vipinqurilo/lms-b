@@ -14,7 +14,9 @@ const teacherRequestSchema = new mongoose.Schema({
         },
         idProof:{type:String,required:true}
     },
+
     profilePhoto:{type:String,required:true},
+    introVideo:{type:String},
     bio:{type:String,required:true},
     experience: [experienceSchema],
     education:[educationSchema],

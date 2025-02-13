@@ -8,6 +8,7 @@ exports.createTeacherRequest = async (req, res) => {
     const {
       personalInfo,
       profilePhoto,
+      introVideo,
       bio,
       education,
       experience,
@@ -35,6 +36,7 @@ exports.createTeacherRequest = async (req, res) => {
       userId,
       personalInfo,
       profilePhoto,
+      introVideo,
       bio,
       experience,
       education,
@@ -178,6 +180,7 @@ exports.approvedTeacherRequest = async (req, res) => {
       userId: request.userId._id,
       education: request.education,
       experience: request.experience,
+      introVideo:request.introVideo,
       subjectsTaught: request.subjectsTaught,
       languagesSpoken: request.languagesSpoken,
     });

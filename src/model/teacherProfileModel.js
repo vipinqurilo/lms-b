@@ -12,6 +12,7 @@ const teacherProfileSchema = new mongoose.Schema({
       enum: [15, 30, 45, 60],
       default: [30, 60]
     },
+    introVideo:{type:String},
     courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     tutionBookings:[{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
     paymentInfo: {

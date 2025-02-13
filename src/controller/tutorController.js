@@ -114,6 +114,7 @@ exports.getTutors = async (req, res) => {
           },
           subjectsTaught: {
             name: 1,
+            pricePerHour:1,
             _id:1,
           },
           languagesSpoken: {
