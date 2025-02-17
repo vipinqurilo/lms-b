@@ -62,6 +62,7 @@ exports.getTeacherProfile=async(req,res)=>{
             {
               $project: {
                 user: {
+                  _id:1,
                   email: 1,
                   phone: 1,
                   firstName: 1,
@@ -79,9 +80,11 @@ exports.getTeacherProfile=async(req,res)=>{
                 subjectsTaught: {
                   name: 1,
                   pricePerHour: 1,
+                  _id:1,
                 },
                 languagesSpoken: {
                   name: 1,
+                  _id:1,
                 },
                 tutionSlots:1,
               },
@@ -260,6 +263,30 @@ exports.editPaymentInfo=async(req,res)=>{
         res.json({
             success:true,
             message:"Payment Info Updated successfully",
+            data:user
+        })
+    } catch (error) {
+        console.log(error);
+        res.json({
+            success:false,
+            message:"Something went wrong",
+            error:error.message
+        })
+    }
+}
+
+exports.editTutionSlots=async(req,res)=>{
+    try {
+        const userId=req.user.id;
+        const {tutionSlots}=req.body;
+        const user=await TeacherProfileModel.findOneAndUpdate({userId},{
+           tutionSlots
+        });
+        if(!user)
+            res.status(404).json({success:false,message:"User not found"})
+        res.json({
+            success:true,
+            message:"Tution Slots Updated successfully",
         })
     } catch (error) {
         console.log(error);

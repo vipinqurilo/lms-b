@@ -5,6 +5,7 @@ const { isValidPassword, getPasswordHash } = require("../utils/password");
 const StudentProfileModel = require("../model/studentProfileModel");
 exports.registerUser = async (req, res) => {
     try {
+        let newUser;
         const data = req.body;
         const userObj = {
             firstName:data.firstName,
@@ -12,27 +13,35 @@ exports.registerUser = async (req, res) => {
             email: data.email,
             password: data.password,
             role: data.role,
-            userStatus:data.role=="teacher"?"pending":"active"
         }
-        const userAdd = await UserModel.create(userObj);
-        if(data.role=="student") {
-            const studentProfile = await StudentProfileModel.create({ userId: userAdd._id });
-            userAdd.studentProfile = studentProfile._id;
-            await userAdd.save();
+        if(data.role=="teacher"){
+            userObj.userStatus="pending"
+             newUser = await UserModel.create(userObj);
+            
         }
-        if(userAdd) {
-            res.json({
-                status:"success",
-                message:"User registered successfully",
-               
-            })
-        }else{
-            res.json({
-                status:"failed",
-                message:"user not added",
-            })
+        else if(data.role=="student") {
+            newUser = await UserModel.create(userObj);
+            const studentProfile = await StudentProfileModel.create({ userId: newUser._id });
+            newUser.studentProfile = studentProfile._id;
+            await newUser.save();
         }
+        else {
+            newUser = await UserModel.create(userObj);
+        }
+        const token = jwt.sign({ email: newUser.email, role: newUser.role,id:newUser._id}, process.env.JWT_SECRET);
+                res.json({
+                    status:"success",
+                    message:"User Registered successfully",
+                    data:{
+                        _id:newUser._id,
+                        email:newUser.email,
+                        role:newUser.role,
+                        userStatus:newUser.userStatus
+                    },
+                    token:token
+                })
     } catch (error) {
+        console.log(error,"error")
         res.json({
             status:"error",
             message:"something went wrong",
@@ -106,4 +115,9 @@ exports.changePassword=async (req,res)=>{
         console.log(e);
         res.json({success:"false",message:"Something went Wrong",error:e.message})
     }
+}
+
+exports.validateToken=async(req,res)=>{
+    const user=await UserModel.findById(req.user.id).select("email role _id userStatus");
+    return res.json({success:true,message:"Token validated successfully",data:user});
 }

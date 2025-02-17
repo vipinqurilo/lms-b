@@ -39,6 +39,10 @@ const UserSchema = new mongoose.Schema(
       enum: ["active", "inactive", "pending"],
       default: "active",
     },
+    walletId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Wallet",
+    },
   },
   { timestamps: true }
 );

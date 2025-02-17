@@ -14,7 +14,12 @@ const orderRouter= require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
 const userRoutes = require("./src/route/userRoutes");
+<<<<<<< HEAD
 const stripeRoute = require("./src/route/stripe");
+=======
+const walletRouter = require("./src/route/walletRoutes");
+const withdrawRouter = require("./src/route/withdrawRoute");
+>>>>>>> 8021b88efa64ec9326b21c78282dd64f97ca5468
 
 const app = express();
 app.use(express.json());
@@ -45,6 +50,11 @@ app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
+<<<<<<< HEAD
 app.use('/api/stripe',stripeRoute)
+=======
+app.use('/api/wallet',walletRouter)
+app.use('/api/withdrawals',withdrawRouter)
+>>>>>>> 8021b88efa64ec9326b21c78282dd64f97ca5468
 
 module.exports = app;

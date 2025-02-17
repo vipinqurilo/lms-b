@@ -44,7 +44,7 @@ exports.createTeacherRequest = async (req, res) => {
       languagesSpoken,
     });
     console.log(newRequest,"sdf");
-     await UserModel.findOneAndUpdate({ id: userId }, personalInfo);
+     await UserModel.findOneAndUpdate({ id: userId }, {...personalInfo,profilePhoto,introVideo,bio});
     res.status(201).json({
       success: true,
       message: "Your request has been submitted for approval.",
@@ -128,10 +128,11 @@ exports.getTeacherRequestsById = async (req, res) => {
 exports.editTeacherRequest = async (req, res) => {
     try{
        const data=req.body;
+       data.approvalStatus="in review";
        const requestId=req.params.requestId;
         const editRequest = await TeacherRequestModel.findOneAndUpdate({_id:requestId},data,{new:true});
-        editRequest.approvalStatus="in review";
-        await editRequest.save();
+        // editRequest.approvalStatus="in review";
+        // await editRequest.save();
         if (!editRequest) {
             return res.status(404).json({success: false, message: "Teacher request not found" });
         }
@@ -188,11 +189,13 @@ exports.approvedTeacherRequest = async (req, res) => {
       userId: request.userId._id,
       availability: defaultAvailability,
     });
+    const wallet=await WalletModel.create({userId:request.userId._id});
+
     teacherProfile.calendar = calendar._id;
     await teacherProfile.save();
     await UserModel.findOneAndUpdate(
       { _id: request.userId._id },
-      { teacherProfile: teacherProfile._id,userStatus:"active" },
+      { teacherProfile: teacherProfile._id,userStatus:"active",walletId:wallet._id,...request.personalInfo,bio:request.bio,profilePhoto:request.profilePhoto},
       { new: true }
     );
     res

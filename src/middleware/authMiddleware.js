@@ -10,6 +10,7 @@ exports.authMiddleware = async (req, res, next) => {
             });
         }else{
             req.user = decord;
+            console.log(req.user.id)
             next();
         }
     } catch (error) {

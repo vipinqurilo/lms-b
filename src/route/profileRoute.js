@@ -1,7 +1,7 @@
 const { changePassword } = require("../controller/authController");
 const { editPersonalInfo, getMyProfile, editSocialLinks } = require("../controller/Profile");
-const { getTeacherProfile,  editPaymentInfo,  editExperience, editEducation, editLanguages, editSubjects, editAvailabilityCalendar, getAvailabilityCalendar } = require("../controller/profile/teacherProfileController");
-const { createTeacherRequest, getTeacherRequests, rejectedTeacherRequest, approvedTeacherRequest } = require("../controller/Requests/teacherRequestController");
+const { getTeacherProfile,  editPaymentInfo,  editExperience, editEducation, editLanguages, editSubjects, editAvailabilityCalendar, getAvailabilityCalendar, editTutionSlots } = require("../controller/profile/teacherProfileController");
+const { createTeacherRequest, getTeacherRequests, rejectedTeacherRequest, approvedTeacherRequest } = require("../controller/Teachers/teacherRequestController");
 const router=require("express").Router();
 
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -22,6 +22,7 @@ router.put("/availability-calendar",authorizeRoles("teacher"),editAvailabilityCa
 router.get("/availability-calendar",authorizeRoles("teacher"),getAvailabilityCalendar);
 router.put("/payment-info",authorizeRoles("teacher"),editPaymentInfo);
 router.put("/social-links",authorizeRoles("teacher,student,teacher"),editSocialLinks);
+router.put("/tution-slots",editTutionSlots)
 router.patch('/change-password',changePassword);
 const profileRouter=router;
 module.exports=profileRouter;
