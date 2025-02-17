@@ -14,6 +14,7 @@ const orderRouter= require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
 const userRoutes = require("./src/route/userRoutes");
+const stripeRoute = require("./src/route/stripe");
 
 const app = express();
 app.use(express.json());
@@ -44,5 +45,6 @@ app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
+app.use('/api/stripe',stripeRoute)
 
 module.exports = app;

@@ -1,5 +1,5 @@
 const express = require("express");
-const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus, filterHomePage } = require("../controller/courseController");
+const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus, filterHomePage, paginationCourse } = require("../controller/courseController");
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -12,7 +12,7 @@ const uploadMulter = multer();
 courseRouter.post('/',upload.fields([
     { name: 'courseVideo', maxCount: 1 },
     { name: 'courseImage', maxCount: 1 },
-  ]),authMiddleware,authorizeRoles("instructor"),addCourse)
+  ]),authMiddleware,authorizeRoles("teacher"),addCourse)
 
 courseRouter.get('/filter/:id',getcourseFilter)
 courseRouter.get('/front',getCourse)
@@ -23,10 +23,11 @@ courseRouter.get("/home/:categoryId",filterHomePage)
 
 // instructor routes
 
-courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("instructor"),getCourseInstructor)
-courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("instructor"),updateCourseInstrustor)
-courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("instructor"),deleteCourse)
-courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("instructor"),filterByStatus)
+courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
+courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
+courseRouter.put('/instructor/pagination',authMiddleware,authorizeRoles("teacher"),paginationCourse)
+courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("teacher"),deleteCourse)
+courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("teacher"),filterByStatus)
 
 // admin 
 

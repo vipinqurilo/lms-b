@@ -17,6 +17,7 @@ const getVideoDuration = async (videoPath) => {
 exports.addCourse = async (req, res) => {
   try {
     const data = req.body;
+    console.log(data,"data")
     const id = req.user.id;
 
     // Get file information from the request
@@ -57,6 +58,7 @@ exports.addCourse = async (req, res) => {
       courseRequirements: JSON.parse(data.courseRequirements),
       status: "pending",
     };
+    console.log(courseObj, " data")
 
     // Save course to the database
     const courseAdd = await CourseModel.create(courseObj);
@@ -286,6 +288,47 @@ exports.updateCourseInstrustor = async (req, res) => {
     });
   }
 };
+
+
+
+
+exports.paginationCourse = async (req, res) => {
+  try {
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1; 
+    limit = parseInt(limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const courses = await CourseModel.find()
+      .populate('courseCategory')
+      .populate('courseSubCategory')
+      .populate('courseInstructor')
+      .skip(skip)
+      .limit(limit);
+
+    const totalCourses = await CourseModel.countDocuments();
+    const totalPages = Math.ceil(totalCourses / limit);
+
+    res.json({
+      success: true,
+      data: courses,
+      meta: {
+        totalCourses,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
 
 exports.deleteCourse = async (req, res) => {
   try {
