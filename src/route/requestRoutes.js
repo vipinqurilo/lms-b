@@ -1,4 +1,4 @@
-const { createTeacherRequest, getTeacherRequests, rejectedTeacherRequest, approvedTeacherRequest, editTeacherRequest, getTeacherRequestsById } = require("../controller/Requests/teacherRequestController");
+const { createTeacherRequest, getTeacherRequests, rejectedTeacherRequest, approvedTeacherRequest, editTeacherRequest, getTeacherRequestsById } = require("../controller/Teachers/teacherRequestController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 

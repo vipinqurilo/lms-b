@@ -14,6 +14,8 @@ const orderRouter= require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
 const userRoutes = require("./src/route/userRoutes");
+const walletRouter = require("./src/route/walletRoutes");
+const withdrawRouter = require("./src/route/withdrawRoute");
 
 const app = express();
 app.use(express.json());
@@ -44,5 +46,7 @@ app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
+app.use('/api/wallet',walletRouter)
+app.use('/api/withdrawals',withdrawRouter)
 
 module.exports = app;

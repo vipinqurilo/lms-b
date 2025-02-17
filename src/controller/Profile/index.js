@@ -7,17 +7,18 @@ exports.getMyProfile=async(req,res)=>{
         const userId=req.user.id;
         const role=req.user.role;
         console.log(role,"role")
-        let profileData;
-        const personalInfo=await UserModel.findById(userId).select("-password -createdAt -updatedAt  -__v").lean()
+        
+        let profileData=await UserModel.findById(userId).select("-password -createdAt -updatedAt  -__v").lean()
         if(role=="teacher")
         {
         const teacherProfile= await TeacherProfileModel.findOne({userId}).select(" -createdAt -updatedAt -_id -__v").lean();
-           profileData={...personalInfo,...teacherProfile};
+           profileData={...profileData,...teacherProfile};
         }
         else if(role=="student"){
            const studentProfile=await StudentProfileModel.findOne({userId})
-           profileData={...personalInfo,...studentProfile}
+           profileData={...profileData,...studentProfile}
         }
+     
         res.json({
             success:true,
             message:"Profile fetched successfully",
