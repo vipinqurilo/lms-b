@@ -10,7 +10,7 @@ const CourseSchema = new mongoose.Schema({
     courseImage:{type:String,required:true},
     courseVideo:{type:String,required:true},
     coursePrice:{type:Number,required:true},
-    idDelete:{type:Boolean,required:true},
+    isDelete:{type:Boolean,required:true},
     // courseDuration:{type:String,required:true},
     status:{type:String,required:true,enum:["pending","published","unpublished"]},
     courseInstructor:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},

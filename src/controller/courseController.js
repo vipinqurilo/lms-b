@@ -52,7 +52,7 @@ exports.addCourse = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      idDelete: false,
+      isDelete: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -87,7 +87,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ idDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
       .limit(6)
       .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -132,7 +132,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      idDelete: false,
+      isDelete: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -153,7 +153,7 @@ exports.getCourseInstructor = async (req, res) => {
     const id = req.user.id;
     const course = await CourseModel.find({
       courseInstructor: id,
-      idDelete: false,
+      isDelete: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -335,7 +335,7 @@ exports.deleteCourse = async (req, res) => {
     const { id } = req.params;
     const updateStatus = await CourseModel.findByIdAndUpdate(
       id,
-      { idDelete: true },
+      { isDelete: true },
       { new: true }
     );
     if (!updateStatus)
@@ -359,7 +359,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      idDelete: false,
+      isDelete: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -382,7 +382,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      idDelete: false,
+      isDelete: false,
     })
       .populate("courseSubCategory")
       .exec();

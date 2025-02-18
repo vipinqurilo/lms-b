@@ -5,7 +5,7 @@ const stripe = require("stripe")("sk_test_51QsH7dPMQ11XQz7t9MpL7LScJgFX7wCAzCScq
 
 exports.addOrderStripe = async (req, res) => {
     try {
-        console.log("requist")
+       
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
         line_items: [
@@ -80,6 +80,7 @@ exports.addOrderStripe = async (req, res) => {
         }
         res.status(200).send();
       }
+      
 exports.orderGet =  async (req, res) => {
     try {
       const order = await Order.findOne({ sessionId: req.params.sessionId });
