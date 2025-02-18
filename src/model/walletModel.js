@@ -6,9 +6,8 @@ const walletSchema = new mongoose.Schema({
     transactions: [
         {
             type: { type: String, enum: ["deposit", "withdrawal"], required: true }, 
-            status: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
-            paymentMethod: { type: String, enum: ["paypal", "bank_transfer"] },
-            referenceId: { type: String }, 
+            amount: { type: Number, required: true },
+            description: { type: String, required: true },
             createdAt: { type: Date, default: Date.now },
         },
     ],
