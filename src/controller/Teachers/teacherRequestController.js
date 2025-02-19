@@ -86,7 +86,7 @@ exports.getTeacherRequests = async (req, res) => {
       total: totalRequests,
       currentPage: page,
       totalPages: Math.ceil(totalRequests / limit),
-      message: "Users retrieved successfully",
+      message: "Teacher Requests retrieved successfully",
     });
   } catch (error) {
     console.log(error);

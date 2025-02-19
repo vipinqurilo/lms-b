@@ -96,7 +96,7 @@ exports.filterCourseSubCategory = async (req, res) => {
 exports.courseSubCategoryEdit = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, courseCategory } = req.body;
+    const { name, courseCategory,pricePerHour} = req.body;
 
     let subCategory = await CourseSubCategoryModel.findById(id);
     if (!subCategory) {
@@ -121,6 +121,7 @@ exports.courseSubCategoryEdit = async (req, res) => {
       subCategory.courseCategory = courseCategory;
     }
     if (name) subCategory.name = name;
+    if(pricePerHour) subCategory.pricePerHour=pricePerHour
 
     await subCategory.save();
     res.json({
@@ -139,9 +140,21 @@ exports.courseSubCategoryEdit = async (req, res) => {
 
 exports.getAllSubcategories = async (req, res) => {
   try {
-    const subcategories = await CourseSubCategoryModel.find({
-      deletedAt: null,
-    }).populate("courseCategory");
+    const query={deletedAt: null};
+        const {search,courseCategory} = req.query;
+        if(search&&search!=="")
+        {
+            query.$or = [
+                { "name": { $regex: search, $options: "i" } },
+            ];
+        }
+        if(courseCategory)
+        {
+          query.courseCategory=courseCategory
+        }
+       
+    const subcategories = await CourseSubCategoryModel.find(query
+    ).populate("courseCategory");
     if (!subcategories || subcategories.length === 0) {
       return res.status(404).json({
         message: "No subcategories found",

@@ -34,6 +34,7 @@ exports.getUsers=async(req,res)=>{
             phone: 1,
             role: 1,
             userStatus: 1,
+            createdAt:1,
           },
           
         
@@ -76,7 +77,7 @@ exports.updateUserStatus = async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    res.json({ success: true, message: "User status updated successfully",data:{useStatus:user.userStatus} });
+    res.json({ success: true, message: "User status updated successfully",data:{userStatus:user.userStatus,_id:user._id} });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: "Something went wrong", error: error.message });
