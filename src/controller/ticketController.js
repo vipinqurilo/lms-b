@@ -132,6 +132,7 @@ exports.addTicketMessage = async (req, res) => {
         message: req.body.message,
         receiver: req.body.receiver || null,
     }
+    console.log(data, "data")
     let addData = await TicketModel.findOne({_id:req.params.id})
     console.log(addData , data , "addData")
     addData.messages.push(data)

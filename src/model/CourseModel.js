@@ -5,6 +5,7 @@ const CourseSchema = new mongoose.Schema({
     courseDescription:{type:String,required:true},
     courseLearning:[{type:String,required:true}],
     courseRequirements:[{type:String,required:true}],
+    courseFeatures:[{type:String,required:true}],
     courseCategory:{type:mongoose.Schema.Types.ObjectId,ref:'CourseCategory',required:true},
     courseSubCategory:{type:mongoose.Schema.Types.ObjectId,ref:'CourseSubCategory',required:true},
     courseImage:{type:String,required:true},

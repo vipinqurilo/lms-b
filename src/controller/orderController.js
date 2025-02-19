@@ -7,7 +7,6 @@ const stripe = require("stripe")(
 
 exports.addOrder = async (req, res) => {
   try {
-    console.log("https://6g2n7ff0-8000.inc1.devtunnels.ms/")
     const { course, amountTotal } = req.body;
     const id = req.user.id;
     const findOrder = await OrderModel.find({ studentId: id, course: course });

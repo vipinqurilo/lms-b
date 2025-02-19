@@ -38,16 +38,15 @@ exports.addCourse = async (req, res) => {
     let videoDuration = 0;
     if (videoPath) {
       videoDuration = await getVideoDuration(videoPath);
-      console.log("Video Duration: ", videoDuration);
     }
 
-    // Prepare course data object
     const courseObj = {
       courseInstructor: id,
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
       courseSubCategory: data.courseSubCategory,
+      courseFeatures: JSON.parse(data.courseFeatures),
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
@@ -60,7 +59,6 @@ exports.addCourse = async (req, res) => {
     };
     console.log(courseObj, " data")
 
-    // Save course to the database
     const courseAdd = await CourseModel.create(courseObj);
 
     if (courseAdd) {
