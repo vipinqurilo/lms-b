@@ -5,11 +5,61 @@ const mongoose = require("mongoose");
 const moment = require("moment");
 const bookingModel = require("../model/bookingModel");
 const paymentModel = require("../model/paymentModel");
+const UserModel = require("../model/UserModel");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 exports.createBooking = async (req, res) => {
   try {
-    const data = req.body;
-    const { studentId, teacherId } = data;
-    const newBooking = await BookingModel.create(data);
+        const { sessionId } = req.body;
+
+        // Step 1: Retrieve Payment Details from Stripe
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        if (!session || session.payment_status != "paid") {
+            return res.status(400).json({ message: "Payment not verified" });
+        }
+        console.log(session,"session");
+        
+        //Update Payment Details
+        const payment=await paymentModel.findOneAndUpdate(
+          {sessionId:session.id},
+          {transactionId:session.payment_intent,status:"succeeded",paymentStatus:"paid"}
+        )
+
+        //Find Exsiting Booking wiht payment ID
+      const existingBooking=await BookingModel.findOne({
+        paymentId:payment?._id
+      })
+      const teacher=await UserModel.findOne({
+        _id:session.metadata.teacherId
+      })
+    if(existingBooking){
+      return res.json({
+        success: true,
+        message: "Booking already created",
+        data:{
+          sessionTitle:"Subject English Lesson of 30 Minutes",
+          teacherName:teacher.firstName+teacher.lastName,
+          transactionId:session.payment_intent,
+          sessionDate:session.metadata.sessionDate,
+          sessionStartDate:session.metadata.sessionStartTime,
+        }
+      });
+    }
+    console.log(payment,"payment")
+     const { teacherId, studentId, subjectId, amount, sessionStartTime,sessionEndTime,sessionDuration } = session.metadata;
+     const newBookingObj={
+      teacherId,
+      studentId,
+      subjectId,
+      sessionDate:session.metadata.sessionDate,
+      sessionStartTime:session.metadata.sessionStartTime,
+      sessionEndTime:session.metadata.sessionEndTime,
+      sessionDuration:session.metadata.sessionDuration,
+      status:"scheduled",
+      paymentId:payment?._id
+     }
+    
+    const newBooking = await BookingModel.create(newBookingObj)
     if (newBooking) {
       const studentProfile = await StudentProfileModel.findOne({
         userId: studentId,
@@ -24,17 +74,24 @@ exports.createBooking = async (req, res) => {
       res.json({
         success: true,
         message: "Booking created successfully",
-        data: newBooking,
+        data:{sessionTitle:"Subject English Lesson of 30 Minutes",
+        teacherName:teacher.firstName+teacher.lastName,
+        transactionId:session.payment_intent,
+        sessionDate:session.metadata.sessionDate,
+        sessionStartDate:session.metadata.sessionStartTime
+        }
       });
     } else {
       res.json({
         success: false,
         message: "Booking not created ",
+      
       });
     }
   } catch (error) {
+    console.log(error)
     res.json({
-      status: false,
+      successs: false,
       message: "Something went wrong",
       error: error.message,
     });
@@ -79,13 +136,13 @@ exports.getBookings = async (req, res) => {
 
     // Date range filtering
     if (startDate || endDate) {
-      query.scheduledDate = {};
+      query.sessionDate = {};
       if (startDate)
-        query.scheduledDate.$gte = new Date(
+        query.sessionDate.$gte = new Date(
           moment(startDate).format("YYYY-MM-DD[T00:00:00.000Z]")
         );
       if (endDate)
-        query.scheduledDate.$lte = new Date(
+        query.sessionDate.$lte = new Date(
           moment(endDate).format("YYYY-MM-DD[T00:00:00.000Z]")
         );
     }
@@ -189,7 +246,7 @@ exports.getBookings = async (req, res) => {
         $project: {
           _id: 1,
           status: 1,
-          scheduledDate: 1,
+          sessionDate: 1,
           sessionStartTime: 1,
           sessionEndTime: 1,
           sessionDuration: 1,
@@ -212,7 +269,7 @@ exports.getBookings = async (req, res) => {
       },
 
       // Sort by timeSlot (earliest bookings first)
-      { $sort: { scheduledDate: 1 } },
+      { $sort: { sessionDate: 1 } },
 
       // // Pagination
       { $skip: skip },

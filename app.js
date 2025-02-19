@@ -19,6 +19,7 @@ const walletRouter = require("./src/route/walletRoutes");
 const withdrawRouter = require("./src/route/withdrawRoute");
 const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
+const paymentRouter = require("./src/route/paymentRoutes");
 
 const app = express();
 app.use(express.json());
@@ -57,4 +58,7 @@ app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
 
+
+//Payment Routes
+app.use("/api/payment",paymentRouter)
 module.exports = app;

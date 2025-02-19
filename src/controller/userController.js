@@ -40,7 +40,7 @@ exports.getUsers=async(req,res)=>{
         
       },
       // Sort by timeSlot (earliest bookings first)
-      { $sort: { scheduledDate: 1 } },
+      { $sort: { sessionDate: 1 } },
 
       // // Pagination
       { $skip: skip },

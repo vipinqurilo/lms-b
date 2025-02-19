@@ -13,9 +13,9 @@ exports.getStudents = async (req, res) => {
         }
         
         if (startDate || endDate) {
-            query.scheduledDate = {};
-            if (startDate) query.scheduledDate.$gte = new Date(moment( startDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
-            if (endDate) query.scheduledDate.$lte = new Date(moment( endDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
+            query.sessionDate = {};
+            if (startDate) query.sessionDate.$gte = new Date(moment( startDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
+            if (endDate) query.sessionDate.$lte = new Date(moment( endDate ).format('YYYY-MM-DD[T00:00:00.000Z]'))
         }
         const students = await StudentProfileModel.aggregate([
             {
