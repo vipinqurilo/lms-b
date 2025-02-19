@@ -23,10 +23,10 @@ courseRouter.get("/home/:categoryId",filterHomePage)
 
 // instructor routes
 
-courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("instructor"),getCourseInstructor)
-courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("instructor"),updateCourseInstrustor)
-courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("instructor"),deleteCourse)
-courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("instructor"),filterByStatus)
+courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
+courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
+courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("teacher"),deleteCourse)
+courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("teacher"),filterByStatus)
 
 // admin 
 
