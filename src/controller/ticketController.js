@@ -28,7 +28,7 @@ exports.addTicket = async (req, res) => {
 };
 exports.getTickets = async (req, res) => {
   try {
-    const tickets = await TicketModel.find({ user: req.user.id })
+    const tickets = await TicketModel.find({ user: req.user.id }).populate("messages.sender").populate("messages.receiver")
     return res.json({
       status: "success",
       message: "Tickets fetched successfully.",
@@ -70,7 +70,7 @@ exports.filterByStatus = async (req, res) => {
 exports.adminTicketsGet = async (req, res) => {
   try {
     const adminId = req.user.id;
-    const tickets = await TicketModel.find({ "messages.resiver": adminId });
+    const tickets = await TicketModel.find({ "messages.receiver": adminId });
     res.json({
         status:"success",
         data:tickets
@@ -92,10 +92,10 @@ exports.adminTicketsUpdate = async (req, res) => {
       const mes = {
         sender: req.user.id,
         message: data.message,
-        resiver: data.resiver || null,
+        receiver: data.receiver || null,
       };
   
-      let tickets = await TicketModel.find({ "messages.resiver": adminId });
+      let tickets = await TicketModel.find({ "messages.receiver": adminId });
   
       if (tickets.length > 0) {
         for (let ticket of tickets) {
@@ -129,12 +129,14 @@ exports.addTicketMessage = async (req, res) => {
   try {
     const data = {
         sender: req.user.id,
-        message: msg.message,
-        resiver: msg.resiver || null,
+        message: req.body.message,
+        receiver: req.body.receiver || null,
     }
-    let addData = await TicketModel.find({_id:req.params.id})
+    console.log(data, "data")
+    let addData = await TicketModel.findOne({_id:req.params.id})
+    console.log(addData , data , "addData")
     addData.messages.push(data)
-
+    await addData.save()
     if(addData){
       res.json({
         status:"success",
@@ -142,7 +144,35 @@ exports.addTicketMessage = async (req, res) => {
       })
     }
   } catch (error) {
-    
+    console.log(error)
   }
 
+};
+
+
+exports.statusUpdate = async (req, res) => {
+  try {
+    const { status, id } = req.params;
+
+    // Validate ID and status
+    if (!id || !status) {
+      return res.status(400).json({ success: false, message: "ID and status are required." });
+    }
+
+    // Update ticket status
+    const statusUpdate = await TicketModel.findOneAndUpdate(
+      { _id: id },
+      { status },
+      { new: true } 
+    );
+
+    if (!statusUpdate) {
+      return res.status(404).json({ success: false, message: "Ticket not found." });
+    }
+
+    res.status(200).json({ success: true, message: "Status updated successfully.", data: statusUpdate });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+  }
 };
