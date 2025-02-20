@@ -1,5 +1,5 @@
 const express = require("express");
-const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus, filterHomePage } = require("../controller/courseController");
+const { addCourse, getcourseFilter, getCourse, getSingleCourse, getCourseInstructor, getAllCourseByAdmin, updateStatusByAdmin, addSingleVideo, addSingleImage, updateCourseInstrustor, deleteCourse, filterByStatus, filterHomePage, paginationCourse } = require("../controller/courseController");
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
@@ -22,8 +22,10 @@ courseRouter.post('/singleImage',uploadMulter.single("courseImage"),addSingleIma
 courseRouter.get("/home/:categoryId",filterHomePage)
 
 // instructor routes
+
 courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
 courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
+
 courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("teacher"),deleteCourse)
 courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("teacher"),filterByStatus)
 

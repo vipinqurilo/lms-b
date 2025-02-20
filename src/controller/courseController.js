@@ -18,6 +18,7 @@ const getVideoDuration = async (videoPath) => {
 exports.addCourse = async (req, res) => {
   try {
     const data = req.body;
+    console.log(data,"data")
     const id = req.user.id;
 
     // Get file information from the request
@@ -37,28 +38,27 @@ exports.addCourse = async (req, res) => {
     let videoDuration = 0;
     if (videoPath) {
       videoDuration = await getVideoDuration(videoPath);
-      console.log("Video Duration: ", videoDuration);
     }
 
-    // Prepare course data object
     const courseObj = {
       courseInstructor: id,
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
       courseSubCategory: data.courseSubCategory,
+      courseFeatures: JSON.parse(data.courseFeatures),
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      idDelete: false,
+      isDelete: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
       status: "pending",
     };
+    console.log(courseObj, " data")
 
-    // Save course to the database
     const courseAdd = await CourseModel.create(courseObj);
 
     if (courseAdd) {
@@ -85,7 +85,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ idDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
       .limit(6)
       .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -130,7 +130,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      idDelete: false,
+      isDelete: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -149,6 +149,7 @@ exports.getcourseFilter = async (req, res) => {
 exports.getCourseInstructor = async (req, res) => {
   try {
     const id = req.user.id;
+
     const { status, page = 1, limit = 10 } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
@@ -168,6 +169,7 @@ exports.getCourseInstructor = async (req, res) => {
       .skip(skip)
       .limit(pageSize)
       .exec();
+
 
     res.json({
       status: "success",
@@ -337,12 +339,53 @@ exports.updateCourseInstrustor = async (req, res) => {
   }
 };
 
+
+
+
+exports.paginationCourse = async (req, res) => {
+  try {
+    let { page, limit } = req.query;
+    page = parseInt(page) || 1; 
+    limit = parseInt(limit) || 10;
+
+    const skip = (page - 1) * limit;
+
+    const courses = await CourseModel.find()
+      .populate('courseCategory')
+      .populate('courseSubCategory')
+      .populate('courseInstructor')
+      .skip(skip)
+      .limit(limit);
+
+    const totalCourses = await CourseModel.countDocuments();
+    const totalPages = Math.ceil(totalCourses / limit);
+
+    res.json({
+      success: true,
+      data: courses,
+      meta: {
+        totalCourses,
+        totalPages,
+        currentPage: page,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching courses:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
     const updateStatus = await CourseModel.findByIdAndUpdate(
       id,
-      { idDelete: true },
+      { isDelete: true },
       { new: true }
     );
     if (!updateStatus)
@@ -366,7 +409,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      idDelete: false,
+      isDelete: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -389,7 +432,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      idDelete: false,
+      isDelete: false,
     })
       .populate("courseSubCategory")
       .exec();
