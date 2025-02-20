@@ -12,7 +12,7 @@ const uploadMulter = multer();
 courseRouter.post('/',upload.fields([
     { name: 'courseVideo', maxCount: 1 },
     { name: 'courseImage', maxCount: 1 },
-  ]),authMiddleware,authorizeRoles("instructor"),addCourse)
+  ]),authMiddleware,authorizeRoles("teacher"),addCourse)
 
 courseRouter.get('/filter/:id',getcourseFilter)
 courseRouter.get('/front',getCourse)
@@ -22,17 +22,14 @@ courseRouter.post('/singleImage',uploadMulter.single("courseImage"),addSingleIma
 courseRouter.get("/home/:categoryId",filterHomePage)
 
 // instructor routes
-
 courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
 courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
 courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("teacher"),deleteCourse)
 courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("teacher"),filterByStatus)
 
 // admin 
-
 courseRouter.get('/admin/get',getAllCourseByAdmin)
 courseRouter.put('/admin-status/:id',authMiddleware,authorizeRoles("admin"),updateStatusByAdmin)
-
 
 
 module.exports = courseRouter;
