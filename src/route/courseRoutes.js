@@ -25,15 +25,13 @@ courseRouter.get("/home/:categoryId",filterHomePage)
 
 courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
 courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
-courseRouter.get('/instructor/pagination',authMiddleware,authorizeRoles("teacher"),paginationCourse)
+
 courseRouter.delete('/instructor/:id',authMiddleware,authorizeRoles("teacher"),deleteCourse)
 courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("teacher"),filterByStatus)
 
 // admin 
-
 courseRouter.get('/admin/get',getAllCourseByAdmin)
 courseRouter.put('/admin-status/:id',authMiddleware,authorizeRoles("admin"),updateStatusByAdmin)
-
 
 
 module.exports = courseRouter;
