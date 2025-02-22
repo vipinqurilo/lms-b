@@ -23,8 +23,8 @@ const paymentRouter = require("./src/route/paymentRoutes");
 
 const app = express();
 app.use(express.json());
-require('dotenv').config()
 app.use(express.urlencoded({ extended: true }));
+require('dotenv').config()
 const corsOption={
     origin:"*",
     optionsSuccessStatus:200

@@ -1,7 +1,7 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
 const { getVideoDurationInSeconds } = require("get-video-duration");
-const { uploadMediaToCloudinary } = require("../upload/cloudinary");
+const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
 const { default: mongoose } = require("mongoose");
 
 // Function to get video duration using get-video-duration library
@@ -18,7 +18,7 @@ const getVideoDuration = async (videoPath) => {
 exports.addCourse = async (req, res) => {
   try {
     const data = req.body;
-    console.log(data,"data")
+    console.log(data, "data");
     const id = req.user.id;
 
     // Get file information from the request
@@ -57,7 +57,7 @@ exports.addCourse = async (req, res) => {
       courseRequirements: JSON.parse(data.courseRequirements),
       status: "pending",
     };
-    console.log(courseObj, " data")
+    console.log(courseObj, " data");
 
     const courseAdd = await CourseModel.create(courseObj);
 
@@ -87,7 +87,7 @@ exports.getCourse = async (req, res) => {
   try {
     let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
       .limit(6)
-      .sort({ createdAt: -1 })
+      // .sort({ createdAt: -1 })
       .populate("courseSubCategory");
     course.map((item) => {
       item.courseImage = `https://6g2n7ff0-8000.inc1.devtunnels.ms/public/${item.courseImage}`;
@@ -169,7 +169,6 @@ exports.getCourseInstructor = async (req, res) => {
       .skip(skip)
       .limit(pageSize)
       .exec();
-
 
     res.json({
       status: "success",
@@ -302,8 +301,11 @@ exports.addSingleImage = async (req, res) => {
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.user.id;
     const data = req.body;
+
+    console.log(data, "samosa kd");
+
     const objData = {
       courseInstructor: id,
       courseTitle: data.courseTitle,
@@ -339,21 +341,18 @@ exports.updateCourseInstrustor = async (req, res) => {
   }
 };
 
-
-
-
 exports.paginationCourse = async (req, res) => {
   try {
     let { page, limit } = req.query;
-    page = parseInt(page) || 1; 
+    page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
 
     const skip = (page - 1) * limit;
 
     const courses = await CourseModel.find()
-      .populate('courseCategory')
-      .populate('courseSubCategory')
-      .populate('courseInstructor')
+      .populate("courseCategory")
+      .populate("courseSubCategory")
+      .populate("courseInstructor")
       .skip(skip)
       .limit(limit);
 
@@ -378,7 +377,6 @@ exports.paginationCourse = async (req, res) => {
     });
   }
 };
-
 
 exports.deleteCourse = async (req, res) => {
   try {
