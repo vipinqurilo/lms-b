@@ -1,4 +1,5 @@
 const CourseModel = require("../model/CourseModel");
+const EarningModel = require("../model/earningModel");
 const OrderModel = require("../model/orderModel");
 
 const stripe = require("stripe")(
@@ -56,6 +57,7 @@ exports.addOrder = async (req, res) => {
         (objData.currency = session?.currency),
         (objData.paymentStatus = session?.payment_status);
       const dataCreate = await OrderModel.create(objData);
+      await EarningModel.create({ course: course, teacher: dataId.courseInstructor, amount: dataId.coursePrice, type: "course", date: new Date() });
       if (dataCreate) {
         res.json({
           status: "success",
