@@ -2,6 +2,7 @@ const CourseModel = require("../model/CourseModel");
 const path = require("path");
 const { getVideoDurationInSeconds } = require("get-video-duration");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");
+const { default: mongoose } = require("mongoose");
 
 // Function to get video duration using get-video-duration library
 const getVideoDuration = async (videoPath) => {
@@ -30,7 +31,6 @@ exports.addCourse = async (req, res) => {
 
     // Build the path to the video file
     const videoPath = courseVideo
-
       ? path.join(__dirname, "..", "public", courseVideo) // Adjust path as necessary
       : null;
 
@@ -149,14 +149,38 @@ exports.getcourseFilter = async (req, res) => {
 exports.getCourseInstructor = async (req, res) => {
   try {
     const id = req.user.id;
-    const course = await CourseModel.find({
-      courseInstructor: id,
-      isDelete: false,
-    }).populate("courseSubCategory");
+
+    const { status, page = 1, limit = 10 } = req.query;
+
+    const pageNumber = parseInt(page, 10) || 1;
+    const pageSize = parseInt(limit, 10) || 1;
+    const skip = (pageNumber - 1) * pageSize;
+
+    let query = { courseInstructor: id, isDelete: false };
+
+    if (status) {
+      query.status = status;
+    }
+    const totalCourses = await CourseModel.countDocuments(query);
+
+    const course = await CourseModel.find(query)
+      .populate("courseSubCategory")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .exec();
+
+
     res.json({
       status: "success",
       message: "course fetched successfully",
       data: course,
+      pagination: {
+        totalCourses,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalCourses / pageSize),
+        pageSize,
+      },
     });
   } catch (error) {
     res.json({
@@ -167,30 +191,58 @@ exports.getCourseInstructor = async (req, res) => {
   }
 };
 
-
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-    const { status = "pending",categoryId } = req.query;
-    let setData = [];
-    const courseSubCategory = await CourseModel.find({
-      status: status,
-    })
-      .populate("courseSubCategory", "name")
-      .exec();
-      setData = courseSubCategory
-      if(categoryId){
-        const dataSet = courseSubCategory.filter((item) => item.courseCategory == categoryId)
-        setData = dataSet
+    const { status = "pending", categoryId, page = 1, limit = 10 } = req.query;
+
+    const pageNumber = parseInt(page, 10) || 1;
+    const pageSize = parseInt(limit, 10) || 10;
+    const skip = (pageNumber - 1) * pageSize;
+
+    console.log("Page:", pageNumber, "Limit:", pageSize, "Skip:", skip);
+
+    let query = { status };
+
+    if (categoryId) {
+      if (mongoose.Types.ObjectId.isValid(categoryId)) {
+        query.courseCategory = new mongoose.Types.ObjectId(categoryId);
+      } else {
+        return res.status(400).json({
+          status: "failed",
+          message: "Invalid categoryId",
+        });
       }
+    }
+
+    // Count total matching documents
+    const totalCourses = await CourseModel.countDocuments(query);
+    console.log("Total Courses Found:", totalCourses); // Debugging log
+
+    // Fetch paginated courses
+    const courses = await CourseModel.find(query)
+      .populate("courseSubCategory", "name")
+      .skip(skip)
+      .limit(pageSize)
+      .exec();
+
+    console.log("Courses Fetched:", courses.length); // Debugging log
+
     res.json({
       status: "success",
-      message: "course sub category fetched successfully",
-      data: setData,
+      message: "Courses fetched successfully",
+      data: courses,
+      pagination: {
+        totalCourses,
+        currentPage: pageNumber,
+        totalPages: Math.ceil(totalCourses / pageSize),
+        pageSize,
+      },
     });
   } catch (error) {
-    res.json({
+    console.error("Error:", error.message); // Debugging log
+    res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }

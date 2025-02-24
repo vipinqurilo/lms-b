@@ -50,9 +50,7 @@ app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
- 
 app.use('/api/stripe',stripeRoute)
- 
 app.use('/api/wallet',walletRouter)
 app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)

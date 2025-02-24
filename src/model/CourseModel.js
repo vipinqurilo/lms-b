@@ -17,7 +17,7 @@ const CourseSchema = new mongoose.Schema({
     courseInstructor:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
     courseContent:[{
         moduleTitle:{type:String,required:true},
-        lessons:[{
+        lessons:[{  
             lessonTitle:{type:String},
             video:{type:String},
             duration:{type:String}

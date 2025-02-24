@@ -1,4 +1,5 @@
-const mongoose=require('mongoose');
+const mongoose = require("mongoose");
+
 
 const bookingSchema=new mongoose.Schema({
     teacherId:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
@@ -16,11 +17,17 @@ const bookingSchema=new mongoose.Schema({
     meetingUsername: { type: String, default: null },
     meetingPassword: { type: String, default: null },
     rescheduleRequest: {
-        newTime: {type:String},
-        reason: {type:String},
-        status: { type: String, enum: ["pending", "accepted", "denied"], default: "pending" }
+      newTime: { type: String },
+      reason: { type: String },
+      status: {
+        type: String,
+        enum: ["pending", "accepted", "denied"],
+        default: "pending",
+      },
     },
-    cancellationReason:{type:String},
-    cancelledBy:{type:mongoose.Schema.Types.ObjectId,ref:'User'}
-},{timestamps:true})
-module.exports=mongoose.model('Booking',bookingSchema);
+    cancellationReason: { type: String },
+    cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  },
+  { timestamps: true }
+);
+module.exports = mongoose.model("Booking", bookingSchema);
