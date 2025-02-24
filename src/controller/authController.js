@@ -118,6 +118,13 @@ exports.changePassword=async (req,res)=>{
 }
 
 exports.validateToken=async(req,res)=>{
-    const user=await UserModel.findById(req.user.id).select("email role _id userStatus");
-    return res.json({success:true,message:"Token validated successfully",data:user});
+    const user=await UserModel.findById(req.user.id).select("email role _id userStatus firstName lastName");
+    const {userStatus,role,email,firstName,lastName}=user;
+    const userData={
+        name:firstName+lastName,
+        userStatus,
+        role,
+        email
+    }
+    return res.json({success:true,message:"Token validated successfully",data:userData});
 }

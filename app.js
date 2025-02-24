@@ -61,4 +61,7 @@ app.use('/api/teachers',teacherRouter)
 
 //Payment Routes
 app.use("/api/payment",paymentRouter)
+
+//Order Routes
+app.use("/api/order",orderRouter);
 module.exports = app;
