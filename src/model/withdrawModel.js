@@ -14,7 +14,7 @@ const withdrawalSchema = new mongoose.Schema({
     approvalStatus: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
     rejectionReason: { type: String },  
     payoutId: { type: String },
-    payoutStatus: { type: String, enum: ["not_initiated","processing","success", "failure"], default: "not_initiated" },
+    payoutStatus: { type: String, enum: ["not_initiated","processing","success", "failure"] },
     createdAt: { type: Date, default: Date.now },
 });
 

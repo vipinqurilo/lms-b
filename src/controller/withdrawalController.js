@@ -61,11 +61,15 @@ exports.requestWithdrawal = async (req, res) => {
 };
 exports.getWtihdrawals = async (req, res) => {
   try {
-    const {search, approvalStatus, payoutStatus, startDate, endDate, teacherId,page=1,limit=10 } =
+    const {search, approvalStatus,teacherId, payoutStatus, startDate, endDate,page=1,limit=10 } =
       req.query;
     const skip=(page-1)*limit;
     //Approval Status
     const query={}
+    if(req.user.role=="teacher")
+      query.userId=req.user.id;
+    if(req.user.role=="admin"&&teacherId&&teacherId!=="")
+      query.userId=new mongoose.Types.ObjectId(teacherId);
     if (approvalStatus && approvalStatus !== "")
       query.approvalStatus = approvalStatus;
     //Payout Status
@@ -152,6 +156,7 @@ exports.getWtihdrawals = async (req, res) => {
 exports.approveOrRejectWithdrawals = async (req, res) => {
   try {
     const { action,rejectionReason} = req.body;
+    console.log(action,rejectionReason);
     const withdrawal = await withdrawalModel.findById(req.params.withdrawalId);
     if (!withdrawal) {
       return res
@@ -175,6 +180,7 @@ exports.approveOrRejectWithdrawals = async (req, res) => {
     if (action === "approve") {
       withdrawal.approvalStatus = "approved";
       wallet.balance -= withdrawal.amount;
+      withdrawal.payoutStatus="processing"
       await withdrawal.save();
       await wallet.save();
 
@@ -186,7 +192,7 @@ exports.approveOrRejectWithdrawals = async (req, res) => {
       }
       return res.json({
         success: true,
-        message: "Withdrawal approved and processed",
+        message: "Withdrawal approved successfully",
       });
     } else {
       withdrawal.approvalStatus = "rejected";
