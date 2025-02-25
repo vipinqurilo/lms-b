@@ -1,8 +1,10 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
 const { getVideoDurationInSeconds } = require("get-video-duration");
-const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
+const { uploadMediaToCloudinary } = require("../upload/cloudinary");
 const { default: mongoose } = require("mongoose");
+const StudentProfileModel = require("../model/studentProfileModel");
+const ReviewModel = require("../model/reviewModel");
 
 // Function to get video duration using get-video-duration library
 const getVideoDuration = async (videoPath) => {
@@ -107,11 +109,35 @@ exports.getCourse = async (req, res) => {
 exports.getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await CourseModel.findById(id).populate("courseInstructor");
+    const course = await CourseModel.findById(id).populate({
+      path: "courseInstructor",
+      select: "-password",
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    const totalStudents = await StudentProfileModel.countDocuments({
+      "enrolledCourses.courseId": id,
+    });
+
+    const totalReviews = await ReviewModel.find({ course: id }).populate({
+      path: "student",
+      select: "firstName lastName profilePhoto gender",
+    });
+
     res.json({
       status: "success",
       message: "course fetched successfully",
-      data: course,
+      data: {
+        course,
+        totalStudents,
+        totalReviews,
+      },
     });
   } catch (error) {
     res.json({
