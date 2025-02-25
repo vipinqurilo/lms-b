@@ -33,7 +33,7 @@ exports.getWishlist = async (req, res) => {
                 path:"courseInstructor"
             }]
         })
-        res.json({
+        res.json({ 
             status: "success",
             message: "wishlist fetched successfully",
             data: wishlist,

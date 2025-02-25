@@ -115,7 +115,7 @@ exports.getAllCourseCategory = async (req, res) => {
   try {
     const courseSubCategory = await CourseCategoryModel.find({
       deletedAt: null,
-    })
+    }).populate("courseSubCategory", "name")
     res.json({
       status: "success",
       message: "course category fetched successfully",
