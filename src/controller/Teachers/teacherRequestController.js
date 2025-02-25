@@ -3,6 +3,7 @@ const TeacherProfileModel = require("../../model/teacherProfileModel");
 const CalendarModel = require("../../model/calenderModel");
 const UserModel = require("../../model/UserModel");
 const { defaultAvailability } = require("../../utils/calendar");
+
 exports.createTeacherRequest = async (req, res) => {
   try {
     const {
@@ -15,7 +16,7 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     } = req.body;
-    
+
     const userId = req.user.id;
     const teacherProfile = await TeacherProfileModel.findOne({ userId });
     if (teacherProfile) {
@@ -43,12 +44,15 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     });
-    console.log(newRequest,"sdf");
-     await UserModel.findOneAndUpdate({ id: userId }, {...personalInfo,profilePhoto,introVideo,bio});
+    console.log(newRequest, "sdf");
+    await UserModel.findOneAndUpdate(
+      { id: userId },
+      { ...personalInfo, profilePhoto, introVideo, bio }
+    );
     res.status(201).json({
       success: true,
       message: "Your request has been submitted for approval.",
-      data: newRequest
+      data: newRequest,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -56,18 +60,38 @@ exports.createTeacherRequest = async (req, res) => {
 };
 exports.getTeacherRequests = async (req, res) => {
   try {
-    let { search, approvalStatus, page = 1, limit = 10 } = req.query;
+    let {
+      search,
+      approvalStatus,
+      page = 1,
+      limit = 10,
+      startDate,
+      endDate,
+    } = req.query;
+
     page = parseInt(page);
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
+
     let query = { approvalStatus: "in review" };
-    if (search && search != "")
+
+    if (search && search.trim() != "")
       query.$or = [
         { "personalInfo.firstName": { $regex: search, $options: "i" } },
         { "personalInfo.lastName": { $regex: search, $options: "i" } },
       ];
-    if (approvalStatus && approvalStatus !== "")
+
+    // Approval Status filter
+    if (approvalStatus && approvalStatus.trim() !== "") {
       query.approvalStatus = approvalStatus;
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
     const teacherRequests = await TeacherRequestModel.aggregate([
       {
         $match: query,
@@ -100,22 +124,20 @@ exports.getTeacherRequests = async (req, res) => {
 
 exports.getTeacherRequestsById = async (req, res) => {
   try {
-    console.log(req.user.role)
-    const query={}
-    if(req.user.role=="admin"&&req.params.requestId)
-      query._id=req.params.requestId;
-    if(req.user.role=="teacher")
-      query.userId=req.user.id;
+    console.log(req.user.role);
+    const query = {};
+    if (req.user.role == "admin" && req.params.requestId)
+      query._id = req.params.requestId;
+    if (req.user.role == "teacher") query.userId = req.user.id;
     console.log(query);
     const teacherRequest = await TeacherRequestModel.findOne(query);
-    if(!teacherRequest)
-      return res.status(404).json({message:"Teacher request not found"});
+    if (!teacherRequest)
+      return res.status(404).json({ message: "Teacher request not found" });
     res.json({
       success: true,
       data: teacherRequest,
       message: "Teacher request found successfully",
     });
-
   } catch (error) {
     console.log(error);
     res.json({
@@ -124,34 +146,38 @@ exports.getTeacherRequestsById = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 exports.editTeacherRequest = async (req, res) => {
-    try{
-       const data=req.body;
-       data.approvalStatus="in review";
-       const requestId=req.params.requestId;
-        const editRequest = await TeacherRequestModel.findOneAndUpdate({_id:requestId},data,{new:true});
-        // editRequest.approvalStatus="in review";
-        // await editRequest.save();
-        if (!editRequest) {
-            return res.status(404).json({success: false, message: "Teacher request not found" });
-        }
-        res.json({
-            success: true,
-            data: editRequest,
-            message: "Teacher request updated successfully",
-        });
-        
+  try {
+    const data = req.body;
+    data.approvalStatus = "in review";
+    const requestId = req.params.requestId;
+    const editRequest = await TeacherRequestModel.findOneAndUpdate(
+      { _id: requestId },
+      data,
+      { new: true }
+    );
+    // editRequest.approvalStatus="in review";
+    // await editRequest.save();
+    if (!editRequest) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Teacher request not found" });
     }
-    catch(error){
-        console.log(error);
-        res.json({
-            success: false,
-            message: "Something went wrong",
-            error: error.message,
-        });
-    }
-}
+    res.json({
+      success: true,
+      data: editRequest,
+      message: "Teacher request updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
 exports.approvedTeacherRequest = async (req, res) => {
   try {
     const { requestId } = req.params;
@@ -164,12 +190,10 @@ exports.approvedTeacherRequest = async (req, res) => {
     }
 
     if (request.approvalStatus !== "in review") {
-      return res
-        .status(400)
-        .json({
-          success: true,
-          message: "This request has already been processed.",
-        });
+      return res.status(400).json({
+        success: true,
+        message: "This request has already been processed.",
+      });
     }
 
     // Approve request
@@ -181,7 +205,7 @@ exports.approvedTeacherRequest = async (req, res) => {
       userId: request.userId._id,
       education: request.education,
       experience: request.experience,
-      introVideo:request.introVideo,
+      introVideo: request.introVideo,
       subjectsTaught: request.subjectsTaught,
       languagesSpoken: request.languagesSpoken,
     });
@@ -189,21 +213,26 @@ exports.approvedTeacherRequest = async (req, res) => {
       userId: request.userId._id,
       availability: defaultAvailability,
     });
-    const wallet=await WalletModel.create({userId:request.userId._id});
+    const wallet = await WalletModel.create({ userId: request.userId._id });
 
     teacherProfile.calendar = calendar._id;
     await teacherProfile.save();
     await UserModel.findOneAndUpdate(
       { _id: request.userId._id },
-      { teacherProfile: teacherProfile._id,userStatus:"active",walletId:wallet._id,...request.personalInfo,bio:request.bio,profilePhoto:request.profilePhoto},
+      {
+        teacherProfile: teacherProfile._id,
+        userStatus: "active",
+        walletId: wallet._id,
+        ...request.personalInfo,
+        bio: request.bio,
+        profilePhoto: request.profilePhoto,
+      },
       { new: true }
     );
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Teacher request approved successfully.",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Teacher request approved successfully.",
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -225,12 +254,10 @@ exports.rejectedTeacherRequest = async (req, res) => {
     }
 
     if (request.approvalStatus !== "in review") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "This request has already been processed.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "This request has already been processed.",
+      });
     }
 
     const teacherRequest = await TeacherRequestModel.findByIdAndUpdate(
