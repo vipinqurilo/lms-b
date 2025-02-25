@@ -63,9 +63,16 @@ exports.createOrderViaStripe = async (req, res) => {
       const newOrder=await OrderModel.create(objData);
       const studentProfile = await StudentProfileModel.findOneAndUpdate(
         { userId },
-        { $push: { enrolledCourses: new mongoose.Types.ObjectId(courseId) } }, // Correct usage of `$push`
+        { 
+          $push: { 
+            enrolledCourses: {
+              courseId: new mongoose.Types.ObjectId(courseId),
+              progress: 0
+            } 
+          }
+        },
         { new: true }
-    );
+      );
         res.json({
           success: "true",
           message: "Course Bought Successfully",
