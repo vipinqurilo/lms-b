@@ -19,7 +19,7 @@ const {
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
-const upload = require("../upload/multerConfig");
+const upload = require("../upload/multerConfig"); 
 const courseRouter = express.Router();
 
 const multer = require("multer");
