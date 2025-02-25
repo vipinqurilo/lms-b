@@ -49,18 +49,11 @@ courseRouter.get("/home/:categoryId", filterHomePage);
 
 // instructor routes
 
-courseRouter.get(
-  "/instructor/get",
-  authMiddleware,
-  authorizeRoles("teacher"),
-  getCourseInstructor
-);
-courseRouter.put(
-  "/instructor/:id",
-  authMiddleware,
-  authorizeRoles("teacher"),
-  updateCourseInstrustor 
-);
+
+courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
+courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
+courseRouter.post('/instructor/pagination',authMiddleware,authorizeRoles("teacher"),paginationCourse)
+
 
 courseRouter.delete(
   "/instructor/:id",
@@ -84,4 +77,6 @@ courseRouter.put(
   updateStatusByAdmin
 );
 
+
 module.exports = courseRouter;
+

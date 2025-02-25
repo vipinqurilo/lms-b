@@ -2,88 +2,58 @@ const CourseModel = require("../../model/CourseModel");
 const OrderModel = require("../../model/orderModel");
 const paymentModel = require("../../model/paymentModel");
 const stripeModel = require("../../model/stripeModel");
+const StudentProfileModel = require("../../model/studentProfileModel");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-
-
 // Create course payment 
 exports.createCoursePayment = async (req, res) => {
   try {
-    // Ensure `req.user` exists
-    if (!req.user || !req.user.id) {
-      return res.status(401).json({ status: "fail", message: "Unauthorized access" });
-    }
-
-    const { courseId, amountTotal } = req.body;
-    const studentId = req.user.id;
-
-    // Check if order already exists
-    const existingOrder = await OrderModel.find({ studentId, courseId });
-    if (existingOrder.length > 0) {
-      return res.status(400).json({ status: "fail", message: "Order already purchased" });
-    }
-
-    // Generate random order ID
-    function generateRandomCode() {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-      return Array.from({ length: 6 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join("");
-    }
-
-    const orderId = generateRandomCode();
-
-    // Fetch course details
-    const courseData = await CourseModel.findOne({ _id: courseId });
-    if (!courseData) {
-      return res.status(404).json({ status: "fail", message: "Course not found" });
-    }
-
-    // Create Stripe Checkout Session
+    const userId=req.user.id;
+    const {courseId, amount} = req.body;
+    console.log(courseId,amount);
+    const studentProfile = await StudentProfileModel.findOne({userId});
+    const courseAlreadyPurchased=studentProfile.enrolledCourses.find((ele)=>ele._id==courseId.toString())
+    if(courseAlreadyPurchased)
+      return res.json({success:true,message:"Course already purchased"})
+    const course=await CourseModel.findById(courseId)
+    // Step 1: Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "zar",
-            product_data: {
-              name: courseData.courseTitle,
-            },
-            unit_amount: amountTotal * 100,
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: "http://localhost:3000/success",
-      cancel_url: "http://localhost:3000/cancel",
+        payment_method_types: ["card",],
+        mode: "payment",
+        success_url: `${process.env.FRONTEND_URL}/courses/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL}/courses/payment-failed`,
+        customer_email: req.user.email, // Optional: Prefill email if user is logged in
+        metadata: { amount,courseId,userId  }, // Store booking data
+        line_items: [
+            {
+                price_data: {
+                    currency: "ZAR",
+                    product_data: { name: course. courseTitle },
+                    unit_amount: Math.round(amount * 100) // Stripe expects amount in cents
+                },
+                quantity: 1
+            }
+        ]
     });
+    // console.log(session,"session")
+    // Step 2: Save the Payment Record (Pending Status)
+    const payment = new paymentModel({
+       
+        userId,
+        amount,
+        paymentFor:'course',
+        paymentMethod: "stripe",
+        sessionId: session.id,
+        status: "pending"
+    });
+    await payment.save();
 
-    // Create order object
-    const orderData = {
-      orderId,
-      studentId,
-      courseId,
-      sessionId: session.id,
-      amountTotal: session.amount_total / 100, // Convert back to original amount
-      currency: session.currency,
-      paymentStatus: "pending", // Set to pending initially
-    };
-
-    // Store order in DB
-    const createdOrder = await OrderModel.create(orderData);
-
-    if (createdOrder) {
-      return res.json({
-        status: "success",
-        message: "Order created successfully",
-        checkoutUrl: session.url,
-      });
-    } else {
-      return res.status(500).json({ status: "fail", message: "Failed to create order" });
-    }
-  } catch (error) {
-    console.error("Stripe Order Error:", error);
-    return res.status(500).json({ status: "error", message: error.message });
-  }
+    // Step 3: Send the session ID to the frontend
+    res.json({ success: true, sessionId: session.id ,url:session.url});
+} catch (error) {
+    console.error("Stripe Payment Error:", error);
+    res.status(500).json({success:false, message: "Payment initiation failed" });
+}
 };
 //Create Booking Payment
 exports.createBookingPayment = async (req, res) => {
@@ -115,6 +85,7 @@ exports.createBookingPayment = async (req, res) => {
     const payment = new paymentModel({
        
         userId: studentId,
+        paymentFor:"booking",
         amount,
         paymentMethod: "stripe",
         sessionId: session.id,

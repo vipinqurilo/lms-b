@@ -127,7 +127,7 @@ exports.getAllCourseCategory = async (req, res) => {
       deletedAt: null,
     })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit).populate("courseSubCategory", "name")
 
     res.json({
       status: "success",

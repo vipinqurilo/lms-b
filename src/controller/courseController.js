@@ -21,7 +21,6 @@ exports.addCourse = async (req, res) => {
     console.log(data, "data");
     const id = req.user.id;
 
-    // Get file information from the request
     const courseVideo = req.files["courseVideo"]
       ? req.files["courseVideo"][0].filename
       : null;
@@ -29,12 +28,10 @@ exports.addCourse = async (req, res) => {
       ? req.files["courseImage"][0].filename
       : null;
 
-    // Build the path to the video file
     const videoPath = courseVideo
       ? path.join(__dirname, "..", "public", courseVideo) // Adjust path as necessary
       : null;
 
-    // Get video duration if a video file exists
     let videoDuration = 0;
     if (videoPath) {
       videoDuration = await getVideoDuration(videoPath);
