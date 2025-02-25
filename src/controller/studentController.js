@@ -79,6 +79,7 @@ exports.getStudents = async (req, res) => {
         res.json({
             success: true,
             data: students,
+            
             total: totalStudents,
             currentPage: page,
             totalPages: Math.ceil(totalStudents / parseInt(limit)),

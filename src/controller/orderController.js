@@ -63,9 +63,16 @@ exports.createOrderViaStripe = async (req, res) => {
       const newOrder=await OrderModel.create(objData);
       const studentProfile = await StudentProfileModel.findOneAndUpdate(
         { userId },
-        { $push: { enrolledCourses: new mongoose.Types.ObjectId(courseId) } }, // Correct usage of `$push`
+        { 
+          $push: { 
+            enrolledCourses: {
+              courseId: new mongoose.Types.ObjectId(courseId),
+              progress: 0
+            } 
+          }
+        },
         { new: true }
-    );
+      );
         res.json({
           success: "true",
           message: "Course Bought Successfully",
@@ -92,18 +99,61 @@ exports.createOrderViaStripe = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const userId = req.user.id;
-    const myOrders = await OrderModel.find({ userId}).populate(
-      "courseId"
-    ).sort({"createdAt":-1})
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const skip = (page - 1) * limit;
+
+    // Create search query
+    let query = { userId };
+    if (search) {
+      // Join with Course model to search by course name
+      const orders = await OrderModel.aggregate([
+        {
+          $lookup: {
+            from: "courses",
+            localField: "courseId",
+            foreignField: "_id",
+            as: "course"
+          }
+        },
+        {
+          $match: {
+            userId: new mongoose.Types.ObjectId(userId),
+            "course.courseTitle": { $regex: search, $options: "i" }
+          }
+        }
+      ]);
+      
+      const orderIds = orders.map(order => order._id);
+      query = { ...query, _id: { $in: orderIds } };
+    }
+
+    const totalOrders = await OrderModel.countDocuments(query);
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    const myOrders = await OrderModel.find(query)
+      .populate("courseId")
+      .sort({ "createdAt": -1 })
+      .skip(skip)
+      .limit(limit);
+
     res.json({
       success: true,
-      message:"Orders Fetch Successfully",
-      data: myOrders,
+      message: "Orders Fetched Successfully",
+      data: {
+        orders: myOrders,
+        currentPage: page,
+        totalPages,
+        totalOrders,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1
+      }
     });
   } catch (error) {
     res.json({
-      success:false,
-      message:"Internal Server Error",
+      success: false,
+      message: "Internal Server Error",
       error: error.message,
     });
   }

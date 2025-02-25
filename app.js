@@ -57,14 +57,6 @@ app.use('/api/wallet',walletRouter)
 app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
-// app.use()
-
-app.use("/api/stripe", stripeRoute);
-
-app.use("/api/wallet", walletRouter);
-app.use("/api/withdrawals", withdrawRouter);
-app.use("/api/students", studentRouter);
-app.use("/api/teachers", teacherRouter);
 
 //Payment Routes
 
