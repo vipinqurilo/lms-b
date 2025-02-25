@@ -34,5 +34,4 @@ courseRouter.get('/instructor/filter/:status',authMiddleware,authorizeRoles("tea
 courseRouter.get('/admin/get',getAllCourseByAdmin)
 courseRouter.put('/admin-status/:id',authMiddleware,authorizeRoles("admin"),updateStatusByAdmin)
 
-
 module.exports = courseRouter;

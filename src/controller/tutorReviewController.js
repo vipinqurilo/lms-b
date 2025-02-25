@@ -1,24 +1,24 @@
-const ReviewModel = require("../model/reviewModel");
+const TutorReviewModel = require("../model/tutorReviewModel");
 
 exports.addReview = async (req, res) => {
     try {
         const data = req.body;
         const objData = {
-            course: data.course,
+            tutorId: data.tutorId,
             student: req.user.id,
             review: data.review,
             rating: data.rating,
             message: data.message
-        }
+        }   
 
-        const addReview = await ReviewModel.create(objData);
+        const addReview = await TutorReviewModel.create(objData);
         if (addReview) {
             res.json({
                 status: "success",
                 message: "Review Added Successfully",
-                data: addReview
+                data: addReview 
             })
-        }else{ 
+        }else{
             res.json({
                 status: "failed",
                 message: "Review Not Added",
@@ -40,11 +40,11 @@ exports.getReview = async (req, res) => {
         const skip = (page - 1) * limit;
 
         // Get total count of reviews
-        const totalReviews = await ReviewModel.countDocuments({ student: id });
+        const totalReviews = await TutorReviewModel.countDocuments({ student: id });
 
         // Get paginated reviews
-        const reviews = await ReviewModel.find({ student: id })
-            .populate("course")
+        const reviews = await TutorReviewModel.find({ student: id })
+            .populate("tutorId")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
@@ -78,21 +78,19 @@ exports.updateReview = async (req, res) => {
             message: req.body.message
         };
 
-        // Find review and check ownership
-        const review = await ReviewModel.findOne({ _id: reviewId, student: userId });
-        
-        if (!review) {
+        // Find and update review in one operation
+        const updatedReview = await TutorReviewModel.findOneAndUpdate(
+            { _id: reviewId, student: userId },
+            updates,
+            { new: true }
+        ).populate('tutorId');
+
+        if (!updatedReview) {
             return res.status(404).json({
                 status: "failed",
                 message: "Review not found or unauthorized"
             });
         }
-
-        const updatedReview = await ReviewModel.findByIdAndUpdate(
-            reviewId,
-            updates,
-            { new: true }
-        ).populate('course');
 
         res.json({
             status: "success",
@@ -108,3 +106,4 @@ exports.updateReview = async (req, res) => {
         });
     }
 }
+

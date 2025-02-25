@@ -20,6 +20,7 @@ const withdrawRouter = require("./src/route/withdrawRoute");
 const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
+const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 
 const app = express();
 app.use(express.json());
@@ -48,6 +49,7 @@ app.use("/api/subcategory",subcategoryRouter);
 app.use("/api/whishlist",wishListRouter);
 app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
+app.use('/api/tutorReview',tutorReviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
 app.use('/api/stripe',stripeRoute)

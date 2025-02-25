@@ -87,4 +87,4 @@ exports.getStudents = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: "Failed to retrieve students", details: error.message });
     }
-};
+};  
