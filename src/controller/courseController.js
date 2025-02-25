@@ -111,7 +111,11 @@ exports.getSingleCourse = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.findById(id).populate({
       path: "courseInstructor",
-      select: "-password",
+      select: "firstName lastName gender",
+      populate:{
+        path:"teacherProfile",
+        select:"experience education subjectsTaught languagesSpoken tutionSlots"
+      }
     });
 
     if (!course) {
@@ -130,6 +134,10 @@ exports.getSingleCourse = async (req, res) => {
       select: "firstName lastName profilePhoto gender",
     });
 
+    const totalCourses = await CourseModel.countDocuments({
+      courseInstructor: course?.courseInstructor?._id,
+    });
+
     res.json({
       status: "success",
       message: "course fetched successfully",
@@ -137,6 +145,7 @@ exports.getSingleCourse = async (req, res) => {
         course,
         totalStudents,
         totalReviews,
+        totalCourses,
       },
     });
   } catch (error) {
