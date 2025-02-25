@@ -4,6 +4,7 @@ const EarningModel = require("../model/earningModel");
 const OrderModel = require("../model/orderModel");
 const paymentModel = require("../model/paymentModel");
 const StudentProfileModel = require("../model/studentProfileModel");
+const moment = require("moment");
 
 const stripe = require("stripe")(
   "sk_test_51QsH7dPMQ11XQz7t9MpL7LScJgFX7wCAzCScqZXrYlMZUN6hrKPuxZmEFLYg8si74hSQM9i4DrdCKnk4HEHLEpbF00LCULZN5a"
@@ -102,12 +103,29 @@ exports.getOrders = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || "";
+    const { startDate, endDate } = req.query;
     const skip = (page - 1) * limit;
 
-    // Create search query
+    // Create base query
     let query = { userId };
+
+    // Add date range filtering
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) {
+        query.createdAt.$gte = new Date(
+          moment(startDate).format("YYYY-MM-DD[T00:00:00.000Z]")
+        );
+      }
+      if (endDate) {
+        query.createdAt.$lte = new Date(
+          moment(endDate).format("YYYY-MM-DD[T23:59:59.999Z]")
+        );
+      }
+    }
+
+    // Add search functionality
     if (search) {
-      // Join with Course model to search by course name
       const orders = await OrderModel.aggregate([
         {
           $lookup: {
@@ -120,7 +138,8 @@ exports.getOrders = async (req, res) => {
         {
           $match: {
             userId: new mongoose.Types.ObjectId(userId),
-            "course.courseTitle": { $regex: search, $options: "i" }
+            "course.courseTitle": { $regex: search, $options: "i" },
+            ...(query.createdAt && { createdAt: query.createdAt })
           }
         }
       ]);
