@@ -121,7 +121,36 @@ const getEnrolledCourses = async (req, res) => {
   }
 };
 
+const getEnrolledCourseIds = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const studentProfile = await StudentProfileModel.findOne({ userId })
+      .select('enrolledCourses.courseId');
+
+    if (!studentProfile) {
+      return res.status(404).json({ message: "Student profile not found" });
+    }
+
+    const courseIds = studentProfile.enrolledCourses
+      .map(course => course.courseId);
+
+    res.status(200).json({
+      success: true,
+      data: courseIds
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching enrolled course IDs",
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getStudentProfile,
-  getEnrolledCourses
+  getEnrolledCourses,
+  getEnrolledCourseIds
 };
