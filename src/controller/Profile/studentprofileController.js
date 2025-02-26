@@ -140,7 +140,7 @@ const getEnrolledCourseIds = async (req, res) => {
       data: courseIds
     });
 
-  } catch (error) {
+  } catch (error) { 
     res.status(500).json({
       success: false,
       message: "Error fetching enrolled course IDs",

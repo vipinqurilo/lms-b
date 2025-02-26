@@ -5,14 +5,21 @@ exports.addToWishlist = async (req, res) => {
     try {
         const user = req.user.id;
         const { course } = req.body;
-        const findUser = await WishlistModel.findById(user);
-        if(findUser) return res.json({ status: "failed", message: "already added to wishlist" })
+        const findUser = await WishlistModel.findOne({ user, course });
+        if(findUser) {
+            const wishlist = await WishlistModel.findByIdAndDelete(findUser._id);
+            return res.json({
+                status: "success",
+                message: "removed from wishlist",
+                data: await wishlist.populate("course"),
+            });
+        }
         const wishlist = await WishlistModel.create({ course, user });
         if(!wishlist) return res.json({ status: "failed", message: "not added to wishlist" })
         res.json({
             status: "success",
             message: "added to wishlist",
-            data: wishlist,
+            data: await wishlist.populate("course"),
         });
     } catch (error) {
         res.json({
@@ -45,8 +52,7 @@ exports.getWishlist = async (req, res) => {
             error: error.message,
         });
     }
-}
-
+};
 
 exports.removeFromWishlist = async (req, res) => {
     try {
@@ -56,7 +62,7 @@ exports.removeFromWishlist = async (req, res) => {
         res.json({
             status: "success",
             message: "removed from wishlist",
-            data: wishlist,
+            data: await wishlist.populate("course"),
         });
     } catch (error) {
         res.json({
