@@ -111,11 +111,12 @@ exports.getSingleCourse = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.findById(id).populate({
       path: "courseInstructor",
-      select: "firstName lastName gender",
-      populate:{
-        path:"teacherProfile",
-        select:"experience education subjectsTaught languagesSpoken tutionSlots"
-      }
+      select: "firstName lastName gender profilePhoto",
+      populate: {
+        path: "teacherProfile",
+        select:
+          "experience education subjectsTaught languagesSpoken tutionSlots ",
+      },
     });
 
     if (!course) {
