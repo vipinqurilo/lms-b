@@ -225,11 +225,11 @@ exports.getCourseInstructor = async (req, res) => {
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-    const { status = "pending", categoryId, page = 1, limit = 10 } = req.query;
-
+    const { status = "pending", categoryId, page = 1, limit } = req.query;
+    
     const pageNumber = parseInt(page, 10) || 1;
-    const pageSize = parseInt(limit, 10) || 10;
-    const skip = (pageNumber - 1) * pageSize;
+    const pageSize =  limit ? parseInt(limit, 10) || 10 : null;
+    const skip = pageSize ? (pageNumber - 1) * pageSize : 0;
 
     console.log("Page:", pageNumber, "Limit:", pageSize, "Skip:", skip);
 
@@ -252,7 +252,14 @@ exports.getAllCourseByAdmin = async (req, res) => {
 
     // Fetch paginated courses
     const courses = await CourseModel.find(query)
-      .populate("courseSubCategory", "name")
+      .populate({
+        path: "courseSubCategory",
+        select: "name",
+      })
+      .populate({
+        path: "courseInstructor",
+        select: "",
+      })
       .skip(skip)
       .limit(pageSize)
       .exec();
