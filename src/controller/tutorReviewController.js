@@ -107,3 +107,68 @@ exports.updateReview = async (req, res) => {
     }
 }
 
+exports.deleteReview = async (req, res) => {
+    try {
+        const reviewId = req.params.id;
+        const userId = req.user.id;
+
+        // Find and delete review in one operation
+        const deletedReview = await TutorReviewModel.findOneAndDelete(
+            { _id: reviewId, student: userId }
+        );
+
+        if (!deletedReview) {
+            return res.status(404).json({
+                status: "failed",
+                message: "Review not found or unauthorized"
+            });
+        }
+
+        res.json({
+            status: "success",
+            message: "Review deleted successfully"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: "Something went wrong",
+            error: error.message
+        });
+    }
+}
+exports.getReviewByTutorId = async (req, res) => {
+    try {
+        const tutorId = req.params.id;
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
+
+        // Get total count of reviews
+        const totalReviews = await TutorReviewModel.countDocuments({ tutorId });
+
+        // Get paginated reviews
+        const reviews = await TutorReviewModel.find({ tutorId })
+            .populate('student', 'profilePhoto userName')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({
+            status: "success",
+            message: "Review Fetched Successfully",
+            data: {
+                reviews,
+                total: totalReviews,
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalReviews / limit)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: "failed",
+            message: "something went wrong",
+            error: error.message
+        });
+    }
+}
+
