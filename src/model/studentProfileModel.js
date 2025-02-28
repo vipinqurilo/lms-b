@@ -19,7 +19,7 @@ const studentProfileSchema = new mongoose.Schema(
   {
     timestamps: true,
   }
-);
+); 
 
 // Adding a virtual to handle the populated course data
 studentProfileSchema.virtual('enrolledCoursesData', {

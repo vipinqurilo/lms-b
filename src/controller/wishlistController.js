@@ -11,13 +11,13 @@ exports.addToWishlist = async (req, res) => {
             return res.json({
                 status: "success",
                 message: "removed from wishlist",
-                data: await wishlist.populate("course"),
+                data: await wishlist.populate("course"),    
             });
         }
         const wishlist = await WishlistModel.create({ course, user });
         if(!wishlist) return res.json({ status: "failed", message: "not added to wishlist" })
         res.json({
-            status: "success",
+            status: "success",  
             message: "added to wishlist",
             data: await wishlist.populate("course"),
         });
