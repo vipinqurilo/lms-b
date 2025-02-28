@@ -226,9 +226,9 @@ exports.getCourseInstructor = async (req, res) => {
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
     const { status = "pending", categoryId, page = 1, limit } = req.query;
-    
+
     const pageNumber = parseInt(page, 10) || 1;
-    const pageSize =  limit ? parseInt(limit, 10) || 10 : null;
+    const pageSize = limit ? parseInt(limit, 10) || 10 : null;
     const skip = pageSize ? (pageNumber - 1) * pageSize : 0;
 
     console.log("Page:", pageNumber, "Limit:", pageSize, "Skip:", skip);
@@ -290,23 +290,54 @@ exports.getAllCourseByAdmin = async (req, res) => {
 exports.updateStatusByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
-    const updateStatus = await CourseModel.findByIdAndUpdate(
-      id,
-      { status: status },
-      { new: true }
-    );
-    if (!updateStatus)
-      return res.json({ status: "failed", message: "status not updated" });
+    const { status, reason } = req.body;
+
+    // Enum values allowed
+    const allowedStatuses = ["pending", "published", "unpublished"];
+
+    // Validate if status is one of the allowed values
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        status: "failed",
+        message:
+          "Invalid status value. Allowed values: pending, published, unpublished",
+      });
+    }
+
+    if (status === "unpublished" && (!reason || reason.trim() === "")) {
+      return res.status(400).json({
+        status: "failed",
+        reason: "Reason is required when setting status to unpublished.",
+      });
+    }
+
+    const updatedData = { status };
+    if (status === "unpublished") {
+      updatedData.reason = reason;
+    } else {
+      updatedData.reason = null;
+    }
+
+    const updateStatus = await CourseModel.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
+    if (!updateStatus) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Course not found or status not updated",
+      });
+    }
+
     res.json({
       status: "success",
-      message: "status updated successfully",
+      message: "Status updated successfully",
       data: updateStatus,
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }
@@ -341,13 +372,19 @@ exports.addSingleImage = async (req, res) => {
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
-    const id = req.user.id;
+    const id = req.params.id || req.body._id; // Use course ID, not user ID
     const data = req.body;
 
-    console.log(data, "samosa kd");
+    console.log("Received data:", data);
+
+    // Check if course exists
+    const existingCourse = await CourseModel.findById(id);
+    if (!existingCourse) {
+      return res.json({ status: "failed", message: "Course not found" });
+    }
 
     const objData = {
-      courseInstructor: id,
+      courseInstructor: req.user.id, // Ensure instructor is updating
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
@@ -355,24 +392,34 @@ exports.updateCourseInstrustor = async (req, res) => {
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
-      // courseDuration: videoDuration,
-      courseContent: JSON.parse(data.courseContent),
-      courseLearning: JSON.parse(data.courseLearning),
-      courseRequirements: JSON.parse(data.courseRequirements),
+      courseContent: Array.isArray(data.courseContent)
+        ? data.courseContent
+        : JSON.parse(data.courseContent),
+      courseLearning: Array.isArray(data.courseLearning)
+        ? data.courseLearning
+        : JSON.parse(data.courseLearning),
+      courseRequirements: Array.isArray(data.courseRequirements)
+        ? data.courseRequirements
+        : JSON.parse(data.courseRequirements),
       status: "pending",
     };
+
+    // Update course
     const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, {
       new: true,
     });
-    if (!updateStatus)
+
+    if (!updateStatus) {
       return res.json({ status: "failed", message: "status not updated" });
+    }
+
     res.json({
       status: "success",
-      message: "status updated successfully",
+      message: "course updated successfully",
       data: updateStatus,
     });
   } catch (error) {
-    console.log(error, "error");
+    console.log("Error updating course:", error.message);
     res.json({
       status: "failed",
       message: "something went wrong",
@@ -430,7 +477,7 @@ exports.deleteCourse = async (req, res) => {
       return res.json({ status: "failed", message: "status not updated" });
     res.json({
       status: "success",
-      message: "status updated successfully",
+      message: "course deleted successfully",
       data: updateStatus,
     });
   } catch (error) {
