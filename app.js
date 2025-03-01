@@ -3,14 +3,14 @@ const cors = require("cors");
 const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
-const languageRouter=require("./src/route/languageRoute");
+const languageRouter = require("./src/route/languageRoute");
 const requestRouter = require("./src/route/requestRoutes");
 const profileRouter = require("./src/route/profileRoute");
 const tutorRouter = require("./src/route/tutorRoutes");
 const bookingRouter = require("./src/route/bookingRoute");
 const subcategoryRouter = require("./src/route/subCategoryRoute");
 const wishListRouter = require("./src/route/wishlistRoute");
-const orderRouter= require("./src/route/orderRoute");
+const orderRouter = require("./src/route/orderRoute");
 const reviewRoute = require("./src/route/reviewRoute");
 const ticketRouter = require("./src/route/ticketRoute");
 const userRoutes = require("./src/route/userRoutes");
@@ -20,20 +20,21 @@ const withdrawRouter = require("./src/route/withdrawRoute");
 const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
+const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 
 const app = express();
 app.use(express.json());
-require('dotenv').config()
 app.use(express.urlencoded({ extended: true }));
-const corsOption={
-    origin:"*",
-    optionsSuccessStatus:200
-}
+require("dotenv").config();
+const corsOption = {
+  origin: "*",
+  optionsSuccessStatus: 200,
+};
 app.use(cors(corsOption));
-app.use((req,res,next)=>{
-    // console.log(req)
-    next();
-})
+app.use((req, res, next) => {
+  // console.log(req)
+  next();
+});
 app.use("/public", express.static("public"));
 
 app.use("/api/requests",requestRouter)
@@ -48,6 +49,7 @@ app.use("/api/subcategory",subcategoryRouter);
 app.use("/api/whishlist",wishListRouter);
 app.use('/api/order',orderRouter)
 app.use('/api/review',reviewRoute)
+app.use('/api/tutorReview',tutorReviewRoute)
 app.use('/api/ticket',ticketRouter)
 app.use('/api/users',userRoutes)
 app.use('/api/stripe',stripeRoute)
@@ -56,8 +58,8 @@ app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
 
-
 //Payment Routes
+
 app.use("/api/payment",paymentRouter)
 
 //Order Routes

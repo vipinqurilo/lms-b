@@ -10,7 +10,7 @@ const server = http.createServer(app);
 
 dotenv.config();
 
-
+require("./src/upload/cronJob");
 
 
 // connect database here
