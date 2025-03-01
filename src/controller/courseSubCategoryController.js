@@ -2,27 +2,27 @@ const CourseCategoryModel = require("../model/courseCategoryModel");
 const CourseSubCategoryModel = require("../model/courseSubCategoryModel");
 
 exports.courseSubCategoryAdd = async (req, res) => {
-    try {
-        const { name,pricePerHour, courseCategory } = req.body;
+  try {
+    const { name, pricePerHour, courseCategory } = req.body;
 
-        // Ensure the category exists
-        let findCategory = await CourseCategoryModel.findById(courseCategory);
-        if (!findCategory) {
-            return res.json({
-                status: "failed",
-                message: "Course category not found",
-            });
-        }
-   
-        // Create the subcategory first to get its ID
-        const courseSubCategoryAdd = await CourseSubCategoryModel.create({
-            name,
-            pricePerHour:pricePerHour||100,
-            courseCategory,
-        });
-        // Push the ObjectId (not the entire object)
-        findCategory.courseSubCategory.push(courseSubCategoryAdd._id);
-        await findCategory.save(); // Wait for save completion
+    // Ensure the category exists
+    let findCategory = await CourseCategoryModel.findById(courseCategory);
+    if (!findCategory) {
+      return res.json({
+        status: "failed",
+        message: "Course category not found",
+      });
+    }
+
+    // Create the subcategory first to get its ID
+    const courseSubCategoryAdd = await CourseSubCategoryModel.create({
+      name,
+      pricePerHour: pricePerHour || 100,
+      courseCategory,
+    });
+    // Push the ObjectId (not the entire object)
+    findCategory.courseSubCategory.push(courseSubCategoryAdd._id);
+    await findCategory.save(); // Wait for save completion
 
     res.json({
       status: "success",
@@ -96,7 +96,7 @@ exports.filterCourseSubCategory = async (req, res) => {
 exports.courseSubCategoryEdit = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, courseCategory,pricePerHour} = req.body;
+    const { name, courseCategory, pricePerHour } = req.body;
 
     let subCategory = await CourseSubCategoryModel.findById(id);
     if (!subCategory) {
@@ -121,7 +121,7 @@ exports.courseSubCategoryEdit = async (req, res) => {
       subCategory.courseCategory = courseCategory;
     }
     if (name) subCategory.name = name;
-    if(pricePerHour) subCategory.pricePerHour=pricePerHour
+    if (pricePerHour) subCategory.pricePerHour = pricePerHour;
 
     await subCategory.save();
     res.json({
@@ -140,21 +140,28 @@ exports.courseSubCategoryEdit = async (req, res) => {
 
 exports.getAllSubcategories = async (req, res) => {
   try {
-    const query={deletedAt: null};
-        const {search,courseCategory} = req.query;
-        if(search&&search!=="")
-        {
-            query.$or = [
-                { "name": { $regex: search, $options: "i" } },
-            ];
-        }
-        if(courseCategory)
-        {
-          query.courseCategory=courseCategory
-        }
-       
-    const subcategories = await CourseSubCategoryModel.find(query
-    ).populate("courseCategory");
+    const query = { deletedAt: null };
+    const { search, courseCategory, page = 1, limit = 10 } = req.query;
+    if (search && search !== "") {
+      query.$or = [{ name: { $regex: search, $options: "i" } }];
+    }
+    if (courseCategory) {
+      query.courseCategory = courseCategory;
+    }
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    const skip = parseInt(pageNumber - 1) * limitNumber;
+
+    const totalSubcategories = await CourseSubCategoryModel.countDocuments(
+      query
+    );
+
+    const subcategories = await CourseSubCategoryModel.find(query)
+      .populate("courseCategory")
+      .skip(skip)
+      .limit(limitNumber);
+
     if (!subcategories || subcategories.length === 0) {
       return res.status(404).json({
         message: "No subcategories found",
@@ -165,6 +172,12 @@ exports.getAllSubcategories = async (req, res) => {
       status: "success",
       message: "subcategories fetched successfully",
       data: subcategories,
+      pagination: {
+        totalSubcategories,
+        totalPages: Math.ceil(totalSubcategories / limitNumber),
+        currentPage: pageNumber,
+        limit: limitNumber,
+      },
     });
   } catch (error) {
     res.status(500).json({

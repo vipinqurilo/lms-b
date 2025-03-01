@@ -94,7 +94,9 @@ exports.editCategory = async (req, res) => {
 
 exports.filterCourseCategory = async (req, res) => {
   try {
-    const courseSubCategory = await CourseCategoryModel.find({deletedAt:null})
+    const courseSubCategory = await CourseCategoryModel.find({
+      deletedAt: null,
+    })
       .populate("courseSubCategory", "name")
       .exec();
     res.json({
@@ -113,13 +115,30 @@ exports.filterCourseCategory = async (req, res) => {
 
 exports.getAllCourseCategory = async (req, res) => {
   try {
+    let { page = 1, limit = 10 } = req.query;
+
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const totalDocuments = await CourseCategoryModel.countDocuments({
+      deletedAt: null,
+    });
     const courseSubCategory = await CourseCategoryModel.find({
       deletedAt: null,
     })
+      .skip((page - 1) * limit)
+      .limit(limit).populate("courseSubCategory", "name")
+
     res.json({
       status: "success",
       message: "course category fetched successfully",
       data: courseSubCategory,
+      pagination: {
+        totalDocuments,
+        totalPages: Math.ceil(totalDocuments / limit),
+        currentPage: page,
+        limit,
+      },
     });
   } catch (error) {
     res.json({
