@@ -1,4 +1,5 @@
 const CourseModel = require("../../model/CourseModel");
+const EarningModel = require("../../model/earningModel");
 const OrderModel = require("../../model/orderModel");
 const paymentModel = require("../../model/paymentModel");
 const stripeModel = require("../../model/stripeModel");
@@ -35,8 +36,7 @@ exports.createCoursePayment = async (req, res) => {
             }
         ]
     });
-    // console.log(session,"session")
-    // Step 2: Save the Payment Record (Pending Status)
+     
     const payment = new paymentModel({
        
         userId,
@@ -47,7 +47,21 @@ exports.createCoursePayment = async (req, res) => {
         status: "pending"
     });
     await payment.save();
-
+    const objData = {
+      course:courseId,
+      teacher:course.courseInstructor,
+      amount,
+      date:Date.now(),
+      type:'course'
+  }
+  console.log(objData , "data");
+    await EarningModel.create({
+        course:courseId,
+        teacher:course.courseInstructor,
+        amount,
+        date:Date.now(),
+        type:'course'
+    })
     // Step 3: Send the session ID to the frontend
     res.json({ success: true, sessionId: session.id ,url:session.url});
 } catch (error) {
@@ -93,7 +107,15 @@ exports.createBookingPayment = async (req, res) => {
     });
     await payment.save();
 
-    // Step 3: Send the session ID to the frontend
+    await EarningModel.create({
+      course:subjectId,
+        teacher:teacherId,
+        student:studentId,
+        amount,
+        date:Date.now(),
+        type:'tutor'
+    })
+
     res.json({ success: true, sessionId: session.id ,url:session.url});
 } catch (error) {
     console.error("Stripe Payment Error:", error);
@@ -101,27 +123,7 @@ exports.createBookingPayment = async (req, res) => {
 }
 };
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * Verifies Stripe payment events received from the webhook.
- * 
- * This function handles various types of Stripe events including:
- * - `checkout.session.completed`: Logs the completion of the checkout session 
- *   and updates the payment record with the transaction ID.
- * - `checkout.session.expired` and `checkout.session.async_payment_failed`: 
- *   Updates the payment status to "expired" if the session is pending.
- * - `payment_intent.succeeded`: Marks the payment status as "succeeded" in the 
- *   database.
- * - `payment_intent.payment_failed`: Marks the payment status as "failed" in 
- *   the database and logs the payment intent ID.
- * - `payment_intent.canceled`: Marks the payment status as "cancelled" in the 
- *   database and logs the payment intent ID.
- * 
- * @param {Object} req - The request object containing the event data.
- * @param {Object} res - The response object to send the success message.
- */
-
-/******  52ffaf57-a15b-4cd9-835d-7e58e473f726  *******/
+ 
   exports.verifyStripePayment=async (req, res) => {
     try{
         const event = req.body;

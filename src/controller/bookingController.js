@@ -51,6 +51,7 @@ exports.createBooking = async (req, res) => {
       teacherId,
       studentId,
       subjectId,
+      amount,
       sessionDate:session.metadata.sessionDate,
       sessionStartTime:session.metadata.sessionStartTime,
       sessionEndTime:session.metadata.sessionEndTime,
