@@ -225,7 +225,15 @@ exports.getCourseInstructor = async (req, res) => {
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-    const { status = "pending", categoryId, page = 1, limit } = req.query;
+    const {
+      status = "pending",
+      categoryId,
+      page = 1,
+      limit,
+      search,
+      startDate,
+      endDate,
+    } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
     const pageSize = limit ? parseInt(limit, 10) || 10 : null;
@@ -246,25 +254,29 @@ exports.getAllCourseByAdmin = async (req, res) => {
       }
     }
 
+    if (search) {
+      query.courseTitle = { $regex: search, $options: "i" };
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
     // Count total matching documents
     const totalCourses = await CourseModel.countDocuments(query);
-    console.log("Total Courses Found:", totalCourses); // Debugging log
+    console.log("Total Courses Found:", totalCourses);
 
     // Fetch paginated courses
     const courses = await CourseModel.find(query)
-      .populate({
-        path: "courseSubCategory",
-        select: "name",
-      })
-      .populate({
-        path: "courseInstructor",
-        select: "",
-      })
+      .populate({ path: "courseSubCategory", select: "name" })
+      .populate({ path: "courseInstructor", select: "" })
       .skip(skip)
       .limit(pageSize)
       .exec();
 
-    console.log("Courses Fetched:", courses.length); // Debugging log
+    console.log("Courses Fetched:", courses.length);
 
     res.json({
       status: "success",
@@ -278,7 +290,7 @@ exports.getAllCourseByAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error:", error.message); // Debugging log
+    console.error("Error:", error.message);
     res.status(500).json({
       status: "failed",
       message: "Something went wrong",
