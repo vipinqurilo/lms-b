@@ -40,6 +40,7 @@ const CourseSchema = new mongoose.Schema(
             lessonTitle: { type: String },
             video: { type: String },
             duration: { type: String },
+            attachements: [{ name: { type: String }, url: { type: String } }],
           },
         ],
       },

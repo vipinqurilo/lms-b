@@ -39,4 +39,31 @@ const uploadMediaToCloudinary = async (fileBuffer, fileType = "image") => {
   }
 };
 
-module.exports = { uploadMediaToCloudinary };
+const uploadPDF = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // Convert buffer to base64 string for Cloudinary upload
+    const fileStr = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(fileStr, {
+      resource_type: 'raw', // Ensure it's handled as a file, not an image
+      folder: 'luxe',
+    });
+
+    res.status(200).json({
+      message: 'File uploaded successfully',
+      url: result.secure_url, // Cloudinary file URL
+      public_id: result.public_id,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+module.exports = { uploadMediaToCloudinary,uploadPDF };

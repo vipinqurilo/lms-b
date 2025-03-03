@@ -296,6 +296,8 @@ exports.addSingleImage = async (req, res) => {
   }
 };
 
+
+
 exports.updateCourseInstrustor = async (req, res) => {
   try {
     const id = req.user.id;
