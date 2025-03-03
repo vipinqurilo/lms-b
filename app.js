@@ -57,6 +57,7 @@ app.use('/api/wallet',walletRouter)
 app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
+app.use('/api/forgotpassword',teacherRouter)
 
 //Payment Routes
 
