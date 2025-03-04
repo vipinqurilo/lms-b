@@ -2,6 +2,9 @@ const TeacherProfileModel = require("../model/teacherProfileModel");
 const walletModel = require("../model/walletModel");
 const withdrawalModel = require("../model/withdrawModel");
 const moment=require('moment');
+const mongoose = require('mongoose');
+
+
 exports.requestWithdrawal = async (req, res) => {
   try {
     const { amount, paymentMethod } = req.body;
@@ -67,7 +70,7 @@ exports.getWtihdrawals = async (req, res) => {
     //Approval Status
     const query={}
     if(req.user.role=="teacher")
-      query.userId=req.user.id;
+      query.userId= new mongoose.Types.ObjectId(req.user.id);
     if(req.user.role=="admin"&&teacherId&&teacherId!=="")
       query.userId=new mongoose.Types.ObjectId(teacherId);
     if (approvalStatus && approvalStatus !== "")

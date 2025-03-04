@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const StudentProfileModel = require("../model/studentProfileModel");
+
 exports.registerUser = async (req, res) => {
   try {
     let newUser;
@@ -91,6 +92,50 @@ exports.userLogin = async (req, res) => {
     res.json({
       status: "failed",
       message: "something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+exports.generateLoginToken = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({
+        status: "failed",
+        message: "userId is required",
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+    }
+
+    const token = jwt.sign(
+      { email: user.email, role: user.role, id: user._id },
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      status: "success",
+      message: "token generated successfully",
+      data: {
+        _id: user._id,
+        email: user.email,
+        name: user.firstName + " " + user.lastName,
+        role: user.role,
+        userStatus: user.userStatus,
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "failed",
+      message: "Something went wrong",
       error: error.message,
     });
   }
