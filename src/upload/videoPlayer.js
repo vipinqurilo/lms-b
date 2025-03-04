@@ -1,28 +1,14 @@
-// const ffmpeg = require('fluent-ffmpeg');
+// Simple video duration getter without ffmpeg dependency
+const getVideoDuration = async (videoPath) => {
+  try {
+    // Return a default duration or handle it in your frontend
+    return 0;
+  } catch (error) {
+    console.error('Error:', error);
+    return 0;
+  }
+};
 
-// // Function to get video duration
-// const getVideoDuration = (videoPath) => {
-//   return new Promise((resolve, reject) => {
-//     ffmpeg.ffprobe(videoPath, (err, metadata) => {
-//       if (err) {
-//         reject(err); // Handle error
-//       } else {
-//         const durationInSeconds = metadata.format.duration;
-//         resolve(durationInSeconds);
-//       }
-//     });
-//   });
-// };
-
-// // // Example Usage
-// // const videoPath = './example.mp4'; // Replace with the actual path to your video
-
-// // getVideoDuration(videoPath)
-// //   .then((duration) => {
-// //     console.log(`The video duration is ${duration.toFixed(2)} seconds.`);
-// //   })
-// //   .catch((error) => {
-// //     console.error('Error fetching video duration:', error);
-// //   });
-
-// module.exports = getVideoDuration
+module.exports = {
+  getVideoDuration
+};
