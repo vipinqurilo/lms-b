@@ -1,4 +1,4 @@
-const TicketModel = require("../model/ticketMOdel");
+const TicketModel = require("../model/ticketModel");
 
 exports.addTicket = async (req, res) => {
   try {
