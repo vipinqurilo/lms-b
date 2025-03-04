@@ -1,17 +1,16 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
-const { getVideoDurationInSeconds } = require("get-video-duration");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
 const { default: mongoose } = require("mongoose");
 
-// Function to get video duration using get-video-duration library
+// Simplified function that returns a default duration
 const getVideoDuration = async (videoPath) => {
   try {
-    const durationInSeconds = await getVideoDurationInSeconds(videoPath);
-    return durationInSeconds;
+    // Return a default duration since we're not using ffmpeg
+    return 0;
   } catch (err) {
-    console.error("Error fetching video duration:", err);
-    throw new Error("Invalid video file");
+    console.error("Error:", err);
+    return 0;
   }
 };
 
@@ -28,14 +27,8 @@ exports.addCourse = async (req, res) => {
       ? req.files["courseImage"][0].filename
       : null;
 
-    const videoPath = courseVideo
-      ? path.join(__dirname, "..", "public", courseVideo) // Adjust path as necessary
-      : null;
-
-    let videoDuration = 0;
-    if (videoPath) {
-      videoDuration = await getVideoDuration(videoPath);
-    }
+    // Set a default duration or get it from the request if provided
+    const videoDuration = data.courseDuration || 0;
 
     const courseObj = {
       courseInstructor: id,

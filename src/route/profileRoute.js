@@ -1,6 +1,6 @@
 const { changePassword } = require("../controller/authController");
 const { editPersonalInfo, getMyProfile, editSocialLinks } = require("../controller/Profile");
-const { getTeacherProfile,  editPaymentInfo,  editExperience, editEducation, editLanguages, editSubjects, editAvailabilityCalendar, getAvailabilityCalendar, editTutionSlots } = require("../controller/profile/teacherProfileController");
+const { getTeacherProfile,  editPaymentInfo,  editExperience, editEducation, editLanguages, editSubjects, editAvailabilityCalendar, getAvailabilityCalendar, editTutionSlots } = require("../controller/Profile/teacherProfileController");
 const { createTeacherRequest, getTeacherRequests, rejectedTeacherRequest, approvedTeacherRequest } = require("../controller/Teachers/teacherRequestController");
 const router=require("express").Router();
 
