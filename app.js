@@ -21,6 +21,7 @@ const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
+const earningRouter = require("./src/route/earningRoutes");
 
 const app = express();
 app.use(express.json());
@@ -64,4 +65,7 @@ app.use("/api/payment",paymentRouter)
 
 //Order Routes
 app.use("/api/order",orderRouter);
+
+//Earning Routes
+app.use("/api/earnings",earningRouter)
 module.exports = app;

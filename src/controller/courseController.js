@@ -1,19 +1,19 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
-const { getVideoDurationInSeconds } = require("get-video-duration");
+// const { getVideoDurationInSeconds } = require("get-video-duration");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
 const { default: mongoose } = require("mongoose");
 
 // Function to get video duration using get-video-duration library
-const getVideoDuration = async (videoPath) => {
-  try {
-    const durationInSeconds = await getVideoDurationInSeconds(videoPath);
-    return durationInSeconds;
-  } catch (err) {
-    console.error("Error fetching video duration:", err);
-    throw new Error("Invalid video file");
-  }
-};
+// const getVideoDuration = async (videoPath) => {
+//   try {
+//     const durationInSeconds = await getVideoDurationInSeconds(videoPath);
+//     return durationInSeconds;
+//   } catch (err) {
+//     console.error("Error fetching video duration:", err);
+//     throw new Error("Invalid video file");
+//   }
+// };
 
 exports.addCourse = async (req, res) => {
   try {
@@ -33,9 +33,9 @@ exports.addCourse = async (req, res) => {
       : null;
 
     let videoDuration = 0;
-    if (videoPath) {
-      videoDuration = await getVideoDuration(videoPath);
-    }
+    // if (videoPath) {
+    //   videoDuration = await getVideoDuration(videoPath);
+    // }
 
     const courseObj = {
       courseInstructor: id,
