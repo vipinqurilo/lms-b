@@ -5,7 +5,24 @@ const moment = require("moment");
 
 exports.getCourseEarnings = async (req,res) => {
     try{
+        const {startDate,endDate}=req.query;
         const teacherId = req.user.id;
+        console.log(startDate,endDate,teacherId,"earnings")
+        const query={
+            'courseDetails.courseInstructor': new mongoose.Types.ObjectId(teacherId)
+        }
+         // Date range filtering
+         if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate)
+              query.createdAt.$gte = new Date(
+                moment(startDate).format("YYYY-MM-DD[T00:00:00.000Z]")
+              );
+            if (endDate)
+              query.createdAt.$lte = new Date(
+                moment(endDate).format("YYYY-MM-DD[T00:00:00.000Z]")
+              );
+          }
         // Aggregation pipeline for course purchases
         const courseEarnings = await OrderModel.aggregate([
         {
@@ -23,9 +40,7 @@ exports.getCourseEarnings = async (req,res) => {
         },
         {
             // Match orders where the course's teacherId matches the specified teacherId
-            $match: {
-            'courseDetails.teacherId': teacherId
-            }
+            $match: query
         },
         {
         // Group by courseId and course name
@@ -127,7 +142,7 @@ exports.getCourseEarnings = async (req,res) => {
       ]);
       
     console.log(bookings,'booking')
-    return res.json({success:true,message:"Tutoring Sessions Found Succesfully",data:bookings});
+    return res.json({success:true,message:bookings.length>0?"Tutoring Sessions Found Succesfully":"No Data found",data:bookings});
     }
     catch(error){
     console.log(error);
