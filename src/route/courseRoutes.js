@@ -56,7 +56,6 @@ courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getC
 courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
 courseRouter.post('/instructor/pagination',authMiddleware,authorizeRoles("teacher"),paginationCourse)
 
-
 courseRouter.delete(
   "/instructor/:id",
   authMiddleware,

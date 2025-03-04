@@ -3,6 +3,8 @@ const path = require("path");
 // const { getVideoDurationInSeconds } = require("get-video-duration");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
 const { default: mongoose } = require("mongoose");
+const StudentProfileModel = require("../model/studentProfileModel");
+const ReviewModel = require("../model/reviewModel");
 
 // Function to get video duration using get-video-duration library
 // const getVideoDuration = async (videoPath) => {
@@ -48,7 +50,7 @@ exports.addCourse = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      isDelete: false,
+      inActive: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -82,7 +84,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ inActive: false }, { courseVideo: 0 })
       .limit(6)
       // .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -107,11 +109,45 @@ exports.getCourse = async (req, res) => {
 exports.getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await CourseModel.findById(id).populate("courseInstructor");
+    const course = await CourseModel.findById(id).populate({
+      path: "courseInstructor",
+      select: "firstName lastName gender profilePhoto",
+      populate: {
+        path: "teacherProfile",
+        select:
+          "experience education subjectsTaught languagesSpoken tutionSlots ",
+      },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    const totalStudents = await StudentProfileModel.countDocuments({
+      "enrolledCourses.courseId": id,
+    });
+
+    const totalReviews = await ReviewModel.find({ course: id }).populate({
+      path: "student",
+      select: "firstName lastName profilePhoto gender",
+    });
+
+    const totalCourses = await CourseModel.countDocuments({
+      courseInstructor: course?.courseInstructor?._id,
+    });
+
     res.json({
       status: "success",
       message: "course fetched successfully",
-      data: course,
+      data: {
+        course,
+        totalStudents,
+        totalReviews,
+        totalCourses,
+      },
     });
   } catch (error) {
     res.json({
@@ -127,7 +163,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      isDelete: false,
+      inActive: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -146,14 +182,13 @@ exports.getcourseFilter = async (req, res) => {
 exports.getCourseInstructor = async (req, res) => {
   try {
     const id = req.user.id;
-
-    const { status, page = 1, limit = 10 } = req.query;
+    const { status, page = 1, limit = 10, activeStatus = false } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
     const pageSize = parseInt(limit, 10) || 1;
     const skip = (pageNumber - 1) * pageSize;
 
-    let query = { courseInstructor: id, isDelete: false };
+    let query = { courseInstructor: id, inActive: activeStatus };
 
     if (status) {
       query.status = status;
@@ -189,11 +224,19 @@ exports.getCourseInstructor = async (req, res) => {
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
-    const { status = "pending", categoryId, page = 1, limit = 10 } = req.query;
+    const {
+      status = "pending",
+      categoryId,
+      page = 1,
+      limit,
+      search,
+      startDate,
+      endDate,
+    } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
-    const pageSize = parseInt(limit, 10) || 10;
-    const skip = (pageNumber - 1) * pageSize;
+    const pageSize = limit ? parseInt(limit, 10) || 10 : null;
+    const skip = pageSize ? (pageNumber - 1) * pageSize : 0;
 
     console.log("Page:", pageNumber, "Limit:", pageSize, "Skip:", skip);
 
@@ -210,18 +253,29 @@ exports.getAllCourseByAdmin = async (req, res) => {
       }
     }
 
+    if (search) {
+      query.courseTitle = { $regex: search, $options: "i" };
+    }
+
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
     // Count total matching documents
     const totalCourses = await CourseModel.countDocuments(query);
-    console.log("Total Courses Found:", totalCourses); // Debugging log
+    console.log("Total Courses Found:", totalCourses);
 
     // Fetch paginated courses
     const courses = await CourseModel.find(query)
-      .populate("courseSubCategory", "name")
+      .populate({ path: "courseSubCategory", select: "name" })
+      .populate({ path: "courseInstructor", select: "" })
       .skip(skip)
       .limit(pageSize)
       .exec();
 
-    console.log("Courses Fetched:", courses.length); // Debugging log
+    console.log("Courses Fetched:", courses.length);
 
     res.json({
       status: "success",
@@ -235,7 +289,7 @@ exports.getAllCourseByAdmin = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error:", error.message); // Debugging log
+    console.error("Error:", error.message);
     res.status(500).json({
       status: "failed",
       message: "Something went wrong",
@@ -247,23 +301,54 @@ exports.getAllCourseByAdmin = async (req, res) => {
 exports.updateStatusByAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
-    const updateStatus = await CourseModel.findByIdAndUpdate(
-      id,
-      { status: status },
-      { new: true }
-    );
-    if (!updateStatus)
-      return res.json({ status: "failed", message: "status not updated" });
+    const { status, reason } = req.body;
+
+    // Enum values allowed
+    const allowedStatuses = ["pending", "published", "unpublished"];
+
+    // Validate if status is one of the allowed values
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        status: "failed",
+        message:
+          "Invalid status value. Allowed values: pending, published, unpublished",
+      });
+    }
+
+    if (status === "unpublished" && (!reason || reason.trim() === "")) {
+      return res.status(400).json({
+        status: "failed",
+        reason: "Reason is required when setting status to unpublished.",
+      });
+    }
+
+    const updatedData = { status };
+    if (status === "unpublished") {
+      updatedData.reason = reason;
+    } else {
+      updatedData.reason = null;
+    }
+
+    const updateStatus = await CourseModel.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
+    if (!updateStatus) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Course not found or status not updated",
+      });
+    }
+
     res.json({
       status: "success",
-      message: "status updated successfully",
+      message: "Status updated successfully",
       data: updateStatus,
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }
@@ -300,13 +385,19 @@ exports.addSingleImage = async (req, res) => {
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
-    const id = req.user.id;
+    const id = req.params.id || req.body._id; // Use course ID, not user ID
     const data = req.body;
 
-    console.log(data, "samosa kd");
+    console.log("Received data:", data);
+
+    // Check if course exists
+    const existingCourse = await CourseModel.findById(id);
+    if (!existingCourse) {
+      return res.json({ status: "failed", message: "Course not found" });
+    }
 
     const objData = {
-      courseInstructor: id,
+      courseInstructor: req.user.id, // Ensure instructor is updating
       courseTitle: data.courseTitle,
       courseDescription: data.courseDescription,
       courseCategory: data.courseCategory,
@@ -314,24 +405,34 @@ exports.updateCourseInstrustor = async (req, res) => {
       courseImage: data.courseImage,
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
-      // courseDuration: videoDuration,
-      courseContent: JSON.parse(data.courseContent),
-      courseLearning: JSON.parse(data.courseLearning),
-      courseRequirements: JSON.parse(data.courseRequirements),
+      courseContent: Array.isArray(data.courseContent)
+        ? data.courseContent
+        : JSON.parse(data.courseContent),
+      courseLearning: Array.isArray(data.courseLearning)
+        ? data.courseLearning
+        : JSON.parse(data.courseLearning),
+      courseRequirements: Array.isArray(data.courseRequirements)
+        ? data.courseRequirements
+        : JSON.parse(data.courseRequirements),
       status: "pending",
     };
+
+    // Update course
     const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, {
       new: true,
     });
-    if (!updateStatus)
+
+    if (!updateStatus) {
       return res.json({ status: "failed", message: "status not updated" });
+    }
+
     res.json({
       status: "success",
-      message: "status updated successfully",
+      message: "course updated successfully",
       data: updateStatus,
     });
   } catch (error) {
-    console.log(error, "error");
+    console.log("Error updating course:", error.message);
     res.json({
       status: "failed",
       message: "something went wrong",
@@ -380,17 +481,28 @@ exports.paginationCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateStatus = await CourseModel.findByIdAndUpdate(
+
+    const course = await CourseModel.findById(id);
+
+    if (!course) {
+      return res.json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    // toggle the inActive field
+    const updateCourse = await CourseModel.findByIdAndUpdate(
       id,
-      { isDelete: true },
+      { inActive: !course.inActive },
       { new: true }
     );
-    if (!updateStatus)
+    if (!updateCourse)
       return res.json({ status: "failed", message: "status not updated" });
     res.json({
       status: "success",
-      message: "status updated successfully",
-      data: updateStatus,
+      message: `Course ${updateCourse.inActive ? "deactivated" : "activated"}`,
+      data: updateCourse,
     });
   } catch (error) {
     res.json({
@@ -406,7 +518,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -429,7 +541,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
