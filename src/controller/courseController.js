@@ -50,7 +50,7 @@ exports.addCourse = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      isDelete: false,
+      inActive: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -84,7 +84,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ inActive: false }, { courseVideo: 0 })
       .limit(6)
       // .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -163,7 +163,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      isDelete: false,
+      inActive: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -182,14 +182,13 @@ exports.getcourseFilter = async (req, res) => {
 exports.getCourseInstructor = async (req, res) => {
   try {
     const id = req.user.id;
-
-    const { status, page = 1, limit = 10 } = req.query;
+    const { status, page = 1, limit = 10, activeStatus = false } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
     const pageSize = parseInt(limit, 10) || 1;
     const skip = (pageNumber - 1) * pageSize;
 
-    let query = { courseInstructor: id, isDelete: false };
+    let query = { courseInstructor: id, inActive: activeStatus };
 
     if (status) {
       query.status = status;
@@ -480,17 +479,28 @@ exports.paginationCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateStatus = await CourseModel.findByIdAndUpdate(
+
+    const course = await CourseModel.findById(id);
+
+    if (!course) {
+      return res.json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    // toggle the inActive field
+    const updateCourse = await CourseModel.findByIdAndUpdate(
       id,
-      { isDelete: true },
+      { inActive: !course.inActive },
       { new: true }
     );
-    if (!updateStatus)
+    if (!updateCourse)
       return res.json({ status: "failed", message: "status not updated" });
     res.json({
       status: "success",
-      message: "course deleted successfully",
-      data: updateStatus,
+      message: `Course ${updateCourse.inActive ? "deactivated" : "activated"}`,
+      data: updateCourse,
     });
   } catch (error) {
     res.json({
@@ -506,7 +516,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -529,7 +539,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
