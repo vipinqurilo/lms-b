@@ -20,7 +20,7 @@ async function transferEarningsToAdmin() {
        const currentDate = new Date();
         const startOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay());
         const endOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - currentDate.getDay() + 6);
-
+        console.log(startOfWeek,endOfWeek,"weekdays")
         const earnings = await EarningModel.find({
             date: { $gte: startOfWeek, $lte: endOfWeek },
         });

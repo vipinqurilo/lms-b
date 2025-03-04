@@ -10,8 +10,8 @@ const server = http.createServer(app);
 
 dotenv.config();
 
-require("./src/upload/cronJob");
-
+// require("./src/upload/cronJob");
+require("./src/schedulers/settlementEarningScheduler")
 
 // connect database here
 connectDataBase();

@@ -20,7 +20,7 @@ const CourseSchema = new mongoose.Schema(
     courseImage: { type: String, required: true },
     courseVideo: { type: String, required: true },
     coursePrice: { type: Number, required: true },
-    isDelete: { type: Boolean, required: true },
+    inActive: { type: Boolean, required: true },
     // courseDuration:{type:String,required:true},
     status: {
       type: String,
@@ -45,6 +45,7 @@ const CourseSchema = new mongoose.Schema(
         ],
       },
     ],
+    reason: { type: String },
   },
   { timestamps: true }
 );
