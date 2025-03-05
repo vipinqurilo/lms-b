@@ -3,7 +3,7 @@ const Booking = require('../model/bookingModel'); // Assuming the Order model is
 const Order = require('../model/orderModel')
 exports.getCourseSalesData = async (req, res) => {
 
-    const { startDate, endDate } = req.query;
+    const { startDate, endDate,page = 1, limit = 10 } = req.query;
     const query = {};
     if (startDate || endDate) {
         query.createdAt = {};
@@ -85,8 +85,77 @@ exports.getCourseSalesData = async (req, res) => {
                 },
             },
         ]);
+        const totalRecords= await Order.aggregate([
+            // Match orders within the specified date range
+            {
+                $match: query,
+            },
+            // Lookup course details
+            {
+                $lookup: {
+                    from: 'courses',
+                    localField: 'courseId',
+                    foreignField: '_id',
+                    as: 'courseDetails',
+                },
+            },
+            { $unwind: '$courseDetails' },
+            // Lookup teacher details
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'courseDetails.courseInstructor',
+                    foreignField: '_id',
+                    as: 'teacherDetails',
+                },
+            },
+            {
+                $unwind: {
+                    path: '$teacherDetails',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            // Group by teacher
 
-        return res.status(200).json({ success: true, message: "Course Sales Found Sucessfully", data: salesData })
+            {
+                $group: {
+                    _id: {
+                        teacherId: '$teacherDetails._id',
+                        courseId: '$courseDetails._id',
+                    },
+                    teacherName: { $first: '$teacherDetails.firstName' },
+                    teacherProfilePhoto: { $first: '$teacherDetails.profilePhoto' },
+                    courseName: { $first: '$courseDetails.courseTitle' },
+                    courseImage: { $first: '$courseDetails.courseImage' },
+                    enrollments: { $sum: 1 },
+                    totalSales: { $sum: '$amount' },
+                },
+            },
+            // Group by teacher to aggregate course data
+            {
+                $group: {
+                    _id: '$teacherId',
+                    teacherName: { $first: '$teacherName' },
+                    teacherProfilePhoto: { $first: '$teacherProfilePhoto' },
+                    courses: {
+                        $push: {
+                            courseId: '$_id.courseId',
+                            courseName: '$courseName',
+                            courseImage: '$courseImage',
+                            enrollments: '$enrollments',
+                            totalSales: '$totalSales',
+                            avgPrice: { $divide: ['$totalSales', '$enrollments'] },
+                        },
+                    },
+                    totalEnrollments: { $sum: '$enrollments' },
+                    totalSalesAmount: { $sum: '$totalSales' },
+                },
+            },
+            {
+                $count:"total"
+            }
+        ]);
+        return res.status(200).json({ success: true, message: "Course Sales Found Sucessfully", data: salesData,currentPage: page, totalRecords: totalRecords[0]?.total || 0, totalPages: Math.ceil(totalRecords[0]?.total || 0 / parseInt(limit)) })
     } catch (error) {
         console.error('Error fetching sales data:', error);
         res.status(500).json({ success: false, message: "Something went wrong" })
