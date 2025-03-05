@@ -22,6 +22,7 @@ const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 const earningRouter = require("./src/route/earningRoutes");
+const saleRouter = require("./src/route/saleRoutes");
 
 const app = express();
 app.use(express.json());
@@ -68,4 +69,7 @@ app.use("/api/order",orderRouter);
 
 //Earning Routes
 app.use("/api/earnings",earningRouter)
+
+//Sales Routes 
+app.use("/api/sales",saleRouter)
 module.exports = app;
