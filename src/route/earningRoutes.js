@@ -1,4 +1,4 @@
-const { getCourseEarnings, getTutoringEarnings } = require("../controller/earningController");
+const { getCourseEarnings, getTutoringEarnings, getSettlements } = require("../controller/earningController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 const router=require("express").Router();
@@ -6,7 +6,7 @@ const router=require("express").Router();
 
 router.get("/tution-sessions",authMiddleware,authorizeRoles("teacher"),getTutoringEarnings);
 router.get("/course-purchases", authMiddleware,authorizeRoles("teacher"), getCourseEarnings);
-// router.post("/settlements", authMiddleware, getSettlements);
+router.post("/settlements", authMiddleware, getSettlements);
 
 
 

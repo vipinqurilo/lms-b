@@ -79,8 +79,8 @@ exports.createBookingPayment = async (req, res) => {
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card",],
         mode: "payment",
-        success_url: `${process.env.FRONTEND_URL}/booking/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/booking/payment-failed`,
+        success_url: `${process.env.FRONTEND_URL}/student-dashboard/booking/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL}/student-dashboard/booking/payment-failed`,
         customer_email: req.user.email, // Optional: Prefill email if user is logged in
         metadata: { sessionTitle,teacherId, studentId,subjectId, sessionDate,sessionStartTime,sessionEndTime,sessionDuration  }, // Store booking data
         line_items: [

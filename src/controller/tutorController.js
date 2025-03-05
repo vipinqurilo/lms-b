@@ -3,54 +3,45 @@ const TeacherProfileModel = require("../model/teacherProfileModel");
 
 exports.getTutors = async (req, res) => {
   try {
-    let { search, subjects, days,timeRanges } = req.query;
-    if(!(days&&days.length>0))
-        days="sun,mon,tue,wed,thu,fri,sat"
+    let { search, subjects, days, timeRanges, gender, minPrice, maxPrice, sortByRating } = req.query;
     
-    console.log(search);
+    if (!(days && days.length > 0)) days = "sun,mon,tue,wed,thu,fri,sat";
+
     let query = {};
-    if (search && search != "")
+
+    // Search filter
+    if (search && search !== "") {
       query.$or = [
         { "user.firstName": { $regex: search, $options: "i" } },
         { "user.lastName": { $regex: search, $options: "i" } },
-      ];  
+      ];
+    }
+
+    // Subject filter
     if (subjects && subjects.length > 0) {
-      const subjectIds = subjects
-        .split(",")
-        .map((id) => new mongoose.mongo.ObjectId(id));
+      const subjectIds = subjects.split(",").map((id) => new mongoose.Types.ObjectId(id));
       query.subjectsTaught = { $in: subjectIds };
     }
-    // Handle filtering by days and timeSlots
-    if (days && days.length > 0 && timeRanges && timeRanges.length > 0) {
-      const daysArray = days.split(","); // Convert comma-separated days (e.g., 'mon,tue') to an array
-      const timeRangesArray = timeRanges.split(","); // Convert comma-separated timeRanges (e.g., '0-4,8-12') to an array
 
-      // Loop through each day and time range to match availability
-    //   query["calendar.availability"] = {
-    //     $elemMatch: {
-    //       day: { $in: daysArray }, // Match any of the requested days
-    //       slots: {
-    //         $elemMatch: {
-    //           $or: timeRangesArray.map((range) => {
-    //             const [start, end] = range.split("-").map(Number); // Split time range into start and end
-    //             const startIndex = start * 2; // 2 slots per hour
-    //             const endIndex = end * 2; // 2 slots per hour
-
-    //             return {
-    //               $slice: [startIndex, endIndex - startIndex], // Match slots in the requested time range
-    //               $in: [true], // At least one slot in the range must be available
-    //             };
-    //           }),
-    //         },
-    //       },
-    //     },
-    //   };
+    // Gender filter (default: both male & female)
+    if (gender && ["male", "female"].includes(gender.toLowerCase())) {
+      query["user.gender"] = gender.toLowerCase();
     }
-    console.log(query);
-    const tutors = await TeacherProfileModel.aggregate([
+
+    // Price range filter
+    let priceFilter = {};
+    if (minPrice) priceFilter.$gte = parseFloat(minPrice);
+    if (maxPrice) priceFilter.$lte = parseFloat(maxPrice);
+    if (Object.keys(priceFilter).length > 0) {
+      query["subjectsTaught.pricePerHour"] = priceFilter;
+    }
+
+    console.log("Query:", query);
+
+    let tutors = await TeacherProfileModel.aggregate([
       {
         $lookup: {
-          from: "calendars", // Collection name in MongoDB
+          from: "calendars",
           localField: "calendar",
           foreignField: "_id",
           as: "calendar",
@@ -58,7 +49,7 @@ exports.getTutors = async (req, res) => {
       },
       {
         $lookup: {
-          from: "languages", // Collection name in MongoDB
+          from: "languages",
           localField: "languagesSpoken",
           foreignField: "_id",
           as: "languagesSpoken",
@@ -66,7 +57,7 @@ exports.getTutors = async (req, res) => {
       },
       {
         $lookup: {
-          from: "coursesubcategories", // Collection name in MongoDB
+          from: "coursesubcategories",
           localField: "subjectsTaught",
           foreignField: "_id",
           as: "subjectsTaught",
@@ -74,75 +65,71 @@ exports.getTutors = async (req, res) => {
       },
       {
         $lookup: {
-          from: "users", // Collection name in MongoDB
+          from: "users",
           localField: "userId",
           foreignField: "_id",
           as: "user",
         },
       },
-     
-      {
-        $unwind: {
-          path: "$user", // Unwind the subjects array
-        
-        },
-      },
-
-      {
-        $unwind: {
-          path: "$calendar", // Unwind the subjects array
-          
-        },
-      },
-      {
-        $match: query,
-      },
+      { $unwind: "$user" },
+      { $unwind: "$calendar" },
+      { $match: query },
       {
         $project: {
           user: {
-            _id:1,
+            _id: 1,
             email: 1,
             firstName: 1,
             lastName: 1,
             gender: 1,
-            subjectsTaught: 1,
-            languagesSpoken: 1,
             profilePhoto: 1,
             country: 1,
             phone: 1,
             bio: 1,
           },
-          createdAt:1,
+          createdAt: 1,
           subjectsTaught: {
             name: 1,
-            pricePerHour:1,
-            _id:1,
+            pricePerHour: 1,
+            _id: 1,
           },
           languagesSpoken: {
             name: 1,
-            _id:1,
+            _id: 1,
           },
           calendar: {
             availability: 1,
           },
-          tutionSlots:1
+          tutionSlots: 1,
+          rating: 1, // Assuming a rating field exists
         },
       },
     ]);
+
+    // Sort tutors by rating if specified
+    if (sortByRating) {
+      if (sortByRating === "high-to-low") {
+        tutors.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      } else if (sortByRating === "low-to-high") {
+        tutors.sort((a, b) => (a.rating || 0) - (b.rating || 0));
+      }
+    }
+
     res.json({
       success: true,
       data: tutors,
       message: "Tutors found successfully",
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.json({
-      success: true,
-      message: "Something went Wrong",
+      success: false,
+      message: "Something went wrong",
       error: e.message,
     });
   }
 };
+
 
 
 
