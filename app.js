@@ -1,4 +1,6 @@
 const express = require("express");
+const path = require("path");
+
 const cors = require("cors");
 const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
@@ -22,8 +24,17 @@ const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 const passwordRouter = require("./src/route/forgotPasswordRoutes");
+const routereeee = require("./src/route/testing");
 
 const app = express();
+
+app.set("view engine", "ejs");
+
+// Define the correct views directory
+// app.set("views", path.join(__dirname, "src", "emailTemplates")); 
+
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
@@ -59,7 +70,12 @@ app.use('/api/withdrawals',withdrawRouter)
 app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
 app.use('/api/forgotpassword',passwordRouter)
+app.use("/api/email",  routereeee);
+ 
 
+app.get("/signup", (req, res) => {
+  res.render("signup");  // Ensure the file name is correct
+});
 //Payment Routes
 
 app.use("/api/payment",paymentRouter)
