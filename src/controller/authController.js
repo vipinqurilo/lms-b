@@ -58,7 +58,16 @@ exports.userLogin = async (req, res) => {
     const data = req.body;
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
+
+    if (!user) {
+      return res.json({
+        status: "failed",
+        message: "user not found",
+      });
+    }
+
     const match = isValidPassword(data.password, user.password);
+
     if (match) {
       if (user.userStatus == "inactive") {
         return res.json({
@@ -73,7 +82,7 @@ exports.userLogin = async (req, res) => {
       res.json({
         status: "success",
         message: "login successfully",
-        data: {
+        data: { 
           _id: user._id,
           email: user.email,
           role: user.role,
@@ -84,7 +93,7 @@ exports.userLogin = async (req, res) => {
     } else {
       res.json({
         status: "failed",
-        message: "password not matched",
+        message: "password is incorrect",
       });
     }
   } catch (error) {

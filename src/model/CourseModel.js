@@ -45,6 +45,7 @@ const CourseSchema = new mongoose.Schema(
         ],
       },
     ],
+    
     reason: { type: String },
   },
   { timestamps: true }

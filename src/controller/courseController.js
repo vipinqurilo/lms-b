@@ -277,10 +277,34 @@ exports.getAllCourseByAdmin = async (req, res) => {
 
     console.log("Courses Fetched:", courses.length);
 
+    // fetch reviews and caluclate ratings for each course
+
+    const courseWithRatings = await Promise.all(
+      courses.map(async (course) => {
+        const reviews = await ReviewModel.find({ course: course._id }, "rating");
+
+        const totalReviews = reviews.length;
+        const sumOfRatings = reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        const averageRating =
+          totalReviews > 0 ? sumOfRatings / totalReviews : 0;
+
+        return {
+          ...course.toObject(),
+          totalReviews,
+          sumOfRatings,
+          averageRating: averageRating.toFixed(2),
+          reviews,
+        };
+      })
+    );
+
     res.json({
       status: "success",
       message: "Courses fetched successfully",
-      data: courses,
+      data: courseWithRatings,
       pagination: {
         totalCourses,
         currentPage: pageNumber,
@@ -380,8 +404,6 @@ exports.addSingleImage = async (req, res) => {
     console.log(error);
   }
 };
-
-
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
