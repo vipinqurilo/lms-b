@@ -73,6 +73,38 @@ exports.getTutors = async (req, res) => {
       },
       { $unwind: "$user" },
       { $unwind: "$calendar" },
+      {
+        $lookup: {
+          from: "tutorreviews",
+          localField: "reviews",
+          foreignField: "_id",
+          as: "reviews"
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { reviews: "$reviews" },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $in: ["$_id", "$$reviews.student"]
+                }
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+                profilePhoto: 1
+              }
+            }
+          ],
+          as: "studentDetails"
+        }
+      },
       { $match: query },
       {
         $project: {
@@ -102,6 +134,42 @@ exports.getTutors = async (req, res) => {
           },
           tutionSlots: 1,
           rating: 1, // Assuming a rating field exists
+          reviews: {
+            $map: {
+              input: "$reviews",
+              as: "review",
+              in: {
+                _id: "$$review._id",
+                rating: "$$review.rating",
+                review: "$$review.review",
+                message: "$$review.message",
+                createdAt: "$$review.createdAt",
+                student: {
+                  $let: {
+                    vars: {
+                      studentInfo: {
+                        $arrayElemAt: [
+                          {
+                            $filter: {
+                              input: "$studentDetails",
+                              as: "student",
+                              cond: { $eq: ["$$student._id", "$$review.student"] }
+                            }
+                          },
+                          0
+                        ]
+                      }
+                    },
+                    in: {
+                      _id: "$$studentInfo._id",
+                      userName: { $concat: ["$$studentInfo.firstName", " ", "$$studentInfo.lastName"] },
+                      profilePhoto: "$$studentInfo.profilePhoto"
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
       },
     ]);
@@ -129,7 +197,6 @@ exports.getTutors = async (req, res) => {
     });
   }
 };
-
 
 
 
