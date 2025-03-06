@@ -4,6 +4,7 @@ const BookingModel = require("../model/bookingModel");
 const CategoryModel = require("../model/courseCategoryModel");
 const SubCategoryModel = require("../model/courseSubCategoryModel");
 
+
 exports.getAdminDashboard = async (req, res) => {
   try {
     const totalCourses = await CourseModel.countDocuments();

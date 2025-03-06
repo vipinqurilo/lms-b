@@ -25,6 +25,7 @@ const courseRouter = express.Router();
 const multer = require("multer");
 const { uploadPDF } = require("../upload/cloudinary");
 const uploadPdf = require("../middleware/upload");
+const { getAdminDashboard } = require("../controller/adminController");
 const uploadMulter = multer();
 // courseRouter.post('/',authMiddleware,authorizeRoles("instructor"),upload.single("courseVideo"),addCourse)
 courseRouter.post(
@@ -77,7 +78,6 @@ courseRouter.put(
   authorizeRoles("admin"),
   updateStatusByAdmin
 );
-
+courseRouter.get("/admin-dashboard",authMiddleware,authorizeRoles("admin"),getAdminDashboard);
 
 module.exports = courseRouter;
-

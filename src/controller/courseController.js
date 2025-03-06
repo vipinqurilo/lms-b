@@ -271,6 +271,7 @@ exports.getAllCourseByAdmin = async (req, res) => {
     const courses = await CourseModel.find(query)
       .populate({ path: "courseSubCategory", select: "name" })
       .populate({ path: "courseInstructor", select: "" })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
       .exec();
@@ -281,7 +282,10 @@ exports.getAllCourseByAdmin = async (req, res) => {
 
     const courseWithRatings = await Promise.all(
       courses.map(async (course) => {
-        const reviews = await ReviewModel.find({ course: course._id }, "rating");
+        const reviews = await ReviewModel.find(
+          { course: course._id },
+          "rating"
+        );
 
         const totalReviews = reviews.length;
         const sumOfRatings = reviews.reduce(
@@ -577,6 +581,24 @@ exports.filterHomePage = async (req, res) => {
       status: "failed",
       message: "something went wrong",
       error: error.message,
+    });
+  }
+};
+
+exports.adminDashboardCourses = async (req, res) => {
+  try {
+    const Courses = await CourseModel.find().limit(10).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      status: "success",
+      message: "courses fetched successfully",
+      data: Courses,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error,
     });
   }
 };
