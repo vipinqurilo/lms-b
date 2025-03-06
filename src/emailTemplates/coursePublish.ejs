@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Request Update</title>
+</head>
+<body>
+    <% if (status === "approved") { %>
+        <h2>🎉 Congratulations!</h2>
+        <p>Your course "<%= courseName %>" has been successfully approved and published.</p>
+        <p>Students can now enroll in your course and start learning.</p>
+        <br>
+        <p>Thank you for your contribution!</p>
+        <p>The Admin Team</p>
+    <% } else { %>
+        <h2>❌ Course Submission Rejected</h2>
+        <p>Unfortunately, your course "<%= courseName %>" has been rejected.</p>
+        <p><strong>Reason for Rejection:</strong> <%= reason %></p>
+        <p>Please review our guidelines and make the necessary changes before resubmitting.</p>
+        <br>
+        <p>Best regards,</p>
+        <p>The Admin Team</p>
+    <% } %>
+</body>
+</html>
