@@ -21,6 +21,7 @@ const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
+const adminRoute = require("./src/route/adminRoute");
 
 const app = express();
 app.use(express.json());
@@ -57,6 +58,7 @@ app.use("/api/wallet", walletRouter);
 app.use("/api/withdrawals", withdrawRouter);
 app.use("/api/students", studentRouter);
 app.use("/api/teachers", teacherRouter);
+app.use("/api/admin", adminRoute);
 
 //Payment Routes
 

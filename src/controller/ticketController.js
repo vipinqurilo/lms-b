@@ -224,7 +224,7 @@ exports.addTicketMessage = async (req, res) => {
 
 exports.statusUpdate = async (req, res) => {
   try {
-    const { status, id } = req.params;
+    const { status, id } = req.query;
 
     // Validate ID and status
     if (!id || !status) {
