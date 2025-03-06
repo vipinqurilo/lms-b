@@ -28,12 +28,13 @@ const routereeee = require("./src/route/testing");
 
 const app = express();
 
-app.set("view engine", "ejs");
+// app.set("view engine", "ejs");
 
-// Define the correct views directory
+// // // Define the correct views directory
 // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
 
-
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "src", "view"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -47,7 +48,7 @@ app.use((req, res, next) => {
   // console.log(req)
   next();
 });
-app.use("/public", express.static("public"));
+app.use(express.static("public"));
 
 app.use("/api/requests",requestRouter)
 app.use("/api/auth",authController);
@@ -73,8 +74,8 @@ app.use('/api/forgotpassword',passwordRouter)
 app.use("/api/email",  routereeee);
  
 
-app.get("/signup", (req, res) => {
-  res.render("signup");  // Ensure the file name is correct
+app.get("/template", (req, res) => {
+  res.render("template");
 });
 //Payment Routes
 
