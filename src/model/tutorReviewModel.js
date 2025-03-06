@@ -6,6 +6,8 @@ const reviewSchema = new mongoose.Schema({
     rating: { type: Number, required: true },
     review: { type: String, required: true },
     message: { type: String, required: true },
+  }, {
+    timestamps: true
   });
   
   const TutorReviewModel = mongoose.model("TutorReview", reviewSchema);
