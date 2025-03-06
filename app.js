@@ -83,6 +83,9 @@ app.use("/api/email",  routereeee);
 app.get("/template", (req, res) => {
   res.render("template");
 });
+app.get("/login", (req, res) => {
+  res.render("login");
+});
 //Payment Routes
 
 app.use("/api/payment", paymentRouter);
