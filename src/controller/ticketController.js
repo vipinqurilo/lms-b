@@ -226,6 +226,12 @@ exports.statusUpdate = async (req, res) => {
   try {
     const { status, id } = req.query;
 
+    if (status !== "close") {
+      return res
+        .status(400)
+        .json({ status: "failed", message: "Invalid status." });
+    }
+
     // Validate ID and status
     if (!id || !status) {
       return res
