@@ -23,6 +23,7 @@ const teacherProfileSchema = new mongoose.Schema({
         bankAddress: { type: String },
         paypalEmail: { type: String }
     },
+    reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "TutorReview" }],
     calendar: { type: mongoose.Schema.Types.ObjectId, ref: "Calendar" },
   },{
     timestamps: true
