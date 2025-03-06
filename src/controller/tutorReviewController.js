@@ -1,4 +1,5 @@
 const TutorReviewModel = require("../model/tutorReviewModel");
+const TeacherProfileModel = require("../model/teacherProfileModel");
 
 exports.addReview = async (req, res) => {
     try {
@@ -13,6 +14,12 @@ exports.addReview = async (req, res) => {
 
         const addReview = await TutorReviewModel.create(objData);
         if (addReview) {
+            // Add review reference to tutor's profile
+            await TeacherProfileModel.findOneAndUpdate(
+                { _id: data.tutorId },
+                { $push: { reviews: addReview._id } }
+            );
+
             res.json({
                 status: "success",
                 message: "Review Added Successfully",
@@ -171,4 +178,3 @@ exports.getReviewByTutorId = async (req, res) => {
         });
     }
 }
-

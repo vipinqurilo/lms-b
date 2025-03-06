@@ -23,6 +23,8 @@ const upload = require("../upload/multerConfig");
 const courseRouter = express.Router();
 
 const multer = require("multer");
+const { uploadPDF } = require("../upload/cloudinary");
+const uploadPdf = require("../middleware/upload");
 const uploadMulter = multer();
 // courseRouter.post('/',authMiddleware,authorizeRoles("instructor"),upload.single("courseVideo"),addCourse)
 courseRouter.post(
@@ -32,7 +34,7 @@ courseRouter.post(
     { name: "courseImage", maxCount: 1 },
   ]),
   authMiddleware,
-  authorizeRoles("teacher"),
+  authorizeRoles("teacher"),  
   addCourse
 );
 
@@ -45,15 +47,14 @@ courseRouter.post(
   uploadMulter.single("courseImage"),
   addSingleImage
 );
+courseRouter.post("/upload/pdf",uploadPdf.single("pdf"),uploadPDF)
 courseRouter.get("/home/:categoryId", filterHomePage);
 
 // instructor routes
 
-
 courseRouter.get('/instructor/get',authMiddleware,authorizeRoles("teacher"),getCourseInstructor)
 courseRouter.put('/instructor/:id',authMiddleware,authorizeRoles("teacher"),updateCourseInstrustor)
 courseRouter.post('/instructor/pagination',authMiddleware,authorizeRoles("teacher"),paginationCourse)
-
 
 courseRouter.delete(
   "/instructor/:id",

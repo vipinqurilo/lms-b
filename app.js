@@ -23,8 +23,13 @@ const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
+
 const passwordRouter = require("./src/route/forgotPasswordRoutes");
 const routereeee = require("./src/route/testing");
+
+const earningRouter = require("./src/route/earningRoutes");
+const saleRouter = require("./src/route/saleRoutes");
+
 
 const app = express();
 
@@ -74,13 +79,20 @@ app.use('/api/forgotpassword',passwordRouter)
 app.use("/api/email",  routereeee);
  
 
+
 app.get("/template", (req, res) => {
   res.render("template");
 });
 //Payment Routes
 
-app.use("/api/payment",paymentRouter)
+app.use("/api/payment", paymentRouter);
 
 //Order Routes
 app.use("/api/order",orderRouter);
+
+//Earning Routes
+app.use("/api/earnings",earningRouter)
+
+//Sales Routes 
+app.use("/api/sales",saleRouter)
 module.exports = app;
