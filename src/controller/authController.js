@@ -14,6 +14,12 @@ exports.registerUser = async (req, res) => {
       password: data.password,
       role: data.role,
     };
+    const existingUserWithEmail=await UserModel.findOne({email:userObj.email});
+    if(existingUserWithEmail)
+      return res.status(400).json({status:"failed",message:"Email already registered"})
+    // const existingUserWithPhone=await UserModel.findOne({phone:userObj.phone});
+    // if(!existingUserWithPhone)
+    //   return res.status(400).json({status:"failed",message:"Mobile already registered"})
     if (data.role == "teacher") {
       userObj.userStatus = "pending";
       newUser = await UserModel.create(userObj);
@@ -31,7 +37,7 @@ exports.registerUser = async (req, res) => {
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
     );
-    res.json({
+    res.status(201).json({
       status: "success",
       message: "User Registered successfully",
       data: {
@@ -44,7 +50,7 @@ exports.registerUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error, "error");
-    res.json({
+    res.status(500).json({
       status: "error",
       message: "something went wrong",
       error: error.message,
@@ -57,10 +63,12 @@ exports.userLogin = async (req, res) => {
     const data = req.body;
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
+    if(!user)
+      return res.status(404).json({status:"success",message:"User not Found"})
     const match = isValidPassword(data.password, user.password);
     if (match) {
       if (user.userStatus == "inactive") {
-        return res.json({
+        return res.status(401).json({
           status: "failed",
           message: "user is inactive",
         });
@@ -69,28 +77,29 @@ exports.userLogin = async (req, res) => {
         { email: user.email, role: user.role, id: user._id },
         process.env.JWT_SECRET
       );
-      res.json({
+      return res.json({
         status: "success",
-        message: "login successfully",
+        message: "Login successfully",
         data: {
           _id: user._id,
           email: user.email,
           role: user.role,
+          name:user.firstName+" "+user.lastName,
           userStatus: user.userStatus,
         },
         token: token,
       });
     } else {
-      res.json({
+     return  res.status(400).json({
         status: "failed",
-        message: "password not matched",
+        message: "Password not match",
       });
     }
   } catch (error) {
     console.log(error);
-    res.json({
+   return  res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }
@@ -132,7 +141,7 @@ exports.validateToken = async (req, res) => {
   const { userStatus, role, email, firstName, lastName, _id } = user;
   const userData = {
     _id,
-    name: firstName + lastName,
+    name: firstName +" "+lastName,
     userStatus,
     role,
     email,
