@@ -4,73 +4,208 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Success</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #ffffff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        display: flex;
+        justify-content: center;
+        padding: 40px 0;
+      }
+      .card {
+        width: 600px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+        text-align: center;
+      }
+      .logo {
+        width: 96px;
+        margin: 0 auto 16px;
+      }
+      .welcome-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #1f2937;
+      }
+      .divider {
+        border-bottom: 2px solid #d1d5db;
+        width: 80%;
+        margin: 12px auto;
+      }
+      .background-section {
+        background-image: url("http://res.cloudinary.com/daprkakyk/image/upload/v1741257771/luxe/xmvotbygpmcjbvznm6m9.png");
+        background-repeat: no-repeat;
+        background-size: 215%;
+        background-position: calc(100% + 240px) calc(100% + 80px);
+        padding: 4px 0;
+      }
+      .course-image-container {
+        width: 320px;
+        height: 256px;
+        margin: 8px auto 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .course-image {
+        width: 100%;
+      }
+      .content {
+        margin-bottom: 16px;
+      }
+      .greeting {
+        font-size: 18px;
+        font-weight: bold;
+        color: #1f2937;
+      }
+      .message {
+        font-size: 14px;
+        color: #4b5563;
+        margin-top: 12px;
+        padding: 0 24px;
+      }
+      .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #000000;
+        margin-top: 40px;
+      }
+      .list {
+        font-size: 14px;
+        color: #4b5563;
+        text-align: left;
+        padding: 0 32px;
+        margin-top: 12px;
+      }
+      .list li {
+        margin-bottom: 8px;
+      }
+      .button {
+        background-color: #000000;
+        color: #ffffff;
+        padding: 8px 24px;
+        border-radius: 4px;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        margin-top: 40px;
+      }
+      .spacer {
+        margin-top: 80px;
+      }
+      .footer {
+        margin-top: 40px;
+        text-align: center;
+        color: #4b5563;
+        font-size: 14px;
+      }
+      .footer img {
+        width: 96px;
+        margin: 0 auto;
+      }
+      .footer p {
+        margin-top: 8px;
+      }
+      .copyright-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .social-icons {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        align-items: center;
+      }
+      .social-icons img {
+        width: 16px;
+      }
+    </style>
   </head>
-  <body class="bg-[#FFFFFF] font-sans">
-    <div class="flex justify-center py-10">
-      <div class="w-5/12   rounded-lg shadow-lg p-6 text-center">
+  <body>
+    <div class="container">
+      <div class="card">
         <!-- Logo -->
-        <div class="mb-4">
-          <img src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257871/luxe/ct4jwc2zuofaglrkh3mk.svg" alt="Steam Institute" class="w-24 mx-auto" />
+        <div>
+          <img
+            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+            alt="Steam Institute"
+            class="logo"
+          />
         </div>
 
         <!-- Welcome Message -->
-        <h2 class="text-lg font-bold text-gray-800">
-          Welcome to Steam Institute!
-        </h2>
-        <div class="border-b-2 border-gray-300 w-4/5 mx-auto my-3"></div>
+        <h2 class="welcome-text">Welcome to Steam Institute!</h2>
+        <div class="divider"></div>
 
-        <div class="bg-[url('http://res.cloudinary.com/daprkakyk/image/upload/v1741257771/luxe/xmvotbygpmcjbvznm6m9.png')] py-1  bg-no-repeat bg-[length:215%] bg-[calc(100%+240px)_calc(100%+80px)]">
-            <div
-            class="  w-80 h-64 mx-auto mt-2 flex justify-center items-center"
-          >
-            <img src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png" alt="Course Image" class="w-full" />
+        <div class="background-section">
+          <div class="course-image-container">
+            <img
+              src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
+              alt="Course Image"
+              class="course-image"
+            />
           </div>
-  
-            <div class="  bg-opacity-80   mb-4 ">
-              <h3 class="text-lg font-bold text-gray-800">Hi Diana</h3>
-              <p class="text-sm text-gray-600 mt-3 px-6">
-                We wanted to inform you that you have successfully signed into your
-                account on Steam Institute. If this was you, you're all set to
-                continue with your learning journey.
-              </p>
-          
-              <!-- What's Next -->
-              <h3 class="text-lg font-bold text-black mt-10">What's Next</h3>
-              <ul class="text-sm text-gray-600 text-left px-8 mt-3 space-y-2">
-                <li>
-                  You can now access your courses, assignments, and learning
-                  resources.
-                </li>
-                <li>
-                  Check out your dashboard for the latest updates, upcoming exams,
-                  and new assignments.
-                </li>
-              </ul>
-          
-              <!-- Button -->
-              <div class="mt-10">
-                <button class="bg-black text-white py-2 px-6 rounded text-sm">
-                  View Courses
-                </button>
-              </div>
-              <div class="mt-[80px]"></div>
-            </div>
-          </div>
-          
 
-        <!-- Illustration -->
-       
+          <div class="content">
+            <h3 class="greeting">Hi Diana</h3>
+            <p class="message">
+              We wanted to inform you that you have successfully signed into
+              your account on Steam Institute. If this was you, you're all set
+              to continue with your learning journey.
+            </p>
+
+            <h3 class="section-title">What's Next</h3>
+            <ul class="list">
+              <li>
+                You can now access your courses, assignments, and learning
+                resources.
+              </li>
+              <li>
+                Check out your dashboard for the latest updates, upcoming exams,
+                and new assignments.
+              </li>
+            </ul>
+
+            <button class="button">View Courses</button>
+            <div class="spacer"></div>
+          </div>
+        </div>
+
         <!-- Footer -->
-        <div class="mt-10 text-center text-gray-600 text-sm">
-          <img src="logo.png" alt="STEAM Institute" class="w-24 mx-auto" />
-          <p class="mt-2">Address - 65 Rz- London, United Kingdom Nd-</p>
-          <p class="mt-1">Copyright © 2024</p>
-          <div class="flex justify-center space-x-3 mt-3">
-            <img src="email-icon.png" alt="Email" class="w-4" />
-            <img src="phone-icon.png" alt="Phone" class="w-4" />
-            <img src="website-icon.png" alt="Website" class="w-4" />
-            <img src="instagram-icon.png" alt="Instagram" class="w-4" />
+        <div class="footer">
+          <img
+            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+            alt="STEAM Institute"
+          />
+          <p>Address - 65 Rz- London, United Kingdom Nd-</p>
+          <div class="copyright-container">
+            <div>Copyright © 2024</div>
+            <div class="social-icons">
+              <img
+                src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263784/luxe/lukzufi37rikdksvtxnv.png"
+                alt="Email"
+              />
+              <img
+                src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263837/luxe/rzs869gxiyvxm4bl06nu.png"
+                alt="Phone"
+              />
+              <img
+                src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263870/luxe/jl7jont6grktooubicim.png"
+                alt="Website"
+              />
+              <img
+                src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263894/luxe/lacihp4i5wlojkxycmsw.png"
+                alt="Instagram"
+              />
+            </div>
           </div>
         </div>
       </div>
