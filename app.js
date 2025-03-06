@@ -22,6 +22,8 @@ const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 const adminRoute = require("./src/route/adminRoute");
+const earningRouter = require("./src/route/earningRoutes");
+const saleRouter = require("./src/route/saleRoutes");
 
 const app = express();
 app.use(express.json());
@@ -53,7 +55,6 @@ app.use("/api/review", reviewRoute);
 app.use("/api/tutorReview", tutorReviewRoute);
 app.use("/api/ticket", ticketRouter);
 app.use("/api/users", userRoutes);
-app.use("/api/stripe", stripeRoute);
 app.use("/api/wallet", walletRouter);
 app.use("/api/withdrawals", withdrawRouter);
 app.use("/api/students", studentRouter);
@@ -65,5 +66,11 @@ app.use("/api/admin", adminRoute);
 app.use("/api/payment", paymentRouter);
 
 //Order Routes
-app.use("/api/order", orderRouter);
+app.use("/api/order",orderRouter);
+
+//Earning Routes
+app.use("/api/earnings",earningRouter)
+
+//Sales Routes 
+app.use("/api/sales",saleRouter)
 module.exports = app;

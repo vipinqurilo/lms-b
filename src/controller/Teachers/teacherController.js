@@ -63,6 +63,74 @@ exports.getTeachers = async (req, res) => {
         $match: query,
       },
       {
+        $lookup: {
+          from: "tutorreviews",
+          localField: "userId",
+          foreignField: "tutorId",
+          as: "reviews",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "reviews.student",
+          foreignField: "_id",
+          as: "reviewStudents"
+        }
+      },
+      {
+        $addFields: {
+          reviews: {
+            $map: {
+              input: "$reviews",
+              as: "review",
+              in: {
+                _id: "$$review._id",
+                rating: "$$review.rating",
+                review: "$$review.review",
+                message: "$$review.message",
+                student: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: "$reviewStudents",
+                        as: "student",
+                        cond: { $eq: ["$$student._id", "$$review.student"] }
+                      }
+                    },
+                    0
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $unwind: {
+          path: "$reviews",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          user: { $first: "$user" },
+          courses: { $first: "$courses" },
+          pendingCourses: { $first: "$pendingCourses" },
+          publishedCourses: { $first: "$publishedCourses" },
+          unpublishedCourses: { $first: "$unpublishedCourses" },
+          totalEnrolledStudents: { $first: "$totalEnrolledStudents" },
+          cancelledSessions: { $first: "$cancelledSessions" },
+          confirmedSessions: { $first: "$confirmedSessions" },
+          rescheuledSessions: { $first: "$rescheuledSessions" },
+          completedSessions: { $first: "$completedSessions" },
+          totalSessions: { $first: "$totalSessions" },
+          scheduledSessions: { $first: "$scheduledSessions" },
+          reviews: { $push: "$reviews" },
+        },
+      },
+      {
         $addFields: {
           pendingCourses: {
             $size: {
@@ -158,7 +226,6 @@ exports.getTeachers = async (req, res) => {
             profilePhoto: 1,
             gender: 1,
           },
-          // tutionBookings:1,
           courses: 1,
           pendingCourses: 1,
           publishedCourses: 1,
@@ -170,6 +237,18 @@ exports.getTeachers = async (req, res) => {
           completedSessions: 1,
           totalSessions: 1,
           scheduledSessions: 1,
+          reviews: {
+            _id: 1,
+            rating: 1,
+            review: 1,
+            message: 1,
+            student: {
+              _id: 1,
+              firstName: 1,
+              lastName: 1,
+              profilePhoto: 1
+            }
+          }
         },
       },
     ]);
