@@ -57,11 +57,6 @@
         font-weight: bold;
         color: #1f2937;
       }
-      .welcome-text1 {
-        font-size: 20px;
-        font-weight:600;
-         color: #1f2937;
-      }
       .divider {
         border-bottom: 2px solid #d1d5db;
         width: 80%;
@@ -70,7 +65,7 @@
       .background-section {
         background-image: url("http://res.cloudinary.com/daprkakyk/image/upload/v1741257771/luxe/xmvotbygpmcjbvznm6m9.png");
         background-repeat: no-repeat;
-        background-size: 188%;
+        background-size: 215%;
         background-position: calc(100% + 240px) calc(100% + 80px);
         padding: 4px 0;
       }
@@ -86,23 +81,18 @@
         width: 100%;
       }
       .content {
-        margin-top: 60px;
+        margin-bottom: 16px;
       }
       .greeting {
         font-size: 18px;
         font-weight: bold;
         color: #1f2937;
-        display: flex;
-        justify-content: start;
-         background-color: aqua;
- 
-        
       }
       .message {
         font-size: 14px;
         color: #4b5563;
-        margin-top: 10px;
-        padding: 1px 76px;
+        margin-top: 12px;
+        padding: 0 24px;
       }
       .section-title {
         font-size: 18px;
@@ -167,128 +157,6 @@
         margin: 0 6px;
         vertical-align: middle;
       }
-
-      .coursedetails{
-        /* background-color: darkmagenta; */
-        margin-top: 90px;
-      }
-      .coursedetails1{
-        font-weight: 600;
-      }
-      .coursemeidium1 {
-    width: 200px ;
-    background-color: aqua;
-    /* margin-right: 90px; */
-}
-
-.coursemeidium2{
-     background-color: aqua;
-    margin-left: 0px;
-}
-
-.detailinfo{
-
-  background-color: aquamarine;
-  display: flex;
-  justify-content: center;
-
-}
-
-.detailinfo1{
-
-background-color: rgb(35, 53, 218);
-display: flex;
-justify-content: start;
-width: 150px;
-
-}
-
-.detailinfo2{
-
-background-color: rgb(248, 245, 56);
-display: flex;
-justify-content: center;
-width: 700px;
-
- }
-
-.detailinfo21{
-  width: auto;
-  background-color: rgb(202, 130, 202);
-  display: flex;
-  justify-content: start;
-}
-
-.detailinfo22{
-  width: auto;
-  /* background-color: fuchsia; */
-  display: flex;
-  justify-content: start;
-}
-
-
-.detailinfobox{
-  /* width: 247px; */
-  background-color: rgba(188, 231, 30, 0.753);
-  display: flex;
-  justify-content: space-between;
-}
-
-
-.detailinfo211{
-background-color: rgb(248, 245, 56);
-display: flex;
-justify-content: center;
- }
-
-.detailinfo2111{
-  width: 144px;
-  background-color: fuchsia;
-  display: flex;
-  justify-content: start;
-}
-
-.course-details {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-}
-
-.title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-
-.details {
-    font-size: 16px;
-    color: #333;
-    display: grid;
-    grid-template-columns: auto auto; /* Two columns */
-    justify-content: center;
-    gap: 10px 30px; /* Adjust spacing */
-    margin-top: 20px;
-}
-
-.info {
-    display: contents; /* Ensures grid structure applies to child elements */
-}
-
-.label {
-    font-weight: bold;
-    text-align: right;
-}
-
-.value {
-    text-align: left;
-}
-
-
-.CourseName{
-  font-weight: 600;
-}
-
     </style>
   </head>
   <body>
@@ -304,11 +172,7 @@ justify-content: center;
         </div>
 
         <!-- Welcome Message -->
-        <h2 class="welcome-text"> Congratulations !  <img style="width: 30px; display: inline-block; "
-          src="http://res.cloudinary.com/daprkakyk/image/upload/v1741334849/luxe/cuyjkckwzdy3rjzd7ndk.png"
-          alt="Phone"
-        /></h2>
-        <h2 class="welcome-text1">Your Course has been Published </h2>
+        <h2 class="welcome-text">Welcome to Steam Institute!</h2>
         <div class="divider"></div>
 
         <div class="background-section">
@@ -320,43 +184,26 @@ justify-content: center;
             />
           </div>
 
-          <div class="CourseName">
-            Course Name - Mathematics Exercises
-          </div>
           <div class="content">
-            <div style="display: flex;  margin-left: 88px;">
-              <h3 style="font-size: 16px; font-weight: bold; color: #808080; text-align: right;">Hi</h3>
-            </div>
-
-
-
+            <h3 class="greeting">Hi Diana</h3>
             <p class="message">
               We wanted to inform you that you have successfully signed into
               your account on Steam Institute. If this was you, you're all set
               to continue with your learning journey.
             </p>
 
-            <div style="text-align: center; font-family: Arial, sans-serif; margin-top: 70px;">
-              <h3 style="margin-bottom: 10px;">Course Details</h3>
-              <table style="margin: 20px auto 0 auto; width: auto; font-size: 16px;">
-                  <tr>
-                      <td style="padding: 8px; font-weight: bold; text-align: right;">Course Name:</td>
-                      <td style="padding: 8px; text-align: left;">Mathematics Exercises</td>
-                  </tr>
-                  <tr>
-                      <td style="padding: 8px; font-weight: bold; text-align: right;">Publish Date:</td>
-                      <td style="padding: 8px; text-align: left;">20/05/2025</td>
-                  </tr>
-                  <tr>
-                      <td style="padding: 8px; font-weight: bold; text-align: right;">Course Duration:</td>
-                      <td style="padding: 8px; text-align: left;">6 Months</td>
-                  </tr>
-              </table>
-          </div>
-          
-          
-          
-            
+            <h3 class="section-title">What's Next</h3>
+            <ul class="list">
+              <li>
+                You can now access your courses, assignments, and learning
+                resources.
+              </li>
+              <li>
+                Check out your dashboard for the latest updates, upcoming exams,
+                and new assignments.
+              </li>
+            </ul>
+
             <button class="button">View Courses</button>
             <div class="spacer"></div>
           </div>
