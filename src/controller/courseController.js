@@ -1,6 +1,6 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
-const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
+const { uploadMediaToCloudinary } = require("../upload/cloudinary");
 const { default: mongoose } = require("mongoose");
 
 // Simplified function that returns a default duration
@@ -481,6 +481,44 @@ exports.adminDashboardCourses = async (req, res) => {
       status: "failed",
       message: "something went wrong",
       error: error,
+    });
+  }
+};
+
+exports.moduleMarkedAsCompleted = async (req, res) => {
+  try {
+    const { courseId, moduleId } = req.body;
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Course not found",
+      });
+    }
+
+    const moduleIndex = course.courseContent.findIndex(
+      (module) => module._id.toString() === moduleId
+    );
+
+    if (moduleIndex === -1) {
+      return res.status(404).json({
+        status: "failed",
+        message: "Module not found",
+      });
+    }
+
+    course.courseContent[moduleIndex].isCompleted = true;
+    await course.save();
+
+    res.json({
+      status: "success",
+      message: "Module marked as completed",
+    });
+  } catch (error) {
+    console.error("Error marking module as completed:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Internal server error",
     });
   }
 };

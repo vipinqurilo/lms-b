@@ -15,6 +15,7 @@ const {
   filterHomePage,
   paginationCourse,
   updateCourseInstrustor,
+  moduleMarkedAsCompleted,
 } = require("../controller/courseController");
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -50,6 +51,7 @@ courseRouter.post(
 );
 courseRouter.post("/upload/pdf",uploadPdfMulter.single("pdf"),uploadPDF)
 courseRouter.get("/home/:categoryId", filterHomePage);
+courseRouter.post("/module-status",authMiddleware,authorizeRoles("student"),moduleMarkedAsCompleted)
 
 // instructor routes
 
