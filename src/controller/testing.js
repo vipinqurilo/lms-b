@@ -50,7 +50,7 @@ const loginUser = async (req, res) => {
 
     // Render the EJS template for login email
     const emailTemplate = await ejs.renderFile(
-      path.join(__dirname, "../emailTemplates/login.ejs"),
+      path.join(__dirname, "../view/login.ejs"),
       { name: email.split("@")[0] } // Extract username from email
     );
 
