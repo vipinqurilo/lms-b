@@ -15,9 +15,13 @@ exports.registerUser = async (req, res) => {
       password: data.password,
       role: data.role,
     };
-    const existingUserWithEmail=await UserModel.findOne({email:userObj.email});
-    if(existingUserWithEmail)
-      return res.status(400).json({status:"failed",message:"Email already registered"})
+    const existingUserWithEmail = await UserModel.findOne({
+      email: userObj.email,
+    });
+    if (existingUserWithEmail)
+      return res
+        .status(400)
+        .json({ status: "failed", message: "Email already registered" });
     // const existingUserWithPhone=await UserModel.findOne({phone:userObj.phone});
     // if(!existingUserWithPhone)
     //   return res.status(400).json({status:"failed",message:"Mobile already registered"})
@@ -65,13 +69,11 @@ exports.userLogin = async (req, res) => {
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
     if (!user) {
-      return res.json({
+      return res.status(404).json({
         status: "failed",
         message: "user not found",
       });
     }
-
-
     const match = isValidPassword(data.password, user.password);
 
     if (match) {
@@ -87,25 +89,25 @@ exports.userLogin = async (req, res) => {
       );
       return res.json({
         status: "success",
-   message: "Login successfully",
+        message: "Login successfully",
         data: {
           _id: user._id,
           email: user.email,
           role: user.role,
-          name:user.firstName+" "+user.lastName,
+          name: user.firstName + " " + user.lastName,
           userStatus: user.userStatus,
         },
         token: token,
       });
     } else {
-     return  res.status(400).json({
+      return res.status(400).json({
         status: "failed",
         message: "password is incorrect",
       });
     }
   } catch (error) {
     console.log(error);
-   return  res.status(500).json({
+    return res.status(500).json({
       status: "failed",
       message: "Something went wrong",
       error: error.message,
@@ -237,7 +239,7 @@ exports.validateToken = async (req, res) => {
   const { userStatus, role, email, firstName, lastName, _id } = user;
   const userData = {
     _id,
-    name: firstName +" "+lastName,
+    name: firstName + " " + lastName,
     userStatus,
     role,
     email,
