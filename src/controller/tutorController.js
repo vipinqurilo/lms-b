@@ -114,7 +114,7 @@ exports.getTutors = async (req, res) => {
             }
           ],
           as: "studentDetails"
-        }
+          }
       },
       { $match: query },
       {

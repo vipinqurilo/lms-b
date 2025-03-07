@@ -44,6 +44,8 @@ const UserSchema = new mongoose.Schema(
       ref: "Wallet",
     },
     earnings: { type: Number, default: 0 },
+    forgotPasswordToken: { type: String, default: "" },
+    forgotPasswordUsed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -1,4 +1,6 @@
 const express = require("express");
+const path = require("path");
+
 const cors = require("cors");
 const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
@@ -22,10 +24,24 @@ const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 const adminRoute = require("./src/route/adminRoute");
+
+const passwordRouter = require("./src/route/forgotPasswordRoutes");
+const routereeee = require("./src/route/testing");
+
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
 
+
 const app = express();
+
+// app.set("view engine", "ejs");
+
+// // // Define the correct views directory
+// app.set("views", path.join(__dirname, "src", "emailTemplates")); 
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "src", "view"));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
@@ -38,28 +54,39 @@ app.use((req, res, next) => {
   // console.log(req)
   next();
 });
-app.use("/public", express.static("public"));
+app.use(express.static("public"));
 
-app.use("/api/requests", requestRouter);
-app.use("/api/auth", authController);
-app.use("/api/course", courseRouter);
-app.use("/api/category", categoryRouter);
-app.use("/api/languages", languageRouter);
-app.use("/api/bookings", bookingRouter);
-app.use("/api/profile", profileRouter);
-app.use("/api/tutors", tutorRouter);
-app.use("/api/subcategory", subcategoryRouter);
-app.use("/api/whishlist", wishListRouter);
-app.use("/api/order", orderRouter);
-app.use("/api/review", reviewRoute);
-app.use("/api/tutorReview", tutorReviewRoute);
-app.use("/api/ticket", ticketRouter);
-app.use("/api/users", userRoutes);
-app.use("/api/wallet", walletRouter);
-app.use("/api/withdrawals", withdrawRouter);
-app.use("/api/students", studentRouter);
-app.use("/api/teachers", teacherRouter);
-app.use("/api/admin", adminRoute);
+app.use("/api/requests",requestRouter)
+app.use("/api/auth",authController);
+app.use("/api/course",courseRouter);
+app.use("/api/category",categoryRouter);
+app.use("/api/languages",languageRouter);
+app.use("/api/bookings",bookingRouter);
+app.use("/api/profile",profileRouter)
+app.use("/api/tutors",tutorRouter);
+app.use("/api/subcategory",subcategoryRouter);
+app.use("/api/whishlist",wishListRouter);
+app.use('/api/order',orderRouter)
+app.use('/api/review',reviewRoute)
+app.use('/api/tutorReview',tutorReviewRoute)
+app.use('/api/ticket',ticketRouter)
+app.use('/api/users',userRoutes)
+app.use('/api/stripe',stripeRoute)
+app.use('/api/wallet',walletRouter)
+app.use('/api/withdrawals',withdrawRouter)
+app.use('/api/students',studentRouter)
+app.use('/api/teachers',teacherRouter)
+app.use('/api/forgotpassword',passwordRouter)
+app.use("/api/email",  routereeee);
+ 
+
+
+app.get("/template", (req, res) => {
+  res.render("template");
+});
+app.get("/login", (req, res) => {
+  res.render("login");
+});app.use("/api/admin", adminRoute);
 
 //Payment Routes
 

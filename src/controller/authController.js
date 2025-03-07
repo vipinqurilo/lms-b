@@ -15,6 +15,12 @@ exports.registerUser = async (req, res) => {
       password: data.password,
       role: data.role,
     };
+    const existingUserWithEmail=await UserModel.findOne({email:userObj.email});
+    if(existingUserWithEmail)
+      return res.status(400).json({status:"failed",message:"Email already registered"})
+    // const existingUserWithPhone=await UserModel.findOne({phone:userObj.phone});
+    // if(!existingUserWithPhone)
+    //   return res.status(400).json({status:"failed",message:"Mobile already registered"})
     if (data.role == "teacher") {
       userObj.userStatus = "pending";
       newUser = await UserModel.create(userObj);
@@ -32,7 +38,7 @@ exports.registerUser = async (req, res) => {
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
     );
-    res.json({
+    res.status(201).json({
       status: "success",
       message: "User Registered successfully",
       data: {
@@ -45,7 +51,7 @@ exports.registerUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error, "error");
-    res.json({
+    res.status(500).json({
       status: "error",
       message: "something went wrong",
       error: error.message,
@@ -58,7 +64,6 @@ exports.userLogin = async (req, res) => {
     const data = req.body;
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
-
     if (!user) {
       return res.json({
         status: "failed",
@@ -66,11 +71,12 @@ exports.userLogin = async (req, res) => {
       });
     }
 
+
     const match = isValidPassword(data.password, user.password);
 
     if (match) {
       if (user.userStatus == "inactive") {
-        return res.json({
+        return res.status(401).json({
           status: "failed",
           message: "user is inactive",
         });
@@ -79,28 +85,73 @@ exports.userLogin = async (req, res) => {
         { email: user.email, role: user.role, id: user._id },
         process.env.JWT_SECRET
       );
-      res.json({
+      return res.json({
         status: "success",
-        message: "login successfully",
-        data: { 
+   message: "Login successfully",
+        data: {
           _id: user._id,
           email: user.email,
           role: user.role,
+          name:user.firstName+" "+user.lastName,
           userStatus: user.userStatus,
         },
         token: token,
       });
     } else {
-      res.json({
+     return  res.status(400).json({
         status: "failed",
         message: "password is incorrect",
       });
     }
   } catch (error) {
     console.log(error);
-    res.json({
+   return  res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+exports.generateLoginToken = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({
+        status: "failed",
+        message: "userId is required",
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+    }
+
+    const token = jwt.sign(
+      { email: user.email, role: user.role, id: user._id },
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      status: "success",
+      message: "token generated successfully",
+      data: {
+        _id: user._id,
+        email: user.email,
+        name: user.firstName + " " + user.lastName,
+        role: user.role,
+        userStatus: user.userStatus,
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "failed",
+      message: "Something went wrong",
       error: error.message,
     });
   }
@@ -186,7 +237,7 @@ exports.validateToken = async (req, res) => {
   const { userStatus, role, email, firstName, lastName, _id } = user;
   const userData = {
     _id,
-    name: firstName + lastName,
+    name: firstName +" "+lastName,
     userStatus,
     role,
     email,

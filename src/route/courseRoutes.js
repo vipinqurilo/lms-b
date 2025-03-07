@@ -24,7 +24,7 @@ const courseRouter = express.Router();
 
 const multer = require("multer");
 const { uploadPDF } = require("../upload/cloudinary");
-const uploadPdf = require("../middleware/upload");
+const uploadPdfMulter = require("../middleware/upload");
 const { getAdminDashboard } = require("../controller/adminController");
 const uploadMulter = multer();
 // courseRouter.post('/',authMiddleware,authorizeRoles("instructor"),upload.single("courseVideo"),addCourse)
@@ -48,7 +48,7 @@ courseRouter.post(
   uploadMulter.single("courseImage"),
   addSingleImage
 );
-courseRouter.post("/upload/pdf",uploadPdf.single("pdf"),uploadPDF)
+courseRouter.post("/upload/pdf",uploadPdfMulter.single("pdf"),uploadPDF)
 courseRouter.get("/home/:categoryId", filterHomePage);
 
 // instructor routes
