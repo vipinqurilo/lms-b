@@ -89,3 +89,27 @@ exports.getStudents = async (req, res) => {
         res.status(500).json({ error: "Failed to retrieve students", details: error.message });
     }
 };  
+
+
+
+exports.getDashboard = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const Courses = await StudentProfileModel.findById(userId);
+    const enrolledCourses = Courses.enrolledCourses.length;
+    
+
+
+    res.status(200).json({
+        status:"success",
+        message:"Dashboard data retrieved successfully"
+    })
+
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+    });
+  }
+};

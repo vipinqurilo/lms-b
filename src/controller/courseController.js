@@ -2,6 +2,8 @@ const CourseModel = require("../model/CourseModel");
 const path = require("path");
 const { uploadMediaToCloudinary } = require("../upload/cloudinary");
 const { default: mongoose } = require("mongoose");
+const ReviewModel = require("../model/reviewModel");
+const StudentProfileModel = require("../model/studentProfileModel");
 
 // Simplified function that returns a default duration
 const getVideoDuration = async (videoPath) => {
@@ -41,7 +43,7 @@ exports.addCourse = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      isDelete: false,
+      inActive: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -75,7 +77,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ inActive: false }, { courseVideo: 0 })
       .limit(6)
       // .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -100,11 +102,45 @@ exports.getCourse = async (req, res) => {
 exports.getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await CourseModel.findById(id).populate("courseInstructor");
+    const course = await CourseModel.findById(id).populate({
+      path: "courseInstructor",
+      select: "firstName lastName gender profilePhoto",
+      populate: {
+        path: "teacherProfile",
+        select:
+          "experience education subjectsTaught languagesSpoken tutionSlots ",
+      },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    const totalStudents = await StudentProfileModel.countDocuments({
+      "enrolledCourses.courseId": id,
+    });
+
+    const totalReviews = await ReviewModel.find({ course: id }).populate({
+      path: "student",
+      select: "firstName lastName profilePhoto gender",
+    });
+
+    const totalCourses = await CourseModel.countDocuments({
+      courseInstructor: course?.courseInstructor?._id,
+    });
+
     res.json({
       status: "success",
       message: "course fetched successfully",
-      data: course,
+      data: {
+        course,
+        totalStudents,
+        totalReviews,
+        totalCourses,
+      },
     });
   } catch (error) {
     res.json({
@@ -120,7 +156,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      isDelete: false,
+      inActive: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -146,7 +182,7 @@ exports.getCourseInstructor = async (req, res) => {
     const pageSize = parseInt(limit, 10) || 1;
     const skip = (pageNumber - 1) * pageSize;
 
-    let query = { courseInstructor: id, isDelete: false };
+    let query = { courseInstructor: id, inActive: false };
 
     if (status) {
       query.status = status;
@@ -402,7 +438,7 @@ exports.deleteCourse = async (req, res) => {
     const { id } = req.params;
     const updateStatus = await CourseModel.findByIdAndUpdate(
       id,
-      { isDelete: true },
+      { inActive: true },
       { new: true }
     );
     if (!updateStatus)
@@ -426,7 +462,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -449,7 +485,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -510,7 +546,7 @@ exports.moduleMarkedAsCompleted = async (req, res) => {
     course.courseContent[moduleIndex].isCompleted = true;
     await course.save();
 
-    res.json({
+    res.status(200).json({
       status: "success",
       message: "Module marked as completed",
     });

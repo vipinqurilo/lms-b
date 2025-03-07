@@ -5,7 +5,7 @@ const BookingModel = require("../model/bookingModel");
 const studentModel = require("../model/studentProfileModel");
 
 exports.getTutors = async (req, res) => {
-  try {
+  try {                         
 
     let { search, subjects, days, timeRanges, gender, minPrice, maxPrice, sortByRating } = req.query;
     
