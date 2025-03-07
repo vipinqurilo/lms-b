@@ -10,7 +10,7 @@ const router=require("express").Router();
 router.get("/",authMiddleware,getTeachers);
 
 //Teacher Requests
-router.post("/request",authorizeRoles("admin,teacher"),createTeacherRequest);
+router.post("/request",authMiddleware,authorizeRoles("admin,teacher"),createTeacherRequest);
 router.put("/request/:requestId",authorizeRoles("teacher"),editTeacherRequest);
 router.get("/request/:requestId",authorizeRoles("admin,teacher"),getTeacherRequestsById);
 router.put("/request/approve/:requestId",authorizeRoles("admin"),approvedTeacherRequest);

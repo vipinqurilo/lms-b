@@ -43,7 +43,6 @@ const CourseSchema = new mongoose.Schema(
             attachements: [{ name: { type: String }, url: { type: String } }],
           },
         ],
-        isCompleted: { type: Boolean, default: false },
       },
     ],
 

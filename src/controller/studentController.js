@@ -96,10 +96,10 @@ exports.getDashboard = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const Courses = await StudentProfileModel.findById(userId);
-    const enrolledCourses = Courses.enrolledCourses.length;
+    const student = await StudentProfileModel.findById(userId);
+    const enrolledCourses = student.enrolledCourses.length;
+    const tutionBookings = student.tutionBookings.length;
     
-
 
     res.status(200).json({
         status:"success",
