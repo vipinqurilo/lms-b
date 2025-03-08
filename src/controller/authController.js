@@ -8,27 +8,36 @@ exports.registerUser = async (req, res) => {
   try {
     let newUser;
     const data = req.body;
+
+    // Generate a unique username for all roles
+    const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    const userName = `${data.firstName.toLowerCase()}${randomNumber}`;
+
     const userObj = {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       password: data.password,
       role: data.role,
+      userName: userName, // Username assigned to all roles
     };
-    const existingUserWithEmail = await UserModel.findOne({
-      email: userObj.email,
-    });
-    if (existingUserWithEmail)
-      return res
-        .status(400)
-        .json({ status: "failed", message: "Email already registered" });
-    // const existingUserWithPhone=await UserModel.findOne({phone:userObj.phone});
-    // if(!existingUserWithPhone)
-    //   return res.status(400).json({status:"failed",message:"Mobile already registered"})
-    if (data.role == "teacher") {
-      userObj.userStatus = "pending";
+
+    console.log("User Object before saving:", userObj); // Debugging log
+
+    // Check if email already exists
+    const existingUserWithEmail = await UserModel.findOne({ email: userObj.email });
+    if (existingUserWithEmail) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Email already registered",
+      });
+    }
+
+    // Create user based on role
+    if (data.role === "teacher") {
+      userObj.userStatus = "pending"; // Teachers need approval
       newUser = await UserModel.create(userObj);
-    } else if (data.role == "student") {
+    } else if (data.role === "student") {
       newUser = await UserModel.create(userObj);
       const studentProfile = await StudentProfileModel.create({
         userId: newUser._id,
@@ -38,10 +47,14 @@ exports.registerUser = async (req, res) => {
     } else {
       newUser = await UserModel.create(userObj);
     }
+
+    console.log("User after saving:", newUser); // Debugging log
+
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
     );
+
     res.status(201).json({
       status: "success",
       message: "User Registered successfully",
@@ -49,15 +62,16 @@ exports.registerUser = async (req, res) => {
         _id: newUser._id,
         email: newUser.email,
         role: newUser.role,
+        userName: newUser.userName, // Ensure username is returned
         userStatus: newUser.userStatus,
       },
       token: token,
     });
   } catch (error) {
-    console.log(error, "error");
+    console.error("Error registering user:", error);
     res.status(500).json({
       status: "error",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }
