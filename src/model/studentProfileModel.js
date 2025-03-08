@@ -17,8 +17,8 @@ const studentProfileSchema = new mongoose.Schema(
         },
         completedModule: [{ type: String, required: true }],
         isCompleted: { type: Boolean, default: false },
-
-        // progress: { type: Number, default: 0, min: 0, max: 100 }, // Progress in percentage
+        progress: { type: Number, default: 0, min: 0, max: 100 }, // Progress in percentage
+        certificate:{}
       },
     ],
     tutionBookings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],

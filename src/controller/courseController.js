@@ -523,32 +523,57 @@ exports.adminDashboardCourses = async (req, res) => {
 
 exports.moduleMarkedAsCompleted = async (req, res) => {
   try {
+    const userId = "67cacafdae7082ff45edfb2a";
     const { courseId, moduleId } = req.body;
+
+    // Find the course to check if it exists
     const course = await CourseModel.findById(courseId);
     if (!course) {
-      return res.status(404).json({
-        status: "failed",
-        message: "Course not found",
-      });
+      return res
+        .status(404)
+        .json({ status: "failed", message: "Course not found" });
     }
 
-    const moduleIndex = course.courseContent.findIndex(
-      (module) => module._id.toString() === moduleId
+    // Find the student profile and update the enrolledCourses array
+    const studentProfile = await StudentProfileModel.findOne({ userId });
+
+    if (!studentProfile) {
+      return res
+        .status(404)
+        .json({ status: "failed", message: "Student profile not found" });
+    }
+
+    const enrolledCourse = studentProfile.enrolledCourses.find(
+      (course) => course.courseId.toString() === courseId
     );
 
-    if (moduleIndex === -1) {
-      return res.status(404).json({
+    if (!enrolledCourse) {
+      return res.status(400).json({
         status: "failed",
-        message: "Module not found",
+        message: "Student is not enrolled in this course",
       });
     }
 
-    course.courseContent[moduleIndex].isCompleted = true;
-    await course.save();
+    if (!enrolledCourse.completedModule.includes(moduleId)) {
+      enrolledCourse.completedModule.push(moduleId);
+    }
+
+    const totalModules = course.courseContent.length;
+    enrolledCourse.progress = Math.round(
+      (enrolledCourse.completedModule.length / totalModules) * 100
+    );
+
+    enrolledCourse.isCompleted = enrolledCourse.progress === 100;
+
+    await studentProfile.save();
 
     res.status(200).json({
       status: "success",
-      message: "Module marked as completed",
+      message: `${
+        enrolledCourse.progress === 100 ? "Course" : "Module"
+      } marked as completed`,
+      progress: enrolledCourse.progress,
+      isCompleted: enrolledCourse.isCompleted,
     });
   } catch (error) {
     console.error("Error marking module as completed:", error);

@@ -130,7 +130,7 @@ const getEnrolledCourseIds = async (req, res) => {
     const userId = req.user.id;
 
     const studentProfile = await StudentProfileModel.findOne({ userId }).select(
-      "enrolledCourses.courseId"
+      "enrolledCourses"
     );
 
     if (!studentProfile) {
