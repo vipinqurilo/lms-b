@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Success</title>
-  </head>
+  </head>   
   <body style="box-sizing: border-box; width: 100%; background-color: #f5f5f6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
     <div class="container" style="background-color: #f5f5f6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
       <div class="card" style="padding-top: 24px; background-color: #ffffff; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
@@ -17,7 +17,6 @@
             style="max-width: 100%; height: auto; width: 96px; margin: 0 auto 16px;"
           />
         </div>
-
         <!-- Welcome Message -->
         <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1f2937;"><%= title %></h2>
         <div class="divider" style="border-bottom: 2px solid #d1d5db; width: 80%; margin: 12px auto;"></div>
@@ -36,22 +35,93 @@
           <div class="content" style="width: 100%;">
             <div style="width: 85%;  margin: 16px auto;"> 
               <% if (title === "Booking Confirmation") { %>
-                <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
-                  Your booking has been successfully confirmed with <%= teacherName %>. Here are your session details:
-                </p>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your booking has been successfully confirmed with <%= teacherName %>. Here are your session details:
+                  </p>
                 <% } else { %>
-                <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    A new session has been confirmed with <%= studentName %>. Here are your session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Cancellation") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= cancelledBy === "student" ? "You have" : teacherName + " has" %> cancelled the booking. Here are the cancelled session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= cancelledBy === "teacher" ? "You have" : studentName + " has" %> cancelled the booking. Here are the cancelled session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Scheduled") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your booking request has been scheduled with <%= teacherName %>. Here are your session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= studentName %> has requested to book a session with you. Here are the session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Reschedule Request") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === 'student' ? 'You have' : `${teacherName} has` %> requested to reschedule your session. Here are the current session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === 'teacher' ? 'You have' : `${studentName} has` %> requested to reschedule the session. Here are the current session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Reschedule Rejection") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === "student" ? "Your reschedule request has been rejected by " + teacherName : teacherName + " has cancelled their reschedule request" %>. Here are the session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === "teacher" ? "Your reschedule request has been rejected by " + studentName : "You have rejected " + studentName + "'s reschedule request" %>. Here are the session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Reschedule Confirmation") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your session with <%= teacherName %> has been successfully rescheduled. Here are your updated session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your session with <%= studentName %> has been successfully rescheduled. Here are your updated session details:
+                  </p>
+                <% } %>
+              <% } else { %>
+                <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                 <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                   A new booking has been scheduled with <%= studentName %>. Here are your session details:
                 </p>
-                <% } %>
+              <% } %>
             </div>
 
             <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Session Details</h3>
             <ul class="list session-details" style="font-size: 14px; color: #4b5563; text-align: left; padding: 0; margin: 24px auto; max-width: 90%; width: 90%; display: table; border-spacing: 0 8px;">
               <li style="display: table-row;">
+                <% if (recipientEmail === studentEmail) { %>
                 <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Teacher:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= teacherName %></span>
+                <% } else { %>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Student:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= studentName %></span>
+                <% } %>
               </li>
               <li style="display: table-row;">
                 <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Date:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= bookingDate %></span>
@@ -65,14 +135,14 @@
             </ul>
 
             <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
-            <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4b5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
+            <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #000000; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
+              <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepOne %></span>
+                <span style="color: #000000;"><%= nextStepOne %></span>
               </li>
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
+              <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepTwo %></span>
+                <span style="color: #000000;"><%= nextStepTwo %></span>
               </li>
             </ul>
             <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
@@ -142,7 +212,6 @@
             </div>
           </div>
         </div>
-        
         <table role="presentation" width="100%" style=" border-top: 2px solid #dfdfdf; color: #808080; font-size: small; border-collapse: collapse;">
           <tr style="border-bottom: 2px solid #dfdfdf;">
             <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
@@ -153,7 +222,6 @@
             </td>
           </tr>
         </table>
-        
       </div>
     </div>
   </body>
