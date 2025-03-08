@@ -83,18 +83,19 @@ const loginUser = async (req, res) => {
 
 const handleCourseRequest = async (req, res) => {
   try {
-    const { email, courseName, status, reason } = req.body;
+    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,publishDate ,startTime ,endTime} = req.body;
 
-    if (!email || !courseName || !status) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields" });
-    }
+    console.log(email)
+    // if (!email || !courseName || !status || !teacherName || !title || !nextStepOne || !nextStepTwo) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Missing required fields" });
+    // }
 
     // Render the EJS template
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/coursePublish.ejs"),
-      { courseName, reason, status }
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,publishDate ,startTime ,endTime}
     );
 
     // Configure Nodemailer transporter
@@ -132,18 +133,18 @@ const handleCourseRequest = async (req, res) => {
 
 const sendMoney = async (req, res) => {
     try {
-      const { teacherEmail, teacherName, amount } = req.body;
+      const {  teacherEmail, courseName, teacherName, status,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address} = req.body;
   
-      if (!teacherEmail || !teacherName || !amount) {
-        return res
-          .status(400)
-          .json({ success: false, message: "All fields are required" });
-      }
+      // if (!teacherEmail || !teacherName || !amount) {
+      //   return res
+      //     .status(400)
+      //     .json({ success: false, message: "All fields are required" });
+      // }
   
       // Render the EJS template for payment settlement email
       const emailTemplate = await ejs.renderFile(
         path.join(__dirname, "../emailTemplates/settlement.ejs"),
-        { teacherName, amount }
+        { teacherEmail, courseName, teacherName, status, studentName,  title ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime}
       );
   
       // Configure Nodemailer transporter
@@ -166,7 +167,7 @@ const sendMoney = async (req, res) => {
   
       return res
         .status(200)
-        .json({ success: true, message: `₹${amount} sent successfully to ${teacherEmail}` });
+        .json({ success: true, message: ` sent successfully to ${teacherEmail}` });
     } catch (error) {
       console.error("Error during payment settlement:", error);
       res.status(500).json({ success: false, message: "Server error" });
