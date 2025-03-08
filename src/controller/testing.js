@@ -299,11 +299,10 @@ const sendBookingConfirmation = async (req, res) => {
   }
 };
 
-// Add to module.exports
 module.exports = {
   sendEmail,
   loginUser,
   handleCourseRequest,
   sendMoney,
-  sendBookingConfirmation, // Add this line
+  sendBookingConfirmation, 
 };

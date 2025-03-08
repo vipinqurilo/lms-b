@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Success</title>
-  </head>
-  <body style="box-sizing: border-box; width: 100%; background-color: #F5F5F6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
-    <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
-      <div class="card" style="padding-top: 24px; background-color: #FFFFFF; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
+  </head>   
+  <body style="box-sizing: border-box; width: 100%; background-color: #f5f5f6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
+    <div class="container" style="background-color: #f5f5f6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
+      <div class="card" style="padding-top: 24px; background-color: #ffffff; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
         <!-- Logo -->
         <div>
           <img
@@ -18,11 +18,12 @@
           />
         </div>
         <!-- Welcome Message -->
-        <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;"><%= title %></h2>
-        <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
+        <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1f2937;"><%= title %></h2>
+        <div class="divider" style="border-bottom: 2px solid #d1d5db; width: 80%; margin: 12px auto;"></div>
         <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
           <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
-            <div class="" style="width: 100%; background-color: #FFFFFF; position: absolute;  "></div>
+            <div class="" style="width: 100%; background-color: #ffffff; position: absolute;  "></div>
+            
             <img
               src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
               alt="Course Image"
@@ -30,44 +31,118 @@
               style="max-width: 100%; height: auto; width: 100%;"
             />
           </div>
+
           <div class="content" style="width: 100%;">
-            <div style="width: 85%;  margin: 16px auto;">
+            <div style="width: 85%;  margin: 16px auto;"> 
               <% if (title === "Booking Confirmation") { %>
-                <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  Your booking has been successfully confirmed with <%= teacherName %>. Here are your session details:
-                </p>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your booking has been successfully confirmed with <%= teacherName %>. Here are your session details:
+                  </p>
                 <% } else { %>
-                <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    A new session has been confirmed with <%= studentName %>. Here are your session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Cancellation") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= cancelledBy === "student" ? "You have" : teacherName + " has" %> cancelled the booking. Here are the cancelled session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= cancelledBy === "teacher" ? "You have" : studentName + " has" %> cancelled the booking. Here are the cancelled session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Scheduled") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your booking request has been scheduled with <%= teacherName %>. Here are your session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= studentName %> has requested to book a session with you. Here are the session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Reschedule Request") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === 'student' ? 'You have' : `${teacherName} has` %> requested to reschedule your session. Here are the current session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === 'teacher' ? 'You have' : `${studentName} has` %> requested to reschedule the session. Here are the current session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Reschedule Rejection") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === "student" ? "Your reschedule request has been rejected by " + teacherName : teacherName + " has cancelled their reschedule request" %>. Here are the session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    <%= requestedBy === "teacher" ? "Your reschedule request has been rejected by " + studentName : "You have rejected " + studentName + "'s reschedule request" %>. Here are the session details:
+                  </p>
+                <% } %>
+              <% } else if (title === "Booking Reschedule Confirmation") { %>
+                <% if (recipientEmail === studentEmail) { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your session with <%= teacherName %> has been successfully rescheduled. Here are your updated session details:
+                  </p>
+                <% } else { %>
+                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
+                    Your session with <%= studentName %> has been successfully rescheduled. Here are your updated session details:
+                  </p>
+                <% } %>
+              <% } else { %>
+                <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                   A new booking has been scheduled with <%= studentName %>. Here are your session details:
                 </p>
-                <% } %>
+              <% } %>
             </div>
+
             <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Session Details</h3>
-            <ul class="list session-details" style="font-size: 14px; color: #4B5563; text-align: left; padding: 0; margin: 24px auto; max-width: 90%; width: 90%; display: table; border-spacing: 0 8px;">
+            <ul class="list session-details" style="font-size: 14px; color: #4b5563; text-align: left; padding: 0; margin: 24px auto; max-width: 90%; width: 90%; display: table; border-spacing: 0 8px;">
               <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Teacher:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= teacherName %></span>
+                <% if (recipientEmail === studentEmail) { %>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Teacher:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= teacherName %></span>
+                <% } else { %>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Student:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= studentName %></span>
+                <% } %>
               </li>
               <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Date:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= bookingDate %></span>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Date:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= bookingDate %></span>
               </li>
               <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Time:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= startTime %> - <%= endTime %></span>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Time:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= startTime %> - <%= endTime %></span>
               </li>
               <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= courseName %></span>
+                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Course:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= courseName %></span>
               </li>
             </ul>
+
             <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
-            <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
+            <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #000000; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
+              <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepOne %></span>
+                <span style="color: #000000;"><%= nextStepOne %></span>
               </li>
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
+              <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepTwo %></span>
+                <span style="color: #000000;"><%= nextStepTwo %></span>
               </li>
             </ul>
             <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
@@ -82,13 +157,13 @@
                 }
               </style>
               <!--<![endif]-->
-              <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
+              <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #ffffff; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
                 <%= buttonText %>
               </button>
             </div>
           </div>
         </div>
-        <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4B5563; border-top: 2px solid #DFDFDF; font-size: 14px;">
+        <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4b5563; border-top: 2px solid #dfdfdf; font-size: 14px;">
           <img
             src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
             alt="STEAM Institute"
@@ -99,7 +174,7 @@
             <div style="text-align: center; margin-right: 16px;">
               <div>Copyright &copy; <%= year %></div>
             </div>
-            <div >
+            <div > 
               <% [
               {
                 type: "Email",
@@ -133,11 +208,12 @@
                   />
                 </a>
               <% }); %>
+           
             </div>
           </div>
         </div>
-        <table role="presentation" width="100%" style=" border-top: 2px solid #DFDFDF; color: #808080; font-size: small; border-collapse: collapse;">
-          <tr style="border-bottom: 2px solid #DFDFDF;">
+        <table role="presentation" width="100%" style=" border-top: 2px solid #dfdfdf; color: #808080; font-size: small; border-collapse: collapse;">
+          <tr style="border-bottom: 2px solid #dfdfdf;">
             <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
             <td align="right" style="padding: 10px 24px;">
               <a href="http://www.steaminstitute.online/" style="text-decoration: none; color: #808080;">
