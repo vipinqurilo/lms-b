@@ -9,7 +9,6 @@ exports.registerUser = async (req, res) => {
     let newUser;
     const data = req.body;
 
-    // Generate a unique username for all roles
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const userName = `${data.firstName.toLowerCase()}${randomNumber}`;
 
@@ -19,10 +18,9 @@ exports.registerUser = async (req, res) => {
       email: data.email,
       password: data.password,
       role: data.role,
-      userName: userName, // Username assigned to all roles
-    };
+      userName: userName,
 
-    console.log("User Object before saving:", userObj); // Debugging log
+
 
     // Check if email already exists
     const existingUserWithEmail = await UserModel.findOne({ email: userObj.email });
@@ -48,7 +46,7 @@ exports.registerUser = async (req, res) => {
       newUser = await UserModel.create(userObj);
     }
 
-    console.log("User after saving:", newUser); // Debugging log
+ 
 
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
@@ -62,7 +60,7 @@ exports.registerUser = async (req, res) => {
         _id: newUser._id,
         email: newUser.email,
         role: newUser.role,
-        userName: newUser.userName, // Ensure username is returned
+        userName: newUser.userName, 
         userStatus: newUser.userStatus,
       },
       token: token,
