@@ -9,6 +9,7 @@ exports.registerUser = async (req, res) => {
     let newUser;
     const data = req.body;
 
+    // Generate a unique username for all roles
     const randomNumber = Math.floor(1000 + Math.random() * 9000);
     const userName = `${data.firstName.toLowerCase()}${randomNumber}`;
 
@@ -19,11 +20,12 @@ exports.registerUser = async (req, res) => {
       password: data.password,
       role: data.role,
       userName: userName,
-
-
+    };
 
     // Check if email already exists
-    const existingUserWithEmail = await UserModel.findOne({ email: userObj.email });
+    const existingUserWithEmail = await UserModel.findOne({
+      email: userObj.email,
+    });
     if (existingUserWithEmail) {
       return res.status(400).json({
         status: "failed",
@@ -33,7 +35,7 @@ exports.registerUser = async (req, res) => {
 
     // Create user based on role
     if (data.role === "teacher") {
-      userObj.userStatus = "pending"; // Teachers need approval
+      userObj.userStatus = "pending";
       newUser = await UserModel.create(userObj);
     } else if (data.role === "student") {
       newUser = await UserModel.create(userObj);
@@ -45,8 +47,6 @@ exports.registerUser = async (req, res) => {
     } else {
       newUser = await UserModel.create(userObj);
     }
-
- 
 
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
@@ -60,7 +60,7 @@ exports.registerUser = async (req, res) => {
         _id: newUser._id,
         email: newUser.email,
         role: newUser.role,
-        userName: newUser.userName, 
+        userName: newUser.userName,
         userStatus: newUser.userStatus,
       },
       token: token,
