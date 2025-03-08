@@ -56,7 +56,7 @@ const loginUser = async (req, res) => {
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: "gmail", 
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -130,9 +130,6 @@ const handleCourseRequest = async (req, res) => {
   }
 };
 
-
-
-
 const sendMoney = async (req, res) => {
     try {
       const { teacherEmail, teacherName, amount } = req.body;
@@ -174,13 +171,139 @@ const sendMoney = async (req, res) => {
       console.error("Error during payment settlement:", error);
       res.status(500).json({ success: false, message: "Server error" });
     }
-  };
+};
 
+const sendBookingConfirmation = async (req, res) => {
+  try {
+    const {
+      studentEmail,
+      studentName,
+      teacherName,
+      teacherEmail,
+      bookingDate,
+      startTime,
+      endTime,
+      courseName,
+      logoUrl,
+      courseImage
+    } = req.body;
 
-  
+    console.log('Received email request for student:', studentEmail, 'and teacher:', teacherEmail);
+
+    // Validate required fields
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    // Configure Nodemailer transporter
+    console.log('Configuring email transporter...');
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // 1. Send email to Student
+    console.log('Attempting to render student email template...');
+    const studentEmailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../view/template.ejs"),
+      {
+        logoUrl: logoUrl || "https://your-default-logo-url.com",
+        title: "Booking Confirmation",
+        courseImage: courseImage || "https://your-default-course-image.com",
+        studentName,
+        teacherName,
+        bookingDate,
+        startTime,
+        endTime,
+        courseName,
+        nextStepOne: "Prepare any necessary materials for your session",
+        nextStepTwo: "Check your email for the meeting link before the session",
+        buttonText: "View Booking Details",
+        address: "123 Education Street, Learning City, 12345",
+        year: new Date().getFullYear(),
+        socialIcons: [ 
+          { url: "https://example.com/facebook.png", alt: "Facebook" },
+          { url: "https://example.com/twitter.png", alt: "Twitter" },
+          { url: "https://example.com/instagram.png", alt: "Instagram" }
+        ]
+      }
+    );
+    console.log('Student email template rendered successfully');
+
+    const studentMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: studentEmail,
+      subject: "Booking Confirmation - Your Session is Confirmed!",
+      html: studentEmailTemplate,
+    };
+
+    console.log('Attempting to send email to student...');
+    await transporter.sendMail(studentMailOptions);
+    console.log('Email sent successfully to student');
+
+    // 2. Send email to Teacher
+    console.log('Attempting to render teacher email template...');
+    const teacherEmailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../view/template.ejs"),
+      {
+        logoUrl: logoUrl || "https://your-default-logo-url.com",
+        title: "New Booking Notification",
+        courseImage: courseImage || "https://your-default-course-image.com",
+        studentName,
+        teacherName,
+        bookingDate,
+        startTime,
+        endTime,
+        courseName,
+        nextStepOne: "Prepare your session materials and resources",
+        nextStepTwo: "Send the meeting link to the student before the session",
+        buttonText: "View Booking Details",
+        address: "123 Education Street, Learning City, 12345",
+        year: new Date().getFullYear(),
+        socialIcons: [
+          { url: "https://example.com/facebook.png", alt: "Facebook" },
+          { url: "https://example.com/twitter.png", alt: "Twitter" },
+          { url: "https://example.com/instagram.png", alt: "Instagram" }
+        ]
+      }
+    );
+    console.log('Teacher email template rendered successfully');
+
+    const teacherMailOptions = {
+      from: process.env.EMAIL_USER,
+      to: teacherEmail,
+      subject: "New Booking Alert - Session Scheduled!",
+      html: teacherEmailTemplate,
+    };
+
+    console.log('Attempting to send email to teacher...');
+    await transporter.sendMail(teacherMailOptions);
+    console.log('Email sent successfully to teacher');
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking confirmation emails sent successfully to both student and teacher"
+    });
+  } catch (error) {
+    console.error("Error sending booking confirmation:", error);
+    // More detailed error logging
+    if (error.code === 'ENOENT') {
+      console.error('Template file not found');
+    } else if (error.code === 'EAUTH') {
+      console.error('Email authentication failed');
+    }
+    res.status(500).json({ success: false, message: "Failed to send booking confirmation" });
+  }
+};
+
+// Add to module.exports
 module.exports = {
   sendEmail,
   loginUser,
   handleCourseRequest,
   sendMoney,
+  sendBookingConfirmation, // Add this line
 };

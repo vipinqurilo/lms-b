@@ -38,6 +38,7 @@ const app = express();
 // // // Define the correct views directory
 // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
 
+
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
 
@@ -77,11 +78,27 @@ app.use('/api/students',studentRouter)
 app.use('/api/teachers',teacherRouter)
 app.use('/api/forgotpassword',passwordRouter)
 app.use("/api/email",  routereeee);
- 
-
 
 app.get("/template", (req, res) => {
-  res.render("template");
+  const templateData = {
+    logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
+    title: "Booking Confirmation",
+    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    studentName: "Diana",
+    teacherName: "John Doe",
+    bookingDate: "Monday, January 15, 2024",
+    startTime: "10:00 AM",
+    endTime: "11:00 AM",
+    courseName: "Introduction to Mathematics",
+    nextStepOne: "You will receive a meeting link 15 minutes before the session.",
+    nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
+    buttonText: "View Booking Details",
+    address: "Address - 65 Rz- London, United Kingdom Nd-",
+    year: new Date().getFullYear(),
+    
+  };
+
+  res.render("template", templateData);
 });
 app.get("/login", (req, res) => {
   res.render("login");
