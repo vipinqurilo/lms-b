@@ -240,7 +240,20 @@ const generateCertificate = async (req, res) => {
             // Delete the local file after successful upload
             fs.unlinkSync(pdfPath);
 
-            res.json({
+          //  update the certificate URL in the database
+            await StudentProfileModel.findOneAndUpdate(
+              { userId, "enrolledCourses.courseId": courseId },
+              {
+                $set: {
+                  "enrolledCourses.$.certificate.certificateUrl":
+                    result.secure_url,
+                },
+              },
+              { new: true } // Return updated document
+            );
+
+            res.status(200).json({
+              stat7s: "success",
               message: "Certificate generated",
               pdfUrl: result.secure_url,
             });
