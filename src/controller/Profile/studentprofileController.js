@@ -186,7 +186,7 @@ const generateCertificate = async (req, res) => {
     const studentData = {
       studentName: enrolledCourse.certificate.studentName,
       courseTitle: enrolledCourse.certificate.courseTitle,
-      completionDate: enrolledCourse.certificate.completionDate,
+      completionDate: enrolledCourse.certificate.completionDate.split("T")[0],
       instructorName: enrolledCourse.certificate.instructorName,
     };
 
@@ -230,7 +230,7 @@ const generateCertificate = async (req, res) => {
           fileStr,
           {
             resource_type: "raw",
-            folder: "luxe",
+            folder: "certificates",
           },
           async (error, result) => {
             if (error) {
@@ -249,11 +249,11 @@ const generateCertificate = async (req, res) => {
                     result.secure_url,
                 },
               },
-              { new: true } // Return updated document
+              { new: true } 
             );
 
             res.status(200).json({
-              stat7s: "success",
+              status: "success",
               message: "Certificate generated",
               pdfUrl: result.secure_url,
             });
