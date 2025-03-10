@@ -7,6 +7,7 @@ const bookingModel = require("../model/bookingModel");
 const paymentModel = require("../model/paymentModel");
 const UserModel = require("../model/UserModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const emailService = require("../services/emailService");
 exports.createBooking = async (req, res) => {
   try {
         const { sessionId } = req.body;
@@ -72,6 +73,29 @@ exports.createBooking = async (req, res) => {
       await studentProfile?.save();
       teacherProfile?.tutionBookings.push(newBooking._id);
       await teacherProfile?.save();
+      
+      // Get student and teacher details for email
+      const student = await UserModel.findById(studentId);
+      const teacher = await UserModel.findById(teacherId);
+      
+      // Send booking confirmation emails
+      try {
+        await emailService.sendBookingConfirmation({
+          studentEmail: student.email,
+          studentName: student.firstName + ' ' + student.lastName,
+          teacherName: teacher.firstName + ' ' + teacher.lastName,
+          teacherEmail: teacher.email,
+          bookingDate: session.metadata.sessionDate,
+          startTime: session.metadata.sessionStartTime,
+          endTime: session.metadata.sessionEndTime,
+          courseName: "Subject English Lesson of 30 Minutes"
+        });
+        console.log("Booking confirmation emails sent successfully");
+      } catch (emailError) {
+        console.error("Error sending booking confirmation emails:", emailError);
+        // Continue with the response even if email sending fails
+      }
+      
       res.json({
         success: true,
         message: "Booking created successfully",
@@ -493,7 +517,10 @@ exports.cancelBooking = async (req, res) => {
     if (booking.status === "cancelled") {
       return res
         .status(400)
-        .json({ succes: false, message: "Booking is already cancelled" });
+        .json({
+          succes: false,
+          message: "Booking is already cancelled",
+        });
     }
 
     const currentTime = new Date();
@@ -535,6 +562,30 @@ exports.cancelBooking = async (req, res) => {
       await paymentModel.findByIdAndUpdate(booking.paymentId, {
         status: "Refunded",
       });
+    }
+
+    // Get student and teacher details for email
+    const student = await UserModel.findById(booking.studentId);
+    const teacher = await UserModel.findById(booking.teacherId);
+    
+    // Send booking cancellation emails
+    try {
+      await emailService.sendBookingCancellation({
+        studentEmail: student.email,
+        studentName: student.firstName + ' ' + student.lastName,
+        teacherName: teacher.firstName + ' ' + teacher.lastName,
+        teacherEmail: teacher.email,
+        bookingDate: booking.sessionDate,
+        startTime: booking.sessionStartTime,
+        endTime: booking.sessionEndTime,
+        courseName: "Subject English Lesson of 30 Minutes",
+        cancelledBy: req.user.role, // 'student' or 'teacher'
+        cancellationReason
+      });
+      console.log("Booking cancellation emails sent successfully");
+    } catch (emailError) {
+      console.error("Error sending booking cancellation emails:", emailError);
+      // Continue with the response even if email sending fails
     }
 
     res.status(200).json({
@@ -591,13 +642,52 @@ exports.rescheduleRequestBooking = async (req, res) => {
 
     await booking.save();
 
+    // Get student and teacher details for email
+    const student = await UserModel.findById(booking.studentId);
+    const teacher = await UserModel.findById(booking.teacherId);
+    
+    // Parse the new time to get date and time components
+    const newTimeObj = new Date(newTime);
+    const newBookingDate = moment(newTimeObj).format('YYYY-MM-DD');
+    const newStartTime = moment(newTimeObj).format('HH:mm');
+    
+    // Calculate end time (assuming same duration as original booking)
+    const originalStartTime = new Date(booking.sessionStartTime);
+    const originalEndTime = new Date(booking.sessionEndTime);
+    const durationMs = originalEndTime - originalStartTime;
+    const newEndTimeObj = new Date(newTimeObj.getTime() + durationMs);
+    const newEndTime = moment(newEndTimeObj).format('HH:mm');
+    
+    // Send reschedule request emails
+    try {
+      await emailService.sendRescheduleRequest({
+        studentEmail: student.email,
+        studentName: student.firstName + ' ' + student.lastName,
+        teacherName: teacher.firstName + ' ' + teacher.lastName,
+        teacherEmail: teacher.email,
+        bookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
+        startTime: moment(booking.sessionStartTime).format('HH:mm'),
+        endTime: moment(booking.sessionEndTime).format('HH:mm'),
+        courseName: "Subject English Lesson of 30 Minutes",
+        newBookingDate,
+        newStartTime,
+        newEndTime,
+        rescheduleReason: reason,
+        requestedBy: 'teacher' // Since only teachers can request reschedule in this function
+      });
+      console.log("Reschedule request emails sent successfully");
+    } catch (emailError) {
+      console.error("Error sending reschedule request emails:", emailError);
+      // Continue with the response even if email sending fails
+    }
+
     res.json({
       success: true,
       message: "Reschedule request sent to student",
       data: booking,
     });
 
-    // ✅ Notify the student (Use WebSocket, Email, or Push Notification)
+    // Notify the student (Use WebSocket, Email, or Push Notification)
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -643,13 +733,74 @@ exports.rescheduleResponseBooking = async (req, res) => {
 
     await booking.save();
 
+    // Get student and teacher details for email
+    const student = await UserModel.findById(booking.studentId);
+    const teacher = await UserModel.findById(booking.teacherId);
+    
+    // Parse the new time to get date and time components
+    const newTimeObj = new Date(booking.rescheduleRequest.newTime);
+    const newBookingDate = moment(newTimeObj).format('YYYY-MM-DD');
+    const newStartTime = moment(newTimeObj).format('HH:mm');
+    
+    // Calculate end time (assuming same duration as original booking)
+    const originalStartTime = new Date(booking.sessionStartTime);
+    const originalEndTime = new Date(booking.sessionEndTime);
+    const durationMs = originalEndTime - originalStartTime;
+    const newEndTimeObj = new Date(newTimeObj.getTime() + durationMs);
+    const newEndTime = moment(newEndTimeObj).format('HH:mm');
+    
+    // Send appropriate emails based on the action
+    try {
+      if (action === "accept") {
+        // Send reschedule confirmation emails
+        await emailService.sendRescheduleConfirmation({
+          studentEmail: student.email,
+          studentName: student.firstName + ' ' + student.lastName,
+          teacherName: teacher.firstName + ' ' + teacher.lastName,
+          teacherEmail: teacher.email,
+          oldBookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
+          oldStartTime: moment(booking.sessionStartTime).format('HH:mm'),
+          oldEndTime: moment(booking.sessionEndTime).format('HH:mm'),
+          newBookingDate,
+          newStartTime,
+          newEndTime,
+          courseName: "Subject English Lesson of 30 Minutes",
+          rescheduleReason: booking.rescheduleRequest.reason,
+          requestedBy: 'teacher' // Since only teachers can request reschedule in this system
+        });
+        console.log("Reschedule confirmation emails sent successfully");
+      } else {
+        // Send reschedule rejection emails
+        await emailService.sendRescheduleRejection({
+          studentEmail: student.email,
+          studentName: student.firstName + ' ' + student.lastName,
+          teacherName: teacher.firstName + ' ' + teacher.lastName,
+          teacherEmail: teacher.email,
+          bookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
+          startTime: moment(booking.sessionStartTime).format('HH:mm'),
+          endTime: moment(booking.sessionEndTime).format('HH:mm'),
+          newBookingDate,
+          newStartTime,
+          newEndTime,
+          courseName: "Subject English Lesson of 30 Minutes",
+          rescheduleReason: booking.rescheduleRequest.reason,
+          rejectionReason: req.body.rejectionReason || "No reason provided",
+          requestedBy: 'teacher' // Since only teachers can request reschedule in this system
+        });
+        console.log("Reschedule rejection emails sent successfully");
+      }
+    } catch (emailError) {
+      console.error(`Error sending ${action === "accept" ? "confirmation" : "rejection"} emails:`, emailError);
+      // Continue with the response even if email sending fails
+    }
+
     res.json({
       success: true,
       message: `Reschedule request ${action}ed successfully`,
       data: booking,
     });
 
-    // ✅ Notify the teacher about the decision (WebSocket, Email, etc.)
+    // Notify the teacher about the decision (WebSocket, Email, etc.)
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
