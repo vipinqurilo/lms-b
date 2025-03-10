@@ -40,7 +40,7 @@
                 style="max-width: 100%; height: auto; width: 100%;"
               />
             </div>
-            <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 1px; text-align: center;">Course : <%= courseName %> </h3>
+           
             <div class="content" style="width: 100%; margin-top: 50px;">
               <div style="width: 85%;  margin: 16px auto;">
                 <% if (title === "Congratulations !") { %>
@@ -62,11 +62,12 @@
                   <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Name :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= courseName %></span>
                 </li>
                 <li style="display: table-row;">
-                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Publish Date :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= publishDate %></span>
+                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Category :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= startTime %>  </span>
                 </li>
                 <li style="display: table-row;">
-                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Duration :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= startTime %> - <%= endTime %></span>
+                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Publish Date :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= publishDate %></span>
                 </li>
+               
               </ul>
   
               <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
@@ -185,11 +186,11 @@
                 style="max-width: 100%; height: auto; width: 100%;"
               />
             </div>
-            <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 1px; text-align: center;">Course : <%= courseName %> </h3>
+            
             <div class="content" style="width: 100%;">
               <div style="width: 85%;  margin: 16px auto;">
                 <% if (title === "Unfortunately !") { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
                     Your course has been rejected due to not meeting our quality standards or platform guidelines. Please review our requirements and consider making the necessary improvements before resubmitting.
                   </p>

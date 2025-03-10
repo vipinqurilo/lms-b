@@ -2,18 +2,21 @@ const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const path = require("path");
 require("dotenv").config();
+ 
 
-const sendEmail = async (req, res) => {
+
+
+const signup = async (req, res) => {
   try {
-    const { to, subject, name, message } = req.body;
+    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
 
-    // Render the EJS template
+    
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/signup.ejs"),
-      { name, message }
+      { teacherEmail, courseName, teacherName, status, studentName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
     );
 
-    // Configure Nodemailer transporter
+    // Configure Nodemailer transportera
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -24,23 +27,29 @@ const sendEmail = async (req, res) => {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to,
-      subject,
+      to: teacherEmail,
+      subject: "Singup Confirmation",
       html: emailTemplate,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ success: true, message: "Email sent successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: ` sent successfully to ${teacherEmail}` });
   } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ success: false, message: "Failed to send email" });
+    console.error("Error during payment settlement:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-const loginUser = async (req, res) => {
+
+
+
+
+const signupUser = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email ,title ,studentName, nextStepTwo,  nextStepOne ,buttonText, address ,year ,teacherName } = req.body;
 
     if (!email) {
       return res
@@ -51,7 +60,7 @@ const loginUser = async (req, res) => {
     // Render the EJS template for login email
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../view/login.ejs"),
-      { name: email.split("@")[0] } // Extract username from email
+      { name: email.split("@")[0] ,title ,studentName ,nextStepTwo,nextStepOne ,buttonText ,address ,year ,teacherName} // Extract username from email
     );
 
     // Configure Nodemailer transporter
@@ -130,6 +139,63 @@ const handleCourseRequest = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+
+const teacherRequest = async (req, res) => {
+  try {
+    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,publishDate ,startTime ,endTime} = req.body;
+
+    console.log(email)
+    // if (!email || !courseName || !status || !teacherName || !title || !nextStepOne || !nextStepTwo) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Missing required fields" });
+    // }
+
+    // Render the EJS template
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/teacherRequest.ejs"),
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,publishDate ,startTime ,endTime}
+    );
+
+    // Configure Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject:
+        status === "approved"
+          ? "Teacher Approved Successfully"
+          : "Course Rejected",
+      html: emailTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({
+      success: true,
+      message: `Teacher ${
+        status === "approved" ? "approved" : "rejected"
+      } email sent successfully.`,
+    });
+  } catch (error) {
+    console.error("Error handling course request:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
 
 const sendMoney = async (req, res) => {
     try {
@@ -302,9 +368,10 @@ const sendBookingConfirmation = async (req, res) => {
 
 // Add to module.exports
 module.exports = {
-  sendEmail,
-  loginUser,
+  signup,
+  signupUser,
   handleCourseRequest,
   sendMoney,
   sendBookingConfirmation, // Add this line
+  teacherRequest
 };

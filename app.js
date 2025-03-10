@@ -98,14 +98,18 @@ app.use("/api/email", routereeee);
 
 app.get("/template1", (req, res) => {
   const templateData1 = {
-    title: "Payment Settlement",
+    logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
+    title: "Welcome to Steam Institute!",
+    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
     studentName: "Diana",
-    teacherName: "Aman'Jaadu",
-    startDate: "01/02/25",
-    endDate: "07/02/25",
-    TotalEarnings: "1000",
-    Commission: "200",
-    NetEarnings: "800",
+    teacherName: "John Dowwe",
+    bookingDate: "Monday, January 15, 2024",
+    startTime: "10:00 AM",
+    endTime: "11:00 AM",
+    courseName: "Introduction to Mathematics",
+    nextStepOne: "Your workspace and any necessary materials (computer, teaching resources, etc.) will be prepared for you. Please check in with [person/department] if you need anything else.",
+    nextStepTwo: "You will receive your class schedule by [date]. If you have any questions or need any adjustments, please let us know.",
+    buttonText: "View",
     address: "Address - 65 Rz- London, United Kingdom Nd-",
     year: new Date().getFullYear(),
   };
