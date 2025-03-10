@@ -16,9 +16,9 @@ const studentProfileSchema = new mongoose.Schema(
           // Adding autopopulate if you want to always populate this field
         },
         completedModule: [{ type: String, required: true }],
-        isCompleted: { type: Boolean, default: false },
         progress: { type: Number, default: 0, min: 0, max: 100 }, // Progress in percentage
-        certificate:{}
+        isCompleted: { type: Boolean, default: false },
+        certificate: { type: Object },
       },
     ],
     tutionBookings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],

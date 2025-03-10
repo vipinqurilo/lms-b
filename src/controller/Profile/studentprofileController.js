@@ -1,4 +1,5 @@
 const StudentProfileModel = require("../../model/studentProfileModel");
+const CourseModel = require("../../model/CourseModel");
 
 const getStudentProfile = async (req, res) => {
   try {
@@ -152,8 +153,29 @@ const getEnrolledCourseIds = async (req, res) => {
   }
 };
 
+const getCourseCertificate = async (req, res) => {
+  try {
+    const courseId = req.params;
+
+    const studentName = "Khurshid Idrees";
+    const courseTitle = "Full Stack Web Development";
+    const completionDate = new Date().toLocaleDateString();
+    const instructorName = "Dr Arjun Nagar";
+
+    res.render("certificate", {
+      studentName,
+      courseTitle,
+      completionDate,
+      instructorName,
+    });
+  } catch (error) {
+    res.status(500).send("Internal Server Error");
+  }
+};
+
 module.exports = {
   getStudentProfile,
   getEnrolledCourses,
   getEnrolledCourseIds,
+  getCourseCertificate,
 };

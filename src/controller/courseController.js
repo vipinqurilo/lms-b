@@ -4,6 +4,7 @@ const { uploadMediaToCloudinary } = require("../upload/cloudinary");
 const { default: mongoose } = require("mongoose");
 const ReviewModel = require("../model/reviewModel");
 const StudentProfileModel = require("../model/studentProfileModel");
+const UserModel = require("../model/UserModel");
 
 // Simplified function that returns a default duration
 const getVideoDuration = async (videoPath) => {
@@ -523,7 +524,7 @@ exports.adminDashboardCourses = async (req, res) => {
 
 exports.moduleMarkedAsCompleted = async (req, res) => {
   try {
-    const userId = "67cacafdae7082ff45edfb2a";
+    const userId = req.user.id;
     const { courseId, moduleId } = req.body;
 
     // Find the course to check if it exists
@@ -532,6 +533,26 @@ exports.moduleMarkedAsCompleted = async (req, res) => {
       return res
         .status(404)
         .json({ status: "failed", message: "Course not found" });
+    }
+
+    const instructorId = course.courseInstructor;
+    const instructor = await UserModel.findById(instructorId);
+    const instructorName = instructor.firstName + " " + instructor.lastName;
+
+    console.log(instructorName, "instructor name");
+
+    const user = await UserModel.findById(userId);
+    const studentName = user.firstName + " " + user.lastName;
+
+    const moduleExists = course.courseContent.some(
+      (module) => module._id.toString() === moduleId
+    );
+
+    if (!moduleExists) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Module not found",
+      });
     }
 
     // Find the student profile and update the enrolledCourses array
@@ -559,11 +580,23 @@ exports.moduleMarkedAsCompleted = async (req, res) => {
     }
 
     const totalModules = course.courseContent.length;
-    enrolledCourse.progress = Math.round(
-      (enrolledCourse.completedModule.length / totalModules) * 100
+
+    enrolledCourse.progress = Math.min(
+      Math.round((enrolledCourse.completedModule.length / totalModules) * 100),
+      100
     );
 
-    enrolledCourse.isCompleted = enrolledCourse.progress === 100;
+    // enrolledCourse.isCompleted = enrolledCourse.progress === 100;
+
+    if (enrolledCourse.progress === 100) {
+      enrolledCourse.isCompleted = true;
+      enrolledCourse.certificate = {
+        studentName: studentName,
+        instructorName: instructorName,
+        courseTitle: course.courseTitle,
+        completionDate: new Date().toISOString(),
+      };
+    }
 
     await studentProfile.save();
 
@@ -574,6 +607,7 @@ exports.moduleMarkedAsCompleted = async (req, res) => {
       } marked as completed`,
       progress: enrolledCourse.progress,
       isCompleted: enrolledCourse.isCompleted,
+      certificate: enrolledCourse.certificate || null,
     });
   } catch (error) {
     console.error("Error marking module as completed:", error);
