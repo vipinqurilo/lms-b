@@ -1,5 +1,17 @@
 const StudentProfileModel = require("../../model/studentProfileModel");
 const CourseModel = require("../../model/CourseModel");
+const pdf = require("html-pdf");
+const path = require("path");
+const { render } = require("ejs");
+const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const uploadPDF = require("../../upload/cloudinary");
+
+cloudinary.config({
+  cloud_name: process.env.cloud_name,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const getStudentProfile = async (req, res) => {
   try {
@@ -153,23 +165,90 @@ const getEnrolledCourseIds = async (req, res) => {
   }
 };
 
-const getCourseCertificate = async (req, res) => {
+const generateCertificate = async (req, res) => {
   try {
-    const courseId = req.params;
+    const userId = req.user.id;
+    const { courseId } = req.params;
 
-    const studentName = "Khurshid Idrees";
-    const courseTitle = "Full Stack Web Development";
-    const completionDate = new Date().toLocaleDateString();
-    const instructorName = "Dr Arjun Nagar";
+    const studentProfile = await StudentProfileModel.findOne({ userId });
+    if (!studentProfile) {
+      return res.status(404).json({ message: "Student profile not found" });
+    }
 
-    res.render("certificate", {
-      studentName,
-      courseTitle,
-      completionDate,
-      instructorName,
+    const enrolledCourse = studentProfile.enrolledCourses.find(
+      (course) => course.courseId.toString() === courseId
+    );
+
+    if (!enrolledCourse || !enrolledCourse.isCompleted) {
+      return res.status(404).json({ message: "Course not Completed" });
+    }
+
+    const studentData = {
+      studentName: enrolledCourse.certificate.studentName,
+      courseTitle: enrolledCourse.certificate.courseTitle,
+      completionDate: enrolledCourse.certificate.completionDate,
+      instructorName: enrolledCourse.certificate.instructorName,
+    };
+
+    const html = await new Promise((resolve, reject) => {
+      res.render("certificate", studentData, (err, renderedData) => {
+        if (err) reject(err);
+        else resolve(renderedData);
+      });
     });
+
+    const pdfPath = path.join(
+      __dirname,
+      "../../public/certificates",
+      "certificate.pdf"
+    );
+
+    pdf
+      .create(html, {
+        format: "letter",
+        orientation: "landscape",
+        border: {
+          top: "10mm",
+          right: "10mm",
+          bottom: "10mm",
+          left: "10mm",
+        },
+      })
+      .toFile(pdfPath, async (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to generate PDF" });
+        }
+
+        // Read file and convert to base64 buffer
+        const fileBuffer = fs.readFileSync(pdfPath);
+        const fileStr = `data:application/pdf;base64,${fileBuffer.toString(
+          "base64"
+        )}`;
+
+        // Upload to Cloudinary
+        cloudinary.uploader.upload(
+          fileStr,
+          {
+            resource_type: "raw",
+            folder: "luxe",
+          },
+          async (error, result) => {
+            if (error) {
+              return res.status(500).json({ error: "Failed to upload PDF" });
+            }
+
+            // Delete the local file after successful upload
+            fs.unlinkSync(pdfPath);
+
+            res.json({
+              message: "Certificate generated",
+              pdfUrl: result.secure_url,
+            });
+          }
+        );
+      });
   } catch (error) {
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ status: "failed", error: error.message });
   }
 };
 
@@ -177,5 +256,5 @@ module.exports = {
   getStudentProfile,
   getEnrolledCourses,
   getEnrolledCourseIds,
-  getCourseCertificate,
+  generateCertificate,
 };

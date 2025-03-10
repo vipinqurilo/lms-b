@@ -591,6 +591,7 @@ exports.moduleMarkedAsCompleted = async (req, res) => {
     if (enrolledCourse.progress === 100) {
       enrolledCourse.isCompleted = true;
       enrolledCourse.certificate = {
+        _id: new mongoose.Types.ObjectId(),
         studentName: studentName,
         instructorName: instructorName,
         courseTitle: course.courseTitle,
