@@ -133,7 +133,7 @@ const handleCourseRequest = async (req, res) => {
 
 const sendMoney = async (req, res) => {
     try {
-      const {  teacherEmail, courseName, teacherName, status,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address} = req.body;
+      const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
   
       // if (!teacherEmail || !teacherName || !amount) {
       //   return res
@@ -144,7 +144,7 @@ const sendMoney = async (req, res) => {
       // Render the EJS template for payment settlement email
       const emailTemplate = await ejs.renderFile(
         path.join(__dirname, "../emailTemplates/settlement.ejs"),
-        { teacherEmail, courseName, teacherName, status, studentName,  title ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime}
+        { teacherEmail, courseName, teacherName, status, studentName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
       );
   
       // Configure Nodemailer transporter

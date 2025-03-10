@@ -30,14 +30,12 @@ const routereeee = require("./src/route/testing");
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
 
-
 const app = express();
 
 // app.set("view engine", "ejs");
 
 // // // Define the correct views directory
-// app.set("views", path.join(__dirname, "src", "emailTemplates")); 
-
+// app.set("views", path.join(__dirname, "src", "emailTemplates"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
@@ -56,95 +54,77 @@ app.use((req, res, next) => {
 });
 app.use(express.static("public"));
 
-app.use("/api/requests",requestRouter)
-app.use("/api/auth",authController);
-app.use("/api/course",courseRouter);
-app.use("/api/category",categoryRouter);
-app.use("/api/languages",languageRouter);
-app.use("/api/bookings",bookingRouter);
-app.use("/api/profile",profileRouter)
-app.use("/api/tutors",tutorRouter);
-app.use("/api/subcategory",subcategoryRouter);
-app.use("/api/whishlist",wishListRouter);
-app.use('/api/order',orderRouter)
-app.use('/api/review',reviewRoute)
-app.use('/api/tutorReview',tutorReviewRoute)
-app.use('/api/ticket',ticketRouter)
-app.use('/api/users',userRoutes)
-app.use('/api/stripe',stripeRoute)
-app.use('/api/wallet',walletRouter)
-app.use('/api/withdrawals',withdrawRouter)
-app.use('/api/students',studentRouter)
-app.use('/api/teachers',teacherRouter)
-app.use('/api/forgotpassword',passwordRouter)
-app.use("/api/email",  routereeee);
+app.use("/api/requests", requestRouter);
+app.use("/api/auth", authController);
+app.use("/api/course", courseRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/languages", languageRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/tutors", tutorRouter);
+app.use("/api/subcategory", subcategoryRouter);
+app.use("/api/whishlist", wishListRouter);
+app.use("/api/order", orderRouter);
+app.use("/api/review", reviewRoute);
+app.use("/api/tutorReview", tutorReviewRoute);
+app.use("/api/ticket", ticketRouter);
+app.use("/api/users", userRoutes);
+app.use("/api/stripe", stripeRoute);
+app.use("/api/wallet", walletRouter);
+app.use("/api/withdrawals", withdrawRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/teachers", teacherRouter);
+app.use("/api/forgotpassword", passwordRouter);
+app.use("/api/email", routereeee);
 
 // app.get("/template", (req, res) => {
-  // const templateData = {
-  //   logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-  //   title: "Booking Confirmation",
-  //   courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
-  //   studentName: "Diana",
-  //   teacherName: "John Doe",
-  //   bookingDate: "Monday, January 15, 2024",
-  //   startTime: "10:00 AM",
-  //   endTime: "11:00 AM",
-  //   courseName: "Introduction to Mathematics",
-  //   nextStepOne: "You will receive a meeting link 15 minutes before the session.",
-  //   nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
-  //   buttonText: "View Booking Details",
-  //   address: "Address - 65 Rz- London, United Kingdom Nd-",
-  //   year: new Date().getFullYear(),
-    
+// const templateData = {
+//   logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
+//   title: "Booking Confirmation",
+//   courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+//   studentName: "Diana",
+//   teacherName: "John Doe",
+//   bookingDate: "Monday, January 15, 2024",
+//   startTime: "10:00 AM",
+//   endTime: "11:00 AM",
+//   courseName: "Introduction to Mathematics",
+//   nextStepOne: "You will receive a meeting link 15 minutes before the session.",
+//   nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
+//   buttonText: "View Booking Details",
+//   address: "Address - 65 Rz- London, United Kingdom Nd-",
+//   year: new Date().getFullYear(),
+
 //   };
 
-
- 
-
-
-
-
 app.get("/template1", (req, res) => {
-  
-    const templateData1 = {
-      // logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-      title: "Time for Your Weekly Earnings",
-      // courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
-      studentName: "Diana",
-      teacherName: "1 Week",
-      bookingDate: "1000 Rand",
-      startTime: "200 Rand",
-      endTime: "",
-      courseName: "800 Rand",
-      nextStepOne: "You will receive a meeting link 15 minutes before the session.",
-      nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
-      buttonText: "View Booking Details",
-      address: "Address - 65 Rz- London, United Kingdom Nd-",
-      year: new Date().getFullYear(),
-    
+  const templateData1 = {
+    title: "Payment Settlement",
+    studentName: "Diana",
+    teacherName: "Aman'Jaadu",
+    startDate: "01/02/25",
+    endDate: "07/02/25",
+    TotalEarnings: "1000",
+    Commission: "200",
+    NetEarnings: "800",
+    address: "Address - 65 Rz- London, United Kingdom Nd-",
+    year: new Date().getFullYear(),
   };
-res.render("template1", templateData1);
+  res.render("template1", templateData1);
 });
-
-
-
-
-
-
 
 app.get("/login", (req, res) => {
   res.render("login");
-}); 
+});
 //Payment Routes
 
 app.use("/api/payment", paymentRouter);
 
 //Order Routes
-app.use("/api/order",orderRouter);
+app.use("/api/order", orderRouter);
 
 //Earning Routes
-app.use("/api/earnings",earningRouter)
+app.use("/api/earnings", earningRouter);
 
-//Sales Routes 
-app.use("/api/sales",saleRouter)
+//Sales Routes
+app.use("/api/sales", saleRouter);
 module.exports = app;
