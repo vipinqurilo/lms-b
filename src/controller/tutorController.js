@@ -1,11 +1,16 @@
 const { mongo, default: mongoose } = require("mongoose");
 const TeacherProfileModel = require("../model/teacherProfileModel");
+const CourseModel = require("../model/CourseModel");
+const BookingModel = require("../model/bookingModel");
+const studentModel = require("../model/studentProfileModel");
 
 exports.getTutors = async (req, res) => {
-  try {
+  try {                         
+
     let { search, subjects, days, timeRanges, gender, minPrice, maxPrice, sortByRating } = req.query;
     
     if (!(days && days.length > 0)) days = "sun,mon,tue,wed,thu,fri,sat";
+
 
     let query = {};
 
@@ -15,13 +20,16 @@ exports.getTutors = async (req, res) => {
         { "user.firstName": { $regex: search, $options: "i" } },
         { "user.lastName": { $regex: search, $options: "i" } },
       ];
+
     }
 
     // Subject filter
+
     if (subjects && subjects.length > 0) {
       const subjectIds = subjects.split(",").map((id) => new mongoose.Types.ObjectId(id));
       query.subjectsTaught = { $in: subjectIds };
     }
+
 
     // Gender filter (default: both male & female)
     if (gender && ["male", "female"].includes(gender.toLowerCase())) {
@@ -34,6 +42,7 @@ exports.getTutors = async (req, res) => {
     if (maxPrice) priceFilter.$lte = parseFloat(maxPrice);
     if (Object.keys(priceFilter).length > 0) {
       query["subjectsTaught.pricePerHour"] = priceFilter;
+
     }
 
     console.log("Query:", query);
@@ -71,6 +80,7 @@ exports.getTutors = async (req, res) => {
           as: "user",
         },
       },
+
       { $unwind: "$user" },
       { $unwind: "$calendar" },
       {
@@ -80,6 +90,7 @@ exports.getTutors = async (req, res) => {
           foreignField: "_id",
           as: "reviews"
         }
+
       },
       {
         $lookup: {
@@ -133,6 +144,7 @@ exports.getTutors = async (req, res) => {
             availability: 1,
           },
           tutionSlots: 1,
+
           rating: 1, // Assuming a rating field exists
           reviews: {
             $map: {
@@ -170,6 +182,7 @@ exports.getTutors = async (req, res) => {
               }
             }
           }
+
         },
       },
     ]);
@@ -198,6 +211,77 @@ exports.getTutors = async (req, res) => {
   }
 };
 
+exports.getDashboard = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    const totalCourses = await CourseModel.countDocuments({
+      courseInstructor: userId,
+    });
+    const publishedCourses = await CourseModel.countDocuments({
+      courseInstructor: userId,
+      status: "published",
+    });
+    const inactiveCourses = await CourseModel.countDocuments({
+      courseInstructor: userId,
+    });
+    const totalBookings = await BookingModel.countDocuments({
+      teacherId: userId,
+    });
+    const totalEearnings = await BookingModel.aggregate([
+      {
+        $match: {
+          teacherId: userId,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAmount: { $sum: "$amount" },
+        },
+      },
+    ]);
 
+    const instructor_courses = await CourseModel.find({
+      courseInstructor: userId,
+    }).select("_id");
 
+    const courseIds = instructor_courses.map((course) => course._id);
+
+    const students = await studentModel.aggregate([
+      {
+        $match: {
+          "enrolledCourses.courseId": { $in: courseIds },
+        },
+      },
+      {
+        $group: {
+          _id: "$userId",
+          studentProfile: { $first: "$$ROOT" },
+        },
+      },
+      {
+        $replaceRoot: { newRoot: "$studentProfile" },
+      },
+    ]);
+
+    res.json({
+      status: "success",
+      message: "Dashboard fetched successfully",
+      data: {
+        students: students.length,
+        totalCourses,
+        publishedCourses,
+        inactiveCourses,
+        totalBookings,
+        totalEearnings:
+          totalEearnings.length > 0 ? totalEearnings[0].totalAmount : 0,
+      },
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+    });
+  }
+};

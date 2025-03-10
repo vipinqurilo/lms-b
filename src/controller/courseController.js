@@ -1,7 +1,10 @@
 const CourseModel = require("../model/CourseModel");
 const path = require("path");
-const { uploadMediaToCloudinary } = require("../upload/cloudinary");  
+const { uploadMediaToCloudinary } = require("../upload/cloudinary");
 const { default: mongoose } = require("mongoose");
+const ReviewModel = require("../model/reviewModel");
+const StudentProfileModel = require("../model/studentProfileModel");
+const UserModel = require("../model/UserModel");
 
 // Simplified function that returns a default duration
 const getVideoDuration = async (videoPath) => {
@@ -41,7 +44,7 @@ exports.addCourse = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       courseDuration: videoDuration,
-      isDelete: false,
+      inActive: false,
       courseContent: JSON.parse(data.courseContent),
       courseLearning: JSON.parse(data.courseLearning),
       courseRequirements: JSON.parse(data.courseRequirements),
@@ -75,7 +78,7 @@ exports.addCourse = async (req, res) => {
 
 exports.getCourse = async (req, res) => {
   try {
-    let course = await CourseModel.find({ isDelete: false }, { courseVideo: 0 })
+    let course = await CourseModel.find({ inActive: false }, { courseVideo: 0 })
       .limit(6)
       // .sort({ createdAt: -1 })
       .populate("courseSubCategory");
@@ -100,11 +103,45 @@ exports.getCourse = async (req, res) => {
 exports.getSingleCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const course = await CourseModel.findById(id).populate("courseInstructor");
+    const course = await CourseModel.findById(id).populate({
+      path: "courseInstructor",
+      select: "firstName lastName gender profilePhoto",
+      populate: {
+        path: "teacherProfile",
+        select:
+          "experience education subjectsTaught languagesSpoken tutionSlots ",
+      },
+    });
+
+    if (!course) {
+      return res.status(404).json({
+        status: "failed",
+        message: "course not found",
+      });
+    }
+
+    const totalStudents = await StudentProfileModel.countDocuments({
+      "enrolledCourses.courseId": id,
+    });
+
+    const totalReviews = await ReviewModel.find({ course: id }).populate({
+      path: "student",
+      select: "firstName lastName profilePhoto gender",
+    });
+
+    const totalCourses = await CourseModel.countDocuments({
+      courseInstructor: course?.courseInstructor?._id,
+    });
+
     res.json({
       status: "success",
       message: "course fetched successfully",
-      data: course,
+      data: {
+        course,
+        totalStudents,
+        totalReviews,
+        totalCourses,
+      },
     });
   } catch (error) {
     res.json({
@@ -120,7 +157,7 @@ exports.getcourseFilter = async (req, res) => {
     const { id } = req.params;
     const course = await CourseModel.find({
       courseCategory: id,
-      isDelete: false,
+      inActive: false,
     }).populate("courseSubCategory");
     res.json({
       status: "success",
@@ -146,7 +183,7 @@ exports.getCourseInstructor = async (req, res) => {
     const pageSize = parseInt(limit, 10) || 1;
     const skip = (pageNumber - 1) * pageSize;
 
-    let query = { courseInstructor: id, isDelete: false };
+    let query = { courseInstructor: id, inActive: false };
 
     if (status) {
       query.status = status;
@@ -209,17 +246,46 @@ exports.getAllCourseByAdmin = async (req, res) => {
 
     // Fetch paginated courses
     const courses = await CourseModel.find(query)
-      .populate("courseSubCategory", "name")
+      .populate({ path: "courseSubCategory", select: "name" })
+      .populate({ path: "courseInstructor", select: "" })
+      .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
       .exec();
 
     console.log("Courses Fetched:", courses.length); // Debugging log
 
+    // fetch reviews and caluclate ratings for each course
+
+    const courseWithRatings = await Promise.all(
+      courses.map(async (course) => {
+        const reviews = await ReviewModel.find(
+          { course: course._id },
+          "rating"
+        );
+
+        const totalReviews = reviews.length;
+        const sumOfRatings = reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        );
+        const averageRating =
+          totalReviews > 0 ? sumOfRatings / totalReviews : 0;
+
+        return {
+          ...course.toObject(),
+          totalReviews,
+          sumOfRatings,
+          averageRating: averageRating.toFixed(2),
+          reviews,
+        };
+      })
+    );
+
     res.json({
       status: "success",
       message: "Courses fetched successfully",
-      data: courses,
+      data: courseWithRatings,
       pagination: {
         totalCourses,
         currentPage: pageNumber,
@@ -288,8 +354,6 @@ exports.addSingleImage = async (req, res) => {
     console.log(error);
   }
 };
-
-
 
 exports.updateCourseInstrustor = async (req, res) => {
   try {
@@ -375,7 +439,7 @@ exports.deleteCourse = async (req, res) => {
     const { id } = req.params;
     const updateStatus = await CourseModel.findByIdAndUpdate(
       id,
-      { isDelete: true },
+      { inActive: true },
       { new: true }
     );
     if (!updateStatus)
@@ -399,7 +463,7 @@ exports.filterByStatus = async (req, res) => {
     console.log(req.params.status);
     const courseSubCategory = await CourseModel.find({
       status: req.params.status,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -422,7 +486,7 @@ exports.filterHomePage = async (req, res) => {
     const categoryId = req.params.categoryId;
     const courseSubCategory = await CourseModel.find({
       courseCategory: categoryId,
-      isDelete: false,
+      inActive: false,
     })
       .populate("courseSubCategory")
       .exec();
@@ -436,6 +500,121 @@ exports.filterHomePage = async (req, res) => {
       status: "failed",
       message: "something went wrong",
       error: error.message,
+    });
+  }
+};
+
+exports.adminDashboardCourses = async (req, res) => {
+  try {
+    const Courses = await CourseModel.find().limit(10).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      status: "success",
+      message: "courses fetched successfully",
+      data: Courses,
+    });
+  } catch (error) {
+    res.json({
+      status: "failed",
+      message: "something went wrong",
+      error: error,
+    });
+  }
+};
+
+exports.moduleMarkedAsCompleted = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { courseId, moduleId } = req.body;
+
+    // Find the course to check if it exists
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+      return res
+        .status(404)
+        .json({ status: "failed", message: "Course not found" });
+    }
+
+    const instructorId = course.courseInstructor;
+    const instructor = await UserModel.findById(instructorId);
+    const instructorName = instructor.firstName + " " + instructor.lastName;
+
+    console.log(instructorName, "instructor name");
+
+    const user = await UserModel.findById(userId);
+    const studentName = user.firstName + " " + user.lastName;
+
+    const moduleExists = course.courseContent.some(
+      (module) => module._id.toString() === moduleId
+    );
+
+    if (!moduleExists) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Module not found",
+      });
+    }
+
+    // Find the student profile and update the enrolledCourses array
+    const studentProfile = await StudentProfileModel.findOne({ userId });
+
+    if (!studentProfile) {
+      return res
+        .status(404)
+        .json({ status: "failed", message: "Student profile not found" });
+    }
+
+    const enrolledCourse = studentProfile.enrolledCourses.find(
+      (course) => course.courseId.toString() === courseId
+    );
+
+    if (!enrolledCourse) {
+      return res.status(400).json({
+        status: "failed",
+        message: "Student is not enrolled in this course",
+      });
+    }
+
+    if (!enrolledCourse.completedModule.includes(moduleId)) {
+      enrolledCourse.completedModule.push(moduleId);
+    }
+
+    const totalModules = course.courseContent.length;
+
+    enrolledCourse.progress = Math.min(
+      Math.round((enrolledCourse.completedModule.length / totalModules) * 100),
+      100
+    );
+
+    // enrolledCourse.isCompleted = enrolledCourse.progress === 100;
+
+    if (enrolledCourse.progress === 100) {
+      enrolledCourse.isCompleted = true;
+      enrolledCourse.certificate = {
+        _id: new mongoose.Types.ObjectId(),
+        studentName: studentName,
+        instructorName: instructorName,
+        courseTitle: course.courseTitle,
+        completionDate: new Date().toISOString(),
+      };
+    }
+
+    await studentProfile.save();
+
+    res.status(200).json({
+      status: "success",
+      message: `${
+        enrolledCourse.progress === 100 ? "Course" : "Module"
+      } marked as completed`,
+      progress: enrolledCourse.progress,
+      isCompleted: enrolledCourse.isCompleted,
+      certificate: enrolledCourse.certificate || null,
+    });
+  } catch (error) {
+    console.error("Error marking module as completed:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Internal server error",
     });
   }
 };

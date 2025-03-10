@@ -23,6 +23,7 @@ const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
+const adminRoute = require("./src/route/adminRoute");
 const emailTestRoutes = require("./src/routes/emailTestRoutes");
 
 const passwordRouter = require("./src/route/forgotPasswordRoutes");
@@ -103,7 +104,12 @@ app.get("/template", (req, res) => {
 });
 app.get("/login", (req, res) => {
   res.render("login");
+
+});app.use("/api/admin", adminRoute);
+
+
 }); 
+
 //Payment Routes
 
 app.use("/api/payment", paymentRouter);

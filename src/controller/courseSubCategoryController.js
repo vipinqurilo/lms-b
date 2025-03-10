@@ -59,7 +59,7 @@ exports.courseSubCategoryDelete = async (req, res) => {
     });
 
     res.json({
-      status: "succss",
+      status: "success",
       message: "course subcategory deleted successfully",
     });
   } catch (error) {
