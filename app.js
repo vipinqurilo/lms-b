@@ -31,13 +31,12 @@ const routereeee = require("./src/route/testing");
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
 
-
 const app = express();
 
 // app.set("view engine", "ejs");
 
 // // // Define the correct views directory
-// app.set("views", path.join(__dirname, "src", "emailTemplates")); 
+// app.set("views", path.join(__dirname, "src", "emailTemplates"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
@@ -56,48 +55,46 @@ app.use((req, res, next) => {
 });
 app.use(express.static("public"));
 
-app.use("/api/requests",requestRouter)
-app.use("/api/auth",authController);
-app.use("/api/course",courseRouter);
-app.use("/api/category",categoryRouter);
-app.use("/api/languages",languageRouter);
-app.use("/api/bookings",bookingRouter);
-app.use("/api/profile",profileRouter)
-app.use("/api/tutors",tutorRouter);
-app.use("/api/subcategory",subcategoryRouter);
-app.use("/api/whishlist",wishListRouter);
-app.use('/api/order',orderRouter)
-app.use('/api/review',reviewRoute)
-app.use('/api/tutorReview',tutorReviewRoute)
-app.use('/api/ticket',ticketRouter)
-app.use('/api/users',userRoutes)
-app.use('/api/stripe',stripeRoute)
-app.use('/api/wallet',walletRouter)
-app.use('/api/withdrawals',withdrawRouter)
-app.use('/api/students',studentRouter)
-app.use('/api/teachers',teacherRouter)
-app.use('/api/forgotpassword',passwordRouter)
-app.use("/api/email",  routereeee);
- 
-
+app.use("/api/requests", requestRouter);
+app.use("/api/auth", authController);
+app.use("/api/course", courseRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/languages", languageRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/tutors", tutorRouter);
+app.use("/api/subcategory", subcategoryRouter);
+app.use("/api/whishlist", wishListRouter);
+app.use("/api/order", orderRouter);
+app.use("/api/review", reviewRoute);
+app.use("/api/tutorReview", tutorReviewRoute);
+app.use("/api/ticket", ticketRouter);
+app.use("/api/users", userRoutes);
+app.use("/api/stripe", stripeRoute);
+app.use("/api/wallet", walletRouter);
+app.use("/api/withdrawals", withdrawRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/teachers", teacherRouter);
+app.use("/api/forgotpassword", passwordRouter);
+app.use("/api/email", routereeee);
 
 app.get("/template", (req, res) => {
   res.render("template");
 });
 app.get("/login", (req, res) => {
   res.render("login");
-});app.use("/api/admin", adminRoute);
+});
+app.use("/api/admin", adminRoute);
 
 //Payment Routes
-
 app.use("/api/payment", paymentRouter);
 
 //Order Routes
-app.use("/api/order",orderRouter);
+app.use("/api/order", orderRouter);
 
 //Earning Routes
-app.use("/api/earnings",earningRouter)
+app.use("/api/earnings", earningRouter);
 
-//Sales Routes 
-app.use("/api/sales",saleRouter)
+//Sales Routes
+app.use("/api/sales", saleRouter);
 module.exports = app;
