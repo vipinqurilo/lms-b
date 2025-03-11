@@ -1,6 +1,7 @@
 const express = require("express");
-const { sendEmail, loginUser, handleCourseRequest, sendPaymentEmail, sendMoney, sendBookingConfirmation, teacherRequest, signupUser, signup } = require("../controller/testing");
+ 
 const { getTeacherRequests } = require("../controller/Teachers/teacherRequestController");
+const { signup, handleCourseRequest, teacherRequest, sendMoney, sendBookingConfirmation, signupUser } = require("../controller/templatesController");
  
 const routereeee = express.Router();
 

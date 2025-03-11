@@ -18,7 +18,7 @@
           />
         </div>
         <!-- Welcome Message -->
-        <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;"><%= title %></h2>
+        <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;">Welcome to Steam Institute!</h2>
         <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
         <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
           <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
@@ -31,18 +31,15 @@
             />
           </div>
           <div class="content" style="width: 100%;">
-            <div style="width: 85%;  margin: 16px auto;">
-              <% if (title === "Welcome to Steam Institute!") { %>
-                <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+            <div style="width: 85%;  margin: 16px auto; padding-left: 30px;">
+             
+                <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= userName %> ,</h3>
                 <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  We are thrilled to welcome you to the [Steam Institute] community! We are excited to have you on board and are confident that your skills, experience, and passion will make a wonderful addition to our team.
+                  We are thrilled to welcome you to the Steam Institute community! We are excited to have you on board and are confident that your skills, experience, and passion will make a wonderful addition to our team.
                 </p>
-                <% } else { %>
-                <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  A new booking has been scheduled with <%= studentName %>. Here are your session details:
-                </p>
-                <% } %>
+                
+               
+                 
             </div>
        
            
@@ -50,11 +47,11 @@
             <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
               <li style="margin-bottom: 8px; text-align: left; display: flex;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepOne %></span>
+                <span>Your workspace and any necessary materials (computer, teaching resources, etc.) will be prepared for you. Please check in with person/department if you need anything else.</span>
               </li>
               <li style="margin-bottom: 8px; text-align: left; display: flex;">
                 <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepTwo %></span>
+                <span>You will receive your class schedule   If you have any questions or need any adjustments, please let us know.</span>
               </li>
             </ul>
             <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
@@ -81,7 +78,7 @@
             alt="STEAM Institute"
             style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
           />
-          <div style="margin: 16px 0; color:#000000"><%= address %></div>
+          <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
           <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
             <div style="text-align: center; margin-right: 16px;">
               <div>Copyright &copy; <%= year %></div>

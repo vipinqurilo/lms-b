@@ -1,139 +1,345 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Singup Success</title>
-  </head>
-  <body style="box-sizing: border-box; width: 100%; background-color: #F5F5F6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
-    <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
-      <div class="card" style="padding-top: 24px; background-color: #FFFFFF; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
-        <!-- Logo -->
-        <div>
-          <img
-            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
-            alt="Steam Institute"
-            class="logo"
-            style="max-width: 100%; height: auto; width: 96px; margin: 0 auto 16px;"
-          />
-        </div>
-        <!-- Welcome Message -->
-        <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;"><%= title %></h2>
-        <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
-        <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
-          <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
-            <div class="" style="width: 100%; background-color: #FFFFFF; position: absolute;  "></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Request Update</title>
+     
+</head>
+<body>
+    <% if (status === "approved") { %>
+      <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
+        <div class="card" style="padding-top: 24px; background-color: #FFFFFF; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
+          <!-- Logo -->
+          <div>
             <img
-              src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
-              alt="Course Image"
-              class="course-image"
-              style="max-width: 100%; height: auto; width: 100%;"
+              src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+              alt="Steam Institute"
+              class="logo"
+              style="max-width: 100%; height: auto; width: 96px; margin: 0 auto 16px;"
             />
           </div>
-          <div class="content" style="width: 100%;">
-            <div style="width: 85%;  margin: 16px auto;">
-              <% if (title === "Welcome to Steam Institute!") { %>
-                <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  We are thrilled to welcome you to the [Steam Institute] community! We are excited to have you on board and are confident that your skills, experience, and passion will make a wonderful addition to our team.
-                </p>
-                <% } else { %>
-                <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  A new booking has been scheduled with <%= studentName %>. Here are your session details:
-                </p>
-                <% } %>
-            </div>
-       
-           
-            <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
-            <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
-                <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepOne %></span>
-              </li>
-              <li style="margin-bottom: 8px; text-align: left; display: flex;">
-                <span style="margin-right: 8px;">•</span>
-                <span><%= nextStepTwo %></span>
-              </li>
-            </ul>
-            <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
-              class="background-image"
-            >
-              <!--[if !mso]><!-->
-              <style type="text/css">
-                @media screen and (max-width: 600px) {
-                  .background-image {
-                    background-image: none !important;
-                  }
-                }
-              </style>
-              <!--<![endif]-->
-              <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
-                <%= buttonText %>
-              </button>
-            </div>
-          </div>
-        </div>
-        <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4B5563; border-top: 2px solid #DFDFDF; font-size: 14px;">
-          <img
-            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
-            alt="STEAM Institute"
-            style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
+          <!-- Welcome Message -->
+          <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;">Congratulations! 
+            <img
+            src="http://res.cloudinary.com/daprkakyk/image/upload/v1741417556/luxe/xhjlwxmbkrloexlrt9kx.png"
+            alt="Steam Institute"
+            class="logo"
+            style="max-width: 100%; height: auto;   "
           />
-          <div style="margin: 16px 0; color:#000000"><%= address %></div>
-          <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
-            <div style="text-align: center; margin-right: 16px;">
-              <div>Copyright &copy; <%= year %></div>
+          </h2>
+          <h3 class="section-title" style="font-size: 17px; font-weight: bold; color:#1F2937; margin-top: 1px; text-align: center;">You Are A Teacher In STEAM Institute</h3>
+          <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
+          <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
+            <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
+              <div class="" style="width: 100%; background-color: #FFFFFF; position: absolute;  "></div>
+              <img
+                src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
+                alt="Course Image"
+                class="course-image"
+                style="max-width: 100%; height: auto; width: 100%;"
+              />
             </div>
-            <div >
-              <% [
-              {
-                type: "Email",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
-                alt: "Email",
-                link: "mailto:info@steaminstitute.online"
-              },
-              {
-                type: "Phone",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
-                alt: "Phone",
-                link: "tel:+1234567890" // Replace with actual phone number
-              },
-              {
-                type: "Twitter",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
-                alt: "Twitter",
-                link: "https://twitter.com/yourhandle" // Replace with actual Twitter handle
-              },
-              {
-                type: "Instagram",
-                imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
-                alt: "Instagram",
-                link: "https://instagram.com/yourhandle" // Replace with actual Instagram handle
-              }
-            ].forEach(function(icon) { %>
-                <a href="<%= icon.link %>" style="text-decoration: none;">
-                  <img style="width: <%= icon.type === 'Email' ? '20px' : (icon.type === 'Instagram' ? '25px' : '16px') %>; display: inline-block; margin: 0 8px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"
-                    src="<%= icon.imageUrl %>"
-                    alt="<%= icon.alt %>"
-                  />
-                </a>
-              <% }); %>
+ 
+            <div class="content" style="width: 100%; margin-top: 50px;">
+              <div style="width: 85%;  margin: 16px auto;">
+             
+                  <h3 style="font-size: 16px; font-weight: bold; color: #808080; text-align: left; margin-bottom: 6px;">Hi <%= teacherName %>,</h3>
+                <p style="font-size: 14px; color: #4B5563; padding: 0; text-align: left; margin-top: 0;">
+                  We are pleased to inform you that your request for the STEAM Institute has been successfully approved. Congratulations!                  
+                </p>
+                
+                 
+                  
+                   
+              </div>
+              <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Your Details</h3>
+              
+              <table style="font-size: 14px; color: #4B5563; text-align: left; margin: 16px auto 24px; width: 100%; max-width: 380px; border-collapse: collapse;">
+                <tbody>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Teacher Name:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= teacherName %></td>
+                  </tr>
+
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Teacher Email:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= email %></td>
+                  </tr>
+
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Contact Number :</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= number %> </td>
+                  </tr>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Joining Date:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= date %></td>
+                  </tr>
+                </tbody>
+              </table>
+              
+  
+              <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
+              <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
+                <li style="margin-bottom: 8px; text-align: left; display: flex;">
+                  <span style="margin-right: 8px;">•</span>
+                  <span style="color: #000000;">You may now proceed with the next steps as per the program guidelines. If you require any further information or assistance, please feel free to reach out.</span>
+                </li>
+                <li style="margin-bottom: 8px; text-align: left; display: flex;">
+                  <span style="margin-right: 8px;">•</span>
+                  <span  style="color: #000000;">We appreciate your dedication and look forward to your participation in the STEAM Institute.</span>
+                </li>
+              </ul>
+               
+              <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
+                class="background-image"
+              >
+                <!--[if !mso]><!-->
+                <style type="text/css">
+                  @media screen and (max-width: 600px) {
+                    .background-image {
+                      background-image: none !important;
+                    }
+                  }
+                </style>
+                <!--<![endif]-->
+                <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
+                   View Details
+                </button>
+              </div>
             </div>
           </div>
+          <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4B5563; border-top: 2px solid #DFDFDF; font-size: 14px;">
+            <img
+              src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+              alt="STEAM Institute"
+              style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
+            />
+            <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
+            <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
+              <div style="text-align: center; margin-right: 16px;">
+                <div>Copyright &copy; 2025</div>
+              </div>
+              <div >
+                <% [
+                {
+                  type: "Email",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
+                  alt: "Email",
+                  link: "mailto:info@steaminstitute.online"
+                },
+                {
+                  type: "Phone",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
+                  alt: "Phone",
+                  link: "tel:+1234567890" // Replace with actual phone number
+                },
+                {
+                  type: "Twitter",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
+                  alt: "Twitter",
+                  link: "https://twitter.com/yourhandle" // Replace with actual Twitter handle
+                },
+                {
+                  type: "Instagram",
+                  imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
+                  alt: "Instagram",
+                  link: "https://instagram.com/yourhandle" // Replace with actual Instagram handle
+                }
+              ].forEach(function(icon) { %>
+                  <a href="<%= icon.link %>" style="text-decoration: none;">
+                    <img style="width: <%= icon.type === 'Email' ? '20px' : (icon.type === 'Instagram' ? '25px' : '16px') %>; display: inline-block; margin: 0 8px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"
+                      src="<%= icon.imageUrl %>"
+                      alt="<%= icon.alt %>"
+                    />
+                  </a>
+                <% }); %>
+              </div>
+            </div>
+          </div>
+          <table role="presentation" width="100%" style=" border-top: 2px solid #DFDFDF; color: #808080; font-size: small; border-collapse: collapse;">
+            <tr style="border-bottom: 2px solid #DFDFDF;">
+              <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
+              <td align="right" style="padding: 10px 24px;">
+                <a href="http://www.steaminstitute.online/" style="text-decoration: none; color: #808080;">
+                  www.steaminstitute.online
+                </a>
+              </td>
+            </tr>
+          </table>
         </div>
-        <table role="presentation" width="100%" style=" border-top: 2px solid #DFDFDF; color: #808080; font-size: small; border-collapse: collapse;">
-          <tr style="border-bottom: 2px solid #DFDFDF;">
-            <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
-            <td align="right" style="padding: 10px 24px;">
-              <a href="http://www.steaminstitute.online/" style="text-decoration: none; color: #808080;">
-                www.steaminstitute.online
-              </a>
-            </td>
-          </tr>
-        </table>
       </div>
-    </div>
-  </body>
+    <% } else { %>
+        <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
+            <div class="card" style="padding-top: 24px; background-color: #FFFFFF; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
+              <!-- Logo -->
+              <div>
+                <img
+                  src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+                  alt="Steam Institute"
+                  class="logo"
+                  style="max-width: 100%; height: auto; width: 96px; margin: 0 auto 16px;"
+                />
+              </div>
+              <!-- Welcome Message -->
+
+
+              <div style="position: relative; display: inline-block; ">
+                <h2 style="font-size: 21px; font-weight: bold; color: #1F2937; margin: 0; display: inline-block;">
+                  Sorry !
+                </h2>
+                <img
+                  src="http://res.cloudinary.com/daprkakyk/image/upload/v1741686774/luxe/eu79u5nk49c6zzomikjs.png"
+                  alt="Steam Institute"
+                  style="width: 32px; height: 32px; position: absolute; top: 0px; right: -40px;"
+                />
+              </div>
+              
+
+
+
+              <h3 class="section-title" style="font-size: 17px; font-weight: bold; color:#1F2937; margin-top: 20px; text-align: center;"> Teacher Request Rejected</h3>
+              <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
+              <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
+                <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
+                  <div class="" style="width: 100%; background-color: #FFFFFF; position: absolute;  "></div>
+                  <img
+                    src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
+                    alt="Course Image"
+                    class="course-image"
+                    style="max-width: 100%; height: auto; width: 100%;"
+                  />
+                </div>
+     
+                <div class="content" style="width: 100%; margin-top: 50px;">
+                  <div style="width: 85%;  margin: 16px auto; padding-left: 30px;">
+                     
+                      <h3 style="font-size: 14px; font-weight: bold; color: #808080; text-align: left; margin-bottom: 6px;">Hi <%= teacherName %>,</h3>
+                    <p style="font-size: 14px; color: #4B5563; padding: 0; text-align: left; margin-top: 0;">
+                      We regret to inform you that your request for the STEAM Institute has not been approved at this time.        
+                    </p>
+                    
+                    
+                      
+                      
+                  </div>
+                  <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Your Details</h3>
+                  
+                  <table style="font-size: 14px; color: #4B5563; text-align: left; margin: 16px auto 24px; width: 100%; max-width: 380px; border-collapse: collapse;">
+                    <tbody>
+                      <tr>
+                        <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Teacher Name:</th>
+                        <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= teacherName %></td>
+                      </tr>
+    
+                      <tr>
+                        <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Teacher Email:</th>
+                        <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= email %></td>
+                      </tr>
+    
+                      <tr>
+                        <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Contact Number :</th>
+                        <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= number %> </td>
+                      </tr>
+                      <tr>
+                        <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Joining Date:</th>
+                        <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= date %></td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+      
+                  <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
+                  <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
+                    <li style="margin-bottom: 8px; text-align: left; display: flex;">
+                      <span style="margin-right: 8px;">•</span>
+                      <span style="color: #000000;">Ensure all necessary criteria and documentation are met.</span>
+                    </li>
+                    <li style="margin-bottom: 8px; text-align: left; display: flex;">
+                      <span style="margin-right: 8px;">•</span>
+                      <span  style="color: #000000;">Contact us to understand the reason for rejection and how you can improve your application.</span>
+                    </li>
+                  </ul>
+                   
+                  <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
+                    class="background-image"
+                  >
+                    <!--[if !mso]><!-->
+                    <style type="text/css">
+                      @media screen and (max-width: 600px) {
+                        .background-image {
+                          background-image: none !important;
+                        }
+                      }
+                    </style>
+                    <!--<![endif]-->
+                    <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
+                       Go TO Dashboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4B5563; border-top: 2px solid #DFDFDF; font-size: 14px;">
+                <img
+                  src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+                  alt="STEAM Institute"
+                  style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
+                />
+                <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
+                <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
+                  <div style="text-align: center; margin-right: 16px;">
+                    <div>Copyright &copy; 2025</div>
+                  </div>
+                  <div >
+                    <% [
+                    {
+                      type: "Email",
+                      imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
+                      alt: "Email",
+                      link: "mailto:info@steaminstitute.online"
+                    },
+                    {
+                      type: "Phone",
+                      imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
+                      alt: "Phone",
+                      link: "tel:+1234567890" // Replace with actual phone number
+                    },
+                    {
+                      type: "Twitter",
+                      imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
+                      alt: "Twitter",
+                      link: "https://twitter.com/yourhandle" // Replace with actual Twitter handle
+                    },
+                    {
+                      type: "Instagram",
+                      imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
+                      alt: "Instagram",
+                      link: "https://instagram.com/yourhandle" // Replace with actual Instagram handle
+                    }
+                  ].forEach(function(icon) { %>
+                      <a href="<%= icon.link %>" style="text-decoration: none;">
+                        <img style="width: <%= icon.type === 'Email' ? '20px' : (icon.type === 'Instagram' ? '25px' : '16px') %>; display: inline-block; margin: 0 8px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"
+                          src="<%= icon.imageUrl %>"
+                          alt="<%= icon.alt %>"
+                        />
+                      </a>
+                    <% }); %>
+                  </div>
+                </div>
+              </div>
+              <table role="presentation" width="100%" style=" border-top: 2px solid #DFDFDF; color: #808080; font-size: small; border-collapse: collapse;">
+                <tr style="border-bottom: 2px solid #DFDFDF;">
+                  <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
+                  <td align="right" style="padding: 10px 24px;">
+                    <a href="http://www.steaminstitute.online/" style="text-decoration: none; color: #808080;">
+                      www.steaminstitute.online
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+    <% } %>
+</body>
+
 </html>

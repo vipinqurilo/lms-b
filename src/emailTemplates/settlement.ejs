@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login Success</title>
+    <title>Payment Settlement</title>
   </head>
   <body style="box-sizing: border-box; width: 100%; background-color: #F5F5F6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
     <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
@@ -18,7 +18,7 @@
           />
         </div>
         <!-- Welcome Message -->
-        <h2 style="font-size:22px; font-weight:bold; color:black; line-height:10px;"><%= title %></h2>
+        <h2 style="font-size:22px; font-weight:bold; color:black; line-height:10px;">Payment Settlement</h2>
 
         <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
         <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
@@ -33,16 +33,13 @@
           </div>
           <div class="content" style="width: 100%;">
             <div style="width: 85%;  margin: 16px auto;">
-              <% if (title === "Payment Settlement") { %>
-                <h3 class="greeting" style="font-size: 14px;  padding-left: 20px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+             
+                <h3 class="greeting" style="font-size: 14px;  padding-left: 20px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                 <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; text-align: left;  padding-left: 20px;">
-                  Your weekly settlement for the duration <%= startDate %> - <%= endDate %> has been completed. Your total earnings were <%= TotalEarnings %>, with a commission of <%= Commission %>, resulting in net earnings of <%= NetEarnings %>, which have been transferred to your wallet.                </p>
-                <% } else { %>
-                <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
-                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  A new booking has been scheduled with <%= studentName %>. Here are your session details:
-                </p>
-                <% } %>
+                  Your weekly settlement for the duration <%= startDate %> - <%= endDate %> has been completed. Your total earnings were <%= TotalEarnings %>, with a commission of <%= Commission %>, resulting in net earnings of <%= NetEarnings %>, which have been transferred to your wallet.   </p>
+               
+              
+               
             </div>
 
 
@@ -104,12 +101,12 @@
             alt="STEAM Institute"
             style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
           />
-          <div style="margin: 16px 0; color:#000000"><%= address %></div>
+          <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
           <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
             <div style="text-align: center; margin-right: 16px;">
-              <div>Copyright &copy; <%= year %></div>
+              <div>Copyright &copy;2025</div>
             </div>
-            <div >
+            <div  >
               <% [
               {
                 type: "Email",

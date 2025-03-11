@@ -20,7 +20,7 @@
             />
           </div>
           <!-- Welcome Message -->
-          <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;"><%= title %>
+          <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;">Congratulations !
             <img
             src="http://res.cloudinary.com/daprkakyk/image/upload/v1741417556/luxe/xhjlwxmbkrloexlrt9kx.png"
             alt="Steam Institute"
@@ -42,18 +42,17 @@
             </div>
            
             <div class="content" style="width: 100%; margin-top: 50px;">
-              <div style="width: 85%;  margin: 16px auto;">
-                <% if (title === "Congratulations !") { %>
-                  <h3 style="font-size: 16px; font-weight: bold; color: #808080; text-align: left; margin-bottom: 6px;">Hi <%= teacherName %>,</h3>
+              <div style="width: 85%;  margin: 16px auto; padding-left: 30px;">
+                
+                  <h3 style="font-size: 14px; font-weight: bold; color: #808080; text-align: left; margin-bottom: 6px;">Hi <%= teacherName %>,</h3>
                 <p style="font-size: 14px; color: #4B5563; padding: 0; text-align: left; margin-top: 0;">
-                  Your course has been successfully approved and is now ready to proceed. 
+                  We are pleased to inform you that your request for the Introduction to Mathematics  at the STEAM Institute has been successfully approved and is now published. Congratulations!
                   
                 </p>
                 
-                  <% } else { %>
-                  <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                   
                   
-                  <% } %>
+                 
               </div>
               <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Course Details</h3>
               
@@ -62,7 +61,8 @@
                   <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Name :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= courseName %></span>
                 </li>
                 <li style="display: table-row;">
-                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Category :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= startTime %>  </span>
+                  <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Course Category :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;">
+                    <%= category %>  </span>
                 </li>
                 <li style="display: table-row;">
                   <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4B5563; vertical-align: top;">Publish Date :</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1F2937; font-weight: 500; vertical-align: top;"><%= publishDate %></span>
@@ -74,11 +74,11 @@
               <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
                 <li style="margin-bottom: 8px; text-align: left; display: flex;">
                   <span style="margin-right: 8px;">•</span>
-                  <span style="color: #000000;"><%= nextStepOne %></span>
+                  Your course is now available for students, and you may proceed with the next steps as per the institute’s guidelines. If you need any assistance or further information, please feel free to reach out.
                 </li>
                 <li style="margin-bottom: 8px; text-align: left; display: flex;">
                   <span style="margin-right: 8px;">•</span>
-                  <span  style="color: #000000;"><%= nextStepTwo %></span>
+                  We appreciate your dedication and look forward to seeing the impact of your course at the STEAM Institute.
                 </li>
               </ul>
                
@@ -173,7 +173,7 @@
             />
           </div>
           <!-- Welcome Message -->
-          <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;"><%= title %></h2>
+          <h2 class="welcome-text" style="font-size: 18px; font-weight: bold; color: #1F2937;">Unfortunately !</h2>
           <h3 class="section-title" style="font-size: 17px; font-weight: bold; color:#1F2937; margin-top: 1px; text-align: center;">Your Course has not been Published</h3>
           <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
           <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
@@ -188,13 +188,14 @@
             </div>
             
             <div class="content" style="width: 100%;">
-              <div style="width: 85%;  margin: 16px auto;">
-                <% if (title === "Unfortunately !") { %>
+              <div style="width: 85%;  margin: 16px auto; padding-left: 30px;">
+              
                   <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                    Your course has been rejected due to not meeting our quality standards or platform guidelines. Please review our requirements and consider making the necessary improvements before resubmitting.
+                    <%= reason %> 
+              
                   </p>
-                  <% }   %>
+                  
               </div>
                <ul class="list session-details" style="font-size: 14px; color: #4B5563; text-align: left; padding: 0; margin: 24px auto; max-width: 90%; width: 90%; display: table; border-spacing: 0 8px;">
                
@@ -208,12 +209,12 @@
               <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #4B5563; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
                 <li style="margin-bottom: 8px; text-align: left; display: flex;">
                   <span style="margin-right: 8px;">•</span>
-                  <span><%= nextStepOne %></span>
+                  Consider alternative courses offered by the STEAM Institute.
                 </li>
                 <li style="margin-bottom: 8px; text-align: left; display: flex;">
                   <span style="margin-right: 8px;">•</span>
-                  <span><%= nextStepTwo %></span>
-                </li>
+                  Contact us to discuss the decision and receive feedback.
+                 </li>
               </ul>
               <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
                 class="background-image"

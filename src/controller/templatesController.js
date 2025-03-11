@@ -8,12 +8,12 @@ require("dotenv").config();
 
 const signup = async (req, res) => {
   try {
-    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
+    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, userName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
 
     
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/signup.ejs"),
-      { teacherEmail, courseName, teacherName, status, studentName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
+      { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
     );
 
     // Configure Nodemailer transportera
@@ -28,7 +28,7 @@ const signup = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: teacherEmail,
-      subject: "Singup Confirmation",
+      subject: "Signup Confirmation",
       html: emailTemplate,
     };
 
@@ -49,8 +49,9 @@ const signup = async (req, res) => {
 
 const signupUser = async (req, res) => {
   try {
-    const { email ,title ,studentName, nextStepTwo,  nextStepOne ,buttonText, address ,year ,teacherName } = req.body;
+    const { email ,title ,userName, nextStepTwo,  nextStepOne ,buttonText, address ,year ,teacherName  , welcomeTittle} = req.body;
 
+    console.log(userName,"pppp")
     if (!email) {
       return res
         .status(400)
@@ -60,7 +61,7 @@ const signupUser = async (req, res) => {
     // Render the EJS template for login email
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../view/login.ejs"),
-      { name: email.split("@")[0] ,title ,studentName ,nextStepTwo,nextStepOne ,buttonText ,address ,year ,teacherName} // Extract username from email
+      { name: email.split("@")[0] ,title ,userName ,nextStepTwo,nextStepOne ,buttonText ,address ,year ,teacherName , welcomeTittle} // Extract username from email
     );
 
     // Configure Nodemailer transporter
@@ -75,7 +76,7 @@ const signupUser = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Login Successful",
+      subject: "Signup Confirmation",
       html: emailTemplate,
     };
 
@@ -83,7 +84,7 @@ const signupUser = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Login successful, email sent!" });
+      .json({ success: true, message: "Signup Confirmation, email sent!" });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -92,7 +93,7 @@ const signupUser = async (req, res) => {
 
 const handleCourseRequest = async (req, res) => {
   try {
-    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,publishDate ,startTime ,endTime} = req.body;
+    const { email, courseName, teacherName, status,  title ,nextStepOne ,reason ,nextStepTwo ,publishDate ,category , } = req.body;
 
     console.log(email)
     // if (!email || !courseName || !status || !teacherName || !title || !nextStepOne || !nextStepTwo) {
@@ -102,9 +103,11 @@ const handleCourseRequest = async (req, res) => {
     // }
 
     // Render the EJS template
+
+
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/coursePublish.ejs"),
-      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,publishDate ,startTime ,endTime}
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,reason ,publishDate ,category , }
     );
 
     // Configure Nodemailer transporter
@@ -121,8 +124,8 @@ const handleCourseRequest = async (req, res) => {
       to: email,
       subject:
         status === "approved"
-          ? "Course Published Successfully"
-          : "Course Rejected",
+          ? "Course Published Request"
+          : "Course Published  Request",
       html: emailTemplate,
     };
 
@@ -145,19 +148,13 @@ const handleCourseRequest = async (req, res) => {
 
 const teacherRequest = async (req, res) => {
   try {
-    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,publishDate ,startTime ,endTime} = req.body;
+    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,subject ,date ,endTime ,number} = req.body;
 
-    console.log(email)
-    // if (!email || !courseName || !status || !teacherName || !title || !nextStepOne || !nextStepTwo) {
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: "Missing required fields" });
-    // }
-
-    // Render the EJS template
+    console.log(number)
+    
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/teacherRequest.ejs"),
-      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,publishDate ,startTime ,endTime}
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,subject ,date ,endTime ,number ,email}
     );
 
     // Configure Nodemailer transporter
@@ -174,8 +171,8 @@ const teacherRequest = async (req, res) => {
       to: email,
       subject:
         status === "approved"
-          ? "Teacher Approved Successfully"
-          : "Course Rejected",
+          ? "Teacher Request"
+          : "Teacher Request",
       html: emailTemplate,
     };
 
