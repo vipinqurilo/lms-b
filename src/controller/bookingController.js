@@ -47,18 +47,20 @@ exports.createBooking = async (req, res) => {
       });
     }
     console.log(payment,"payment")
-     const { teacherId, studentId, subjectId, amount, sessionStartTime,sessionEndTime,sessionDuration } = session.metadata;
+     const { teacherId, studentId, subjectId, amount, sessionStartTime, sessionEndTime, sessionDuration, meetingLink, meetingPlatform } = session.metadata;
      const newBookingObj={
       teacherId,
       studentId,
       subjectId,
       amount,
-      sessionDate:session.metadata.sessionDate,
-      sessionStartTime:session.metadata.sessionStartTime,
-      sessionEndTime:session.metadata.sessionEndTime,
-      sessionDuration:session.metadata.sessionDuration,
+      sessionDate: session.metadata.sessionDate,
+      sessionStartTime: session.metadata.sessionStartTime,
+      sessionEndTime: session.metadata.sessionEndTime,
+      sessionDuration: session.metadata.sessionDuration,
       status:"scheduled",
-      paymentId:payment?._id
+      paymentId:payment?._id,
+      meetingPlatform: meetingPlatform || "Zoom",
+      meetingLink: meetingLink || `https://zoom.us/j/${Math.floor(100000000 + Math.random() * 900000000)}` // Generate a random meeting ID if not provided
      }
     
     const newBooking = await BookingModel.create(newBookingObj)
@@ -88,7 +90,9 @@ exports.createBooking = async (req, res) => {
           bookingDate: session.metadata.sessionDate,
           startTime: session.metadata.sessionStartTime,
           endTime: session.metadata.sessionEndTime,
-          courseName: "Subject English Lesson of 30 Minutes"
+          courseName: "Subject English Lesson of 30 Minutes",
+          meetingPlatform: newBookingObj.meetingPlatform,
+          meetingLink: newBookingObj.meetingLink
         });
         console.log("Booking confirmation emails sent successfully");
       } catch (emailError) {
@@ -123,7 +127,7 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-exports.getBookings = async (req, res) => {
+exports.getBookings = async (req, res) => { 
   try {
     const { role, id: userId } = req.user; // Extract user role and ID
     console.log(role, userId);

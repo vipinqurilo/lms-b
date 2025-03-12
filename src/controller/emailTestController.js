@@ -6,22 +6,25 @@ const emailService = require("../services/emailService");
 exports.testBookingConfirmation = async (req, res) => {
   try {
     const {
-      studentEmail,
+      studentEmail = "nethead321@gmail.com",
       studentName,
       teacherName,
-      teacherEmail,
+      teacherEmail = "sakshi04002@gmail.com",
       bookingDate,
       startTime,
       endTime,
       courseName,
       logoUrl,
-      courseImage
+      courseImage,
+      meetingPlatform = "Zoom",
+      meetingLink = "https://zoom.us/j/123456789",
+      amount = 2500
     } = req.body;
 
     console.log('Received test email request for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !meetingPlatform || !meetingLink || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -35,7 +38,10 @@ exports.testBookingConfirmation = async (req, res) => {
       endTime,
       courseName,
       logoUrl,
-      courseImage
+      courseImage,
+      meetingPlatform,
+      meetingLink,
+      amount
     });
 
     return res.status(200).json({
@@ -66,13 +72,14 @@ exports.testBookingCancellation = async (req, res) => {
       cancelledBy = "teacher", 
       cancellationReason = "Schedule conflict", 
       logoUrl,
-      courseImage
+      courseImage,
+      amount = 2500
     } = req.body;
 
     console.log('Received test booking cancellation email request for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -88,7 +95,8 @@ exports.testBookingCancellation = async (req, res) => {
       cancelledBy,
       cancellationReason,
       logoUrl,
-      courseImage
+      courseImage,
+      amount
     });
 
     return res.status(200).json({
@@ -122,13 +130,14 @@ exports.testRescheduleRequest = async (req, res) => {
       rescheduleReason = "Schedule conflict", 
       requestedBy = "student", 
       logoUrl,
-      courseImage
+      courseImage,
+      amount = 2500
     } = req.body;
 
     console.log('Received test reschedule request email for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -147,7 +156,8 @@ exports.testRescheduleRequest = async (req, res) => {
       rescheduleReason,
       requestedBy,
       logoUrl,
-      courseImage
+      courseImage,
+      amount
     });
 
     return res.status(200).json({
@@ -181,13 +191,14 @@ exports.testRescheduleConfirmation = async (req, res) => {
       rescheduleReason = "Schedule conflict", 
       requestedBy = "student", 
       logoUrl,
-      courseImage
+      courseImage,
+      amount = 2500
     } = req.body;
 
     console.log('Received test reschedule confirmation email for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !oldBookingDate || !oldStartTime || !oldEndTime || !newBookingDate || !newStartTime || !newEndTime || !courseName) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !oldBookingDate || !oldStartTime || !oldEndTime || !newBookingDate || !newStartTime || !newEndTime || !courseName || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -206,7 +217,8 @@ exports.testRescheduleConfirmation = async (req, res) => {
       rescheduleReason,
       requestedBy,
       logoUrl,
-      courseImage
+      courseImage,
+      amount
     });
 
     return res.status(200).json({
@@ -241,13 +253,14 @@ exports.testRescheduleRejection = async (req, res) => {
       rejectionReason = "Not available at the requested time", 
       requestedBy = "student", 
       logoUrl,
-      courseImage
+      courseImage,
+      amount = 2500
     } = req.body;
 
     console.log('Received test reschedule rejection email for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -267,7 +280,8 @@ exports.testRescheduleRejection = async (req, res) => {
       rejectionReason,
       requestedBy,
       logoUrl,
-      courseImage
+      courseImage,
+      amount
     });
 
     return res.status(200).json({
@@ -296,13 +310,16 @@ exports.testBookingScheduled = async (req, res) => {
       endTime,
       courseName,
       logoUrl,
-      courseImage
+      courseImage,
+      meetingPlatform,
+      meetingLink,
+      amount = 2500
     } = req.body;
 
     console.log('Received test booking scheduled email request for student:', studentEmail, 'and teacher:', teacherEmail);
 
     // Validate required fields
-    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
+    if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !amount) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -316,7 +333,10 @@ exports.testBookingScheduled = async (req, res) => {
       endTime,
       courseName,
       logoUrl,
-      courseImage
+      courseImage,
+      meetingPlatform,
+      meetingLink,
+      amount
     });
 
     return res.status(200).json({

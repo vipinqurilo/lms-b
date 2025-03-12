@@ -29,7 +29,7 @@ exports.createCoursePayment = async (req, res) => {
             {
                 price_data: {
                     currency: "ZAR",
-                    product_data: { name: course. courseTitle },
+                    product_data: { name: course.courseTitle },
                     unit_amount: Math.round(amount * 100) // Stripe expects amount in cents
                 },
                 quantity: 1
@@ -75,6 +75,10 @@ exports.createBookingPayment = async (req, res) => {
 
     const {sessionTitle, teacherId, studentId, subjectId, amount, sessionDate, sessionStartTime,sessionEndTime,sessionDuration } = req.body;
     console.log(teacherId, studentId, subjectId, amount, sessionDate, sessionStartTime,sessionEndTime,sessionDuration)
+    // Generate a Zoom meeting link
+    const meetingId = Math.floor(100000000 + Math.random() * 900000000);
+    const meetingLink = `https://zoom.us/j/${meetingId}`;
+    
     // Step 1: Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card",],
@@ -82,7 +86,19 @@ exports.createBookingPayment = async (req, res) => {
         success_url: `${process.env.FRONTEND_URL}/student-dashboard/booking/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${process.env.FRONTEND_URL}/student-dashboard/booking/payment-failed`,
         customer_email: req.user.email, // Optional: Prefill email if user is logged in
-        metadata: { sessionTitle,teacherId, studentId,subjectId, sessionDate,sessionStartTime,amount,sessionEndTime,sessionDuration  }, // Store booking data
+        metadata: { 
+          sessionTitle,
+          teacherId, 
+          studentId,
+          subjectId, 
+          sessionDate,
+          sessionStartTime,
+          amount,
+          sessionEndTime,
+          sessionDuration,
+          meetingPlatform: "Zoom",
+          meetingLink
+        }, // Store booking data
         line_items: [
             {
                 price_data: {
