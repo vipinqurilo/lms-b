@@ -15,6 +15,7 @@ const {
   filterHomePage,
   paginationCourse,
   updateCourseInstrustor,
+  moduleMarkedAsCompleted,
 } = require("../controller/courseController");
 const authController = require("./authRoutes");
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -25,6 +26,7 @@ const courseRouter = express.Router();
 const multer = require("multer");
 const { uploadPDF } = require("../upload/cloudinary");
 const uploadPdfMulter = require("../middleware/upload");
+const { getAdminDashboard } = require("../controller/adminController");
 const uploadMulter = multer();
 // courseRouter.post('/',authMiddleware,authorizeRoles("instructor"),upload.single("courseVideo"),addCourse)
 courseRouter.post(
@@ -49,6 +51,7 @@ courseRouter.post(
 );
 courseRouter.post("/upload/pdf",uploadPdfMulter.single("pdf"),uploadPDF)
 courseRouter.get("/home/:categoryId", filterHomePage);
+courseRouter.post("/module-status",authMiddleware,authorizeRoles("student"),moduleMarkedAsCompleted)
 
 // instructor routes
 
@@ -77,7 +80,6 @@ courseRouter.put(
   authorizeRoles("admin"),
   updateStatusByAdmin
 );
-
+courseRouter.get("/admin-dashboard",authMiddleware,authorizeRoles("admin"),getAdminDashboard);
 
 module.exports = courseRouter;
-
