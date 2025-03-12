@@ -111,7 +111,6 @@ app.get("/login", (req, res) => {
 });app.use("/api/admin", adminRoute);
 
 
-}); 
 
 //Payment Routes
 
