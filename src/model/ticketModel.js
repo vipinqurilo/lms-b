@@ -5,7 +5,7 @@ const ticketSchema = new mongoose.Schema({
     subject: { type: String, required: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "CourseCategory", required: true },
     description: { type: String, required: true },
-    status: { type: String, enum: ["processing", "completed", "open"], default: "open" },
+    status: { type: String, enum: [ "close", "open"], default: "open" },
     messages:[
         {
         sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

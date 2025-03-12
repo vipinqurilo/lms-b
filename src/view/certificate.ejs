@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Orbitron:wght@400..900&display=swap"
+      rel="stylesheet"
+    />
+    <title>Course Completion Certificate</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Nunito", sans-serif;
+        text-align: center;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .certificate-container {
+        width: 60%;
+        background-image: url("https://res.cloudinary.com/dxyt4v9lc/image/upload/v1741430822/1_1_rayxjc.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+        margin: auto;
+        position: relative;
+        padding: 30px 20px;
+        border: 2px solid #f39d1251;
+      }
+      .logo {
+        width: 200px;
+        height: auto;
+      }
+      .certificate-title {
+        font-size: 24px;
+        margin: 20px 0;
+      }
+      .certificate-body {
+        font-size: 18px;
+        margin: 10px 0;
+      }
+      .recipient-name {
+        font-size: 30px;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #3498db;
+      }
+      .course-name {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #f39c12;
+      }
+      .signature-section {
+        max-width: 60%;
+        display: flex;
+        justify-content: space-between;
+        margin: 40px auto;
+      }
+      .signature {
+        text-align: center;
+      }
+      .signature-name {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .footer {
+        margin-top: 20px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="certificate-container">
+      <!-- <div class="ribbon"></div> -->
+      <img
+        class="logo"
+        src="https://res.cloudinary.com/dxyt4v9lc/image/upload/v1741420591/logo_t2mwub.png"
+        alt="Logo"
+      />
+      <h1 class="certificate-title">Certificate of Completion</h1>
+      <p class="certificate-body">This is to certify that</p>
+      <p class="recipient-name"><%= studentName %></p>
+      <p class="certificate-body">has successfully completed the course</p>
+      <p class="course-name"><%= courseTitle %></p>
+      <p class="date">Date of Completion: <%= completionDate %></p>
+
+      <div class="signature-section">
+        <div class="signature">
+          <p class="signature-name"><%= instructorName %></p>
+          <p>Instructor</p>
+        </div>
+        <div class="signature">
+          <p>Date: <%= completionDate %></p>
+        </div>
+        <!-- <div class="signature">
+          <img
+            class="logo"
+            src="https://res.cloudinary.com/dxyt4v9lc/image/upload/v1741420591/logo_t2mwub.png"
+            alt="Logo"
+          />
+          <p>University Head</p>
+        </div> -->
+      </div>
+
+      <div class="footer">
+        <p>
+          This certificate is awarded for outstanding achievement in the course.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

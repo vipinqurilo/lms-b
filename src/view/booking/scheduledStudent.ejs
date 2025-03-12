@@ -6,22 +6,46 @@
     <title>Login Success</title>
     <style>
       body {
-        background-color: #ffffff;
+        box-sizing: border-box;
+        width: 100%;
+        background-color: #f5f5f6;
         font-family: Arial, sans-serif;
         margin: 0;
-        padding: 0;
+        min-height: 100vh;
       }
+
       .container {
+        background-color: #f5f5f6;
+        width: 100%;
+        max-width: 100%;
+        padding: 40px 0px;
+        margin: 0 auto;
+      }
+
+      .card {
+        padding-top: 24px;
+        background-color: #ffffff;
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      /* Update image widths to prevent overflow */
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      .course-image-container {
+        width: 100%;
+        max-width: 320px;
+        height: auto;
+        margin: 8px auto 0;
         display: flex;
         justify-content: center;
-        padding: 40px 0;
-      }
-      .card {
-        width: 600px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 24px;
-        text-align: center;
+        align-items: center;
       }
       .logo {
         width: 96px;
@@ -99,9 +123,11 @@
         margin-top: 80px;
       }
       .footer {
+        padding: 20px;
         margin-top: 40px;
         text-align: center;
         color: #4b5563;
+        border-top: 2px solid #dfdfdf;
         font-size: 14px;
       }
       .footer img {
@@ -112,20 +138,23 @@
         margin-top: 8px;
       }
       .copyright-container {
+        
         display: flex;
-        align-items: center;
-        justify-content: center;
+        justify-content: center !important;
+        align-items: center;  
+        width: 100%;
         gap: 12px;
+        text-align: center;
       }
-
       .social-icons {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        align-items: center;
+        width: fit-content;
+        text-align: center;
       }
       .social-icons img {
         width: 16px;
+        display: inline-block;
+        margin: 0 6px;
+        vertical-align: middle;
       }
     </style>
   </head>
@@ -141,8 +170,8 @@
           />
         </div>
 
-        <!-- Welcome Message -->
-        <h2 class="welcome-text">Welcome to Steam Institute!</h2>
+        <!-- Updated Welcome Message -->
+        <h2 class="welcome-text">Booking Confirmation</h2>
         <div class="divider"></div>
 
         <div class="background-section">
@@ -157,24 +186,36 @@
           <div class="content">
             <h3 class="greeting">Hi Diana</h3>
             <p class="message">
-              We wanted to inform you that you have successfully signed into
-              your account on Steam Institute. If this was you, you're all set
-              to continue with your learning journey.
+              Your booking has been successfully confirmed with Teacher XYZ. Here are your session details:
             </p>
+
+            <h3 class="section-title">Session Details</h3>
+            <ul class="list">
+              <li>
+                <strong>Teacher:</strong> XYZ
+              </li>
+              <li>
+                <strong>Date:</strong> Monday, January 15, 2024
+              </li>
+              <li>
+                <strong>Time:</strong> 10:00 AM - 11:00 AM
+              </li>
+              <li>
+                <strong>Course:</strong> Introduction to Mathematics
+              </li>
+            </ul>
 
             <h3 class="section-title">What's Next</h3>
             <ul class="list">
               <li>
-                You can now access your courses, assignments, and learning
-                resources.
+                You will receive a meeting link 15 minutes before the session.
               </li>
               <li>
-                Check out your dashboard for the latest updates, upcoming exams,
-                and new assignments.
+                Please ensure you have a stable internet connection and required materials ready.
               </li>
             </ul>
 
-            <button class="button">View Courses</button>
+            <button class="button">View Booking Details</button>
             <div class="spacer"></div>
           </div>
         </div>
@@ -186,22 +227,23 @@
             alt="STEAM Institute"
           />
           <p>Address - 65 Rz- London, United Kingdom Nd-</p>
-          <div class="copyright-container">
+          <!-- Update the copyright container structure -->
+          <div  style="display: flex !important; justify-content: center !important; align-items: center !important; width: 100% !important; gap: 12px !important; text-align: center !important;"></div>
             <div>Copyright © 2024</div>
-            <div class="social-icons">
-              <img
+            <div style="margin-top: 10px; text-align: center;"></div>
+              <img style="width: 16px; display: inline-block; margin: 0 6px; vertical-align: middle;"
                 src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263784/luxe/lukzufi37rikdksvtxnv.png"
                 alt="Email"
               />
-              <img
+              <img style="width: 16px; display: inline-block; margin: 0 6px; vertical-align: middle;"
                 src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263837/luxe/rzs869gxiyvxm4bl06nu.png"
                 alt="Phone"
               />
-              <img
+              <img style="width: 16px; display: inline-block; margin: 0 6px; vertical-align: middle;"
                 src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263870/luxe/jl7jont6grktooubicim.png"
                 alt="Website"
               />
-              <img
+              <img style="width: 16px; display: inline-block; margin: 0 6px; vertical-align: middle;"
                 src="https://res.cloudinary.com/daprkakyk/image/upload/v1741263894/luxe/lacihp4i5wlojkxycmsw.png"
                 alt="Instagram"
               />

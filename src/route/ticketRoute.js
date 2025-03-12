@@ -12,5 +12,5 @@ ticketRouter.post('/addMessage/:id',authMiddleware,addTicketMessage)
 
 ticketRouter.get('/admin/get',authMiddleware,adminTicketsGet)
 ticketRouter.post('/admin',authMiddleware,adminTicketsUpdate)
-ticketRouter.post('/admin',authMiddleware,statusUpdate)
+ticketRouter.post('/admin/status',authMiddleware,statusUpdate)
 module.exports = ticketRouter;
