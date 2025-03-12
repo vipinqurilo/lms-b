@@ -214,6 +214,7 @@ exports.getTutors = async (req, res) => {
   }
 };
 
+
 exports.getAvailabilityCalendarByTeacherId=async(req,res)=>{
   try {
       const userId=req.params.teacherId;
@@ -312,3 +313,4 @@ exports.getDashboard = async (req, res) => {
     });
   }
 };
+

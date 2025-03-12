@@ -96,7 +96,11 @@ app.get("/template", (req, res) => {
     buttonText: "View Booking Details",
     address: "Address - 65 Rz- London, United Kingdom Nd-",
     year: new Date().getFullYear(),
-    
+    recipientEmail: "nethead321@gmail.com", // Student email from memory
+    studentEmail: "nethead321@gmail.com", // Student email from memory
+    teacherEmail: "sakshi04002@gmail.com", // Teacher email from memory
+    meetingPlatform: "Zoom",
+    meetingLink: "https://zoom.us/j/example" // Example meeting link
   };
 
   res.render("template", templateData);
