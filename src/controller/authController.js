@@ -45,6 +45,7 @@ exports.registerUser = async (req, res) => {
         email: newUser.email,
         role: newUser.role,
         userStatus: newUser.userStatus,
+        name:!newUser.firstName?`${newUser.role.toUpperCase()}`:`${newUser.firstName} ${newUser.lastName||""}`
       },
       token: token,
     });

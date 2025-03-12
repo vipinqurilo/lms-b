@@ -1,6 +1,6 @@
 const { mongo, default: mongoose } = require("mongoose");
 const TeacherProfileModel = require("../model/teacherProfileModel");
-
+const CalenderModel=require("../model/calenderModel")
 exports.getTutors = async (req, res) => {
   try {
     let { search, subjects, days, timeRanges, gender, minPrice, maxPrice, sortByRating } = req.query;
@@ -16,11 +16,11 @@ exports.getTutors = async (req, res) => {
         { "user.lastName": { $regex: search, $options: "i" } },
       ];
     }
-
+    let subjectsTaughtQuery={};
     // Subject filter
-    if (subjects && subjects.length > 0) {
+    if (subjects) {
       const subjectIds = subjects.split(",").map((id) => new mongoose.Types.ObjectId(id));
-      query.subjectsTaught = { $in: subjectIds };
+      subjectsTaughtQuery = { $in: subjectIds };
     }
 
     // Gender filter (default: both male & female)
@@ -39,6 +39,10 @@ exports.getTutors = async (req, res) => {
     console.log("Query:", query);
 
     let tutors = await TeacherProfileModel.aggregate([
+     ... (subjects?
+        [{
+        $match:{subjectsTaught:subjectsTaughtQuery}}]:[]
+        ),
       {
         $lookup: {
           from: "calendars",
@@ -182,7 +186,7 @@ exports.getTutors = async (req, res) => {
         tutors.sort((a, b) => (a.rating || 0) - (b.rating || 0));
       }
     }
-
+    console.log(tutors,"tutors")
     res.json({
       success: true,
       data: tutors,
@@ -197,6 +201,27 @@ exports.getTutors = async (req, res) => {
     });
   }
 };
+
+exports.getAvailabilityCalendarByTeacherId=async(req,res)=>{
+  try {
+      const userId=req.params.teacherId;
+      const teacherCalendar=await CalenderModel.findOne({userId});
+      if(!teacherCalendar)
+          return res.json({success:false,message:"Availablity Calendar not found"})
+      res.json({  
+          success:true,
+          message:"Availablity Calendar fetched successfully",
+          data:teacherCalendar
+      })
+  } catch (error) {
+      console.log(error);
+      res.json({
+          success:false,
+          message:"Something went wrong",
+          error:error.message
+      })
+  }
+}
 
 
 

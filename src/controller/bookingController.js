@@ -112,7 +112,7 @@ exports.getBookings = async (req, res) => {
       page = 1,
       limit = 10,
     } = req.query;
-    console.log(status, startDate, endDate, search);
+    console.log(teacherId,role,status, startDate, endDate, search);
     page = parseInt(page);
 
     limit = parseInt(limit);
@@ -396,6 +396,120 @@ exports.getBookings = async (req, res) => {
   }
 };
 
+//Get Booking for Tutor 
+exports.getBookingsForTutor = async (req, res) => {
+  try {
+    let {
+      startDate,
+      endDate,
+      teacherId,
+    } = req.query;
+    console.log(teacherId, startDate, endDate,"getBookingForTutor");
+  
+    let query = {status:{$ne:"cancelled"}};
+    //Filter with Teacher Id
+    if (teacherId) {
+      query.teacherId = new mongoose.Types.ObjectId(teacherId);
+    }
+
+    // Date range filtering
+    if (startDate || endDate) {
+      query.sessionDate = {};
+      if (startDate)
+        query.sessionDate.$gte = new Date(
+          moment(startDate).format("YYYY-MM-DD[T00:00:00.000Z]")
+        );
+      if (endDate)
+        query.sessionDate.$lte = new Date(
+          moment(endDate).format("YYYY-MM-DD[T00:00:00.000Z]")
+        );
+    }
+    console.log(query);
+   
+    const bookings = await BookingModel.aggregate([
+      { $match: query },
+
+      // Lookup student details
+      {
+        $lookup: {
+          from: "users",
+          localField: "studentId",
+          foreignField: "_id",
+          as: "student",
+        },
+      },
+      { $unwind: "$student" },
+
+      // // Lookup teacher details
+      {
+        $lookup: {
+          from: "users",
+          localField: "teacherId",
+          foreignField: "_id",
+          as: "teacher",
+        },
+      },
+      { $unwind: "$teacher" },
+
+      // // Lookup subject details
+      {
+        $lookup: {
+          from: "coursesubcategories",
+          localField: "subjectId",
+          foreignField: "_id",
+          as: "subject",
+        },
+      },
+      { $unwind: "$subject" },
+
+      // Project only necessary fields
+      {
+        $project: {
+          _id: 1,
+          status: 1,
+          sessionDate: 1,
+          sessionStartTime: 1,
+          sessionEndTime: 1,
+          sessionDuration: 1,
+          // "subject.name": 1,
+          // "student._id": 1,
+          // "student.firstName": 1,
+          // "student.lastName": 1,
+          // "student.profilePhoto": 1,
+          // "student.email": 1,
+          // "student.profilePhoto": 1,
+          // "teacher.firstName": 1,
+          // "teacher.lastName": 1,
+          // "teacher.email": 1,
+          // "teacher.profilePhoto": 1,
+          // "subject.name": 1,
+          // rescheduleRequest: 1,
+          // meetingLink: 1,
+          // meetingPlatform: 1,
+        },
+      },
+
+      // Sort by timeSlot (earliest bookings first)
+      { $sort: { sessionDate: 1 } },
+
+    ]);
+
+    res.json({
+      success: true,
+      data: bookings,
+      message: "Bookings retrieved successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Something went wrong",
+        error: error.message,
+      });
+  }
+};
 exports.confirmBooking = async (req, res) => {
   try {
     const userId = req.user.id;

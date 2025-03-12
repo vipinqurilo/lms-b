@@ -6,7 +6,6 @@ const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
 const languageRouter = require("./src/route/languageRoute");
-const requestRouter = require("./src/route/requestRoutes");
 const profileRouter = require("./src/route/profileRoute");
 const tutorRouter = require("./src/route/tutorRoutes");
 const bookingRouter = require("./src/route/bookingRoute");
@@ -49,13 +48,13 @@ const corsOption = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOption));
+
+
 app.use((req, res, next) => {
   // console.log(req)
   next();
 });
 app.use(express.static("public"));
-
-app.use("/api/requests",requestRouter)
 app.use("/api/auth",authController);
 app.use("/api/course",courseRouter);
 app.use("/api/category",categoryRouter);

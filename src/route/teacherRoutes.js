@@ -7,8 +7,8 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 const router=require("express").Router();
 
 //Teacher
-router.get("/",authMiddleware,getTeachers);
-
+router.use(authMiddleware)
+router.get("/",getTeachers);
 //Teacher Requests
 router.post("/request",authorizeRoles("admin,teacher"),createTeacherRequest);
 router.put("/request/:requestId",authorizeRoles("teacher"),editTeacherRequest);
