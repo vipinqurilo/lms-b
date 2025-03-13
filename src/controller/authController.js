@@ -2,6 +2,7 @@ const UserModel = require("../model/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
+const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
 
 exports.registerUser = async (req, res) => {
@@ -9,9 +10,11 @@ exports.registerUser = async (req, res) => {
     let newUser;
     const data = req.body;
 
-    // Generate a unique username for all roles
-    const randomNumber = Math.floor(1000 + Math.random() * 9000);
-    const userName = `${data.firstName.toLowerCase()}${randomNumber}`;
+    let userName = '';
+    
+    if (data.role !== "teacher") {
+      userName = generateUsername(data.firstName);
+    }
 
     const userObj = {
       firstName: data.firstName,
@@ -172,50 +175,6 @@ exports.generateLoginToken = async (req, res) => {
   }
 };
 
-exports.generateLoginToken = async (req, res) => {
-  try {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({
-        status: "failed",
-        message: "userId is required",
-      });
-    }
-
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        status: "failed",
-        message: "User not found",
-      });
-    }
-
-    const token = jwt.sign(
-      { email: user.email, role: user.role, id: user._id },
-      process.env.JWT_SECRET
-    );
-
-    res.json({
-      status: "success",
-      message: "token generated successfully",
-      data: {
-        _id: user._id,
-        email: user.email,
-        name: user.firstName + " " + user.lastName,
-        role: user.role,
-        userStatus: user.userStatus,
-      },
-      token,
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: "failed",
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-};
-
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -246,20 +205,38 @@ exports.changePassword = async (req, res) => {
 };
 
 exports.validateToken = async (req, res) => {
-  const user = await UserModel.findById(req.user.id).select(
-    "email role _id userStatus firstName lastName"
-  );
-  const { userStatus, role, email, firstName, lastName, _id } = user;
-  const userData = {
-    _id,
-    name: firstName + " " + lastName,
-    userStatus,
-    role,
-    email,
-  };
-  return res.json({
-    success: true,
-    message: "Token validated successfully",
-    data: userData,
-  });
+  try {
+    const user = await UserModel.findById(req.user.id).select(
+      "email role _id userStatus firstName lastName"
+    );
+     
+    if (!user) {
+      return res.status(404).json({
+        success: false, 
+        message: "User not found"
+      });
+    }
+
+    const { userStatus, role, email, firstName, lastName, _id } = user;
+    const userData = {
+      _id,
+      name: firstName + " " + lastName,
+      userStatus,
+      role,
+      email,
+    };
+    
+    return res.json({
+      success: true,
+      message: "Token validated successfully",
+      data: userData,
+    });
+  } catch (error) {
+    console.error("Error validating token:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message
+    });
+  }
 };

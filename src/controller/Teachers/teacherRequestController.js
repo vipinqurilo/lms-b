@@ -97,9 +97,24 @@ exports.getTeacherRequests = async (req, res) => {
       {
         $match: query,
       },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      {
+        $unwind: "$userDetails"
+      },
+      {
+        $project: {
+          "userDetails.password": 0,
+          "userDetails.__v": 0
+        }
+      },
       { $sort: { createdAt: 1 } },
-
-      // // Pagination
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -122,13 +137,15 @@ exports.getTeacherRequests = async (req, res) => {
     });
   }
 };
-
 exports.getTeacherRequestsById = async (req, res) => {
   try {
     console.log(req.user.role);
     const query = {};
-    if (req.user.role == "admin" && req.params.requestId)
-      query._id = req.params.requestId;
+    if (req.user.role == "admin" && req.params.requestId) {
+      if (req.params.requestId !== "all") {
+        query._id = req.params.requestId;
+      }
+    }
     if (req.user.role == "teacher") query.userId = req.user.id;
     console.log(query);
     const teacherRequest = await TeacherRequestModel.findOne(query);
