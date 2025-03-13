@@ -131,7 +131,7 @@ exports.getTeachers = async (req, res) => {
         },
       },
       {
-        $addFields: {
+        $addFields: { 
           pendingCourses: {
             $size: {
               $filter: {
@@ -227,16 +227,16 @@ exports.getTeachers = async (req, res) => {
             gender: 1,
           },
           courses: 1,
-          pendingCourses: 1,
-          publishedCourses: 1,
-          unpublishedCourses: 1,
-          totalEnrolledStudents: 1,
-          cancelledSessions: 1,
-          confirmedSessions: 1,
-          rescheuledSessions: 1,
-          completedSessions: 1,
-          totalSessions: 1,
-          scheduledSessions: 1,
+          // pendingCourses: 1,
+          // publishedCourses: 1,
+          // unpublishedCourses: 1,
+          // totalEnrolledStudents: 1,
+          // cancelledSessions: 1,
+          // confirmedSessions: 1,
+          // rescheuledSessions: 1,
+          // completedSessions: 1,
+          // totalSessions: 1,
+          // scheduledSessions: 1,
           reviews: {
             _id: 1,
             rating: 1,

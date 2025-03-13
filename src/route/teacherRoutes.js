@@ -15,6 +15,6 @@ router.put("/request/:requestId",authMiddleware,authorizeRoles("teacher"),editTe
 router.get("/request/:requestId",authMiddleware,authorizeRoles("admin,teacher"),getTeacherRequestsById);
 router.put("/request/approve/:requestId",authMiddleware,authorizeRoles("admin"),approvedTeacherRequest);
 router.put("/request/reject/:requestId",authMiddleware, authorizeRoles("admin"),rejectedTeacherRequest);
-router.get("/request/all",authMiddleware, authorizeRoles("admin"),getTeacherRequests);
+router.get("/all-request/",authMiddleware, authorizeRoles("admin"),getTeacherRequests);
 const teacherRouter=router;
 module.exports=teacherRouter;

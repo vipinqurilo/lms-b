@@ -4,8 +4,8 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 const router=require("express").Router();
 router.get("/",getTutors);
 router.get("/dashboard",authMiddleware,authorizeRoles("teacher"),  getDashboard);
-router.get("/avaiablity-calendar/:teacherId",getAvailabilityCalendarByTeacherId)
+router.get("/availability-calendar/:teacherId",getAvailabilityCalendarByTeacherId)
 // router.use(authMiddleware,authorizeRoles("admin,teacher"))
 
-const tutorRouter=router;
+const tutorRouter=router; 
 module.exports=tutorRouter; 

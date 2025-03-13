@@ -286,6 +286,7 @@ exports.getBookings = async (req, res) => {
           "student.profilePhoto": 1,
           "student.email": 1,
           "student.profilePhoto": 1,
+          "teacher._id": 1,
           "teacher.firstName": 1,
           "teacher.lastName": 1,
           "teacher.email": 1,
@@ -295,6 +296,41 @@ exports.getBookings = async (req, res) => {
           meetingLink: 1,
           meetingPlatform: 1,
         },
+      },
+
+      // Add lookup for rescheduleBy user details
+      {
+        $lookup: {
+          from: "users",
+          let: { rescheduleBy: "$rescheduleRequest.rescheduleBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", "$$rescheduleBy"] }
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+                profilePhoto: 1,
+                role: 1
+              }
+            }
+          ],
+          as: "rescheduleRequest.rescheduleByUser"
+        }
+      },
+
+      // Unwind rescheduleByUser if it exists
+      {
+        $addFields: {
+          "rescheduleRequest.rescheduleByUser": {
+            $arrayElemAt: ["$rescheduleRequest.rescheduleByUser", 0]
+          }
+        }
       },
 
       // Sort by timeSlot (earliest bookings first)
@@ -342,7 +378,42 @@ exports.getBookings = async (req, res) => {
       },
       { $unwind: "$subject" },
 
-      // Search filtering (same as your aggregation pipeline)
+      // Add lookup for rescheduleBy user details
+      {
+        $lookup: {
+          from: "users",
+          let: { rescheduleBy: "$rescheduleRequest.rescheduleBy" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$_id", "$$rescheduleBy"] }
+              }
+            },
+            {
+              $project: {
+                _id: 1,
+                firstName: 1,
+                lastName: 1,
+                email: 1,
+                profilePhoto: 1,
+                role: 1
+              }
+            }
+          ],
+          as: "rescheduleRequest.rescheduleByUser"
+        }
+      },
+
+      // Unwind rescheduleByUser if it exists
+      {
+        $addFields: {
+          "rescheduleRequest.rescheduleByUser": {
+            $arrayElemAt: ["$rescheduleRequest.rescheduleByUser", 0]
+          }
+        }
+      },
+
+      // Search filtering (same as before)
       ...(search
         ? [
             {
@@ -715,50 +786,52 @@ exports.cancelBooking = async (req, res) => {
     console.log(error, "error");
     res.status(500).json({ success: false, message: "Server error", error });
   }
-};
+};     
 exports.rescheduleRequestBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const { newTime, reason } = req.body;
 
     const booking = await bookingModel.findById(bookingId);
-    if (!booking)
-      return res
-        .status(404)
-        .json({ success: false, message: "Booking not found" });
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
 
-    // Ensure only the teacher can request reschedule
-    if (req.user.id.toString() !== booking.teacherId.toString()) {
+    // Allow both teacher and student to request reschedule
+    const isTeacher = req.user.id.toString() === booking.teacherId.toString();
+    const isStudent = req.user.id.toString() === booking.studentId.toString();
+    
+    if (!isTeacher && !isStudent) {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    if (
-      booking.status == "reschedule_in_progress" ||
-      booking.status == "rescheduled"
-    )
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Booking either in progress or already scheduled",
-        });
+    if (booking.status === "reschedule_in_progress" || booking.status === "rescheduled") {
+      return res.status(400).json({
+        success: false,
+        message: "Booking either in progress or already scheduled",
+      });
+    }
 
-    if (booking.status !== "scheduled")
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Booking is either cancelled or completed or confirmed",
-        });
+    if (booking.status !== "scheduled") {
+      return res.status(400).json({
+        success: false,
+        message: "Booking is either cancelled or completed or confirmed",
+      });
+    }
+
     // Update Booking with Reschedule Request
     booking.rescheduleRequest = {
       newTime,
       reason,
       status: "pending",
+      rescheduleBy: req.user.id // Store the User ObjectId instead of "teacher"/"student" string
     };
     booking.status = "reschedule_in_progress";
 
     await booking.save();
+
+    // Populate the rescheduleBy user data before sending response
+    await booking.populate('rescheduleRequest.rescheduleBy', '_id firstName lastName email role');
 
     // Get student and teacher details for email
     const student = await UserModel.findById(booking.studentId);
@@ -791,21 +864,19 @@ exports.rescheduleRequestBooking = async (req, res) => {
         newStartTime,
         newEndTime,
         rescheduleReason: reason,
-        requestedBy: 'teacher' // Since only teachers can request reschedule in this function
+        requestedBy: isTeacher ? "teacher" : "student"
       });
       console.log("Reschedule request emails sent successfully");
     } catch (emailError) {
       console.error("Error sending reschedule request emails:", emailError);
-      // Continue with the response even if email sending fails
     }
 
     res.json({
       success: true,
-      message: "Reschedule request sent to student",
+      message: "Reschedule request sent successfully",
       data: booking,
     });
 
-    // Notify the student (Use WebSocket, Email, or Push Notification)
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -817,39 +888,56 @@ exports.rescheduleResponseBooking = async (req, res) => {
     const { action } = req.body; // action: "accept" or "deny"
 
     const booking = await bookingModel.findById(bookingId);
-    if (!booking)
-      return res
-        .status(404)
-        .json({ success: false, message: "Booking not found" });
-
-    // Ensure only the student can respond
-    if (req.user.id.toString() !== booking.studentId.toString()) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
     }
 
+    // Check if there's a pending reschedule request
     if (booking.rescheduleRequest.status !== "pending") {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Reschedule request already processed",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Reschedule request already processed",
+      });
     }
 
+    // Determine who should respond to the request
+    const requestedById = booking.rescheduleRequest.rescheduleBy.toString();
+    const responderId = req.user.id.toString();
+    
+    // If request was made by student, teacher should respond and vice versa
+    const isValidResponder = (
+      (requestedById === booking.studentId.toString() && responderId === booking.teacherId.toString()) ||
+      (requestedById === booking.teacherId.toString() && responderId === booking.studentId.toString())
+    );
+
+    if (!isValidResponder) {
+      return res.status(403).json({ 
+        success: false, 
+        message: "Unauthorized. Only the other party can respond to the reschedule request" 
+      });
+    }
+
+    // Rest of the existing code remains the same
     if (action === "accept") {
-      // Update booking with new schedule
-      booking.scheduleTime = booking.rescheduleRequest.newTime;
+      const newTimeObj = new Date(booking.rescheduleRequest.newTime);
+      booking.sessionStartTime = newTimeObj;
+      
+      const originalDuration = booking.sessionEndTime - booking.sessionStartTime;
+      booking.sessionEndTime = new Date(newTimeObj.getTime() + originalDuration);
+      
+      booking.sessionDate = moment(newTimeObj).startOf('day').toDate();
+      
       booking.status = "rescheduled";
       booking.rescheduleRequest.status = "accepted";
     } else {
-      // Deny the request
-      booking.status = "cancelled"; // Keep original booking
+      booking.status = "scheduled"; // Changed from 'cancelled' to 'scheduled' to keep original booking active
       booking.rescheduleRequest.status = "denied";
-      //Process Refund
-      // refundForBooking();
     }
 
     await booking.save();
+
+    // Populate the rescheduleBy user data before sending response
+    await booking.populate('rescheduleRequest.rescheduleBy', '_id firstName lastName email role');
 
     // Get student and teacher details for email
     const student = await UserModel.findById(booking.studentId);
@@ -870,7 +958,6 @@ exports.rescheduleResponseBooking = async (req, res) => {
     // Send appropriate emails based on the action
     try {
       if (action === "accept") {
-        // Send reschedule confirmation emails
         await emailService.sendRescheduleConfirmation({
           studentEmail: student.email,
           studentName: student.firstName + ' ' + student.lastName,
@@ -884,11 +971,9 @@ exports.rescheduleResponseBooking = async (req, res) => {
           newEndTime,
           courseName: "Subject English Lesson of 30 Minutes",
           rescheduleReason: booking.rescheduleRequest.reason,
-          requestedBy: 'teacher' // Since only teachers can request reschedule in this system
+          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
         });
-        console.log("Reschedule confirmation emails sent successfully");
       } else {
-        // Send reschedule rejection emails
         await emailService.sendRescheduleRejection({
           studentEmail: student.email,
           studentName: student.firstName + ' ' + student.lastName,
@@ -903,13 +988,11 @@ exports.rescheduleResponseBooking = async (req, res) => {
           courseName: "Subject English Lesson of 30 Minutes",
           rescheduleReason: booking.rescheduleRequest.reason,
           rejectionReason: req.body.rejectionReason || "No reason provided",
-          requestedBy: 'teacher' // Since only teachers can request reschedule in this system
+          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
         });
-        console.log("Reschedule rejection emails sent successfully");
       }
     } catch (emailError) {
       console.error(`Error sending ${action === "accept" ? "confirmation" : "rejection"} emails:`, emailError);
-      // Continue with the response even if email sending fails
     }
 
     res.json({
@@ -918,13 +1001,10 @@ exports.rescheduleResponseBooking = async (req, res) => {
       data: booking,
     });
 
-    // Notify the teacher about the decision (WebSocket, Email, etc.)
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
-
-
-};
+}; 
 
 exports.addPayment = async (req, res) => {
   try {
@@ -933,3 +1013,4 @@ exports.addPayment = async (req, res) => {
 
   } catch (error) {}
 };
+ 

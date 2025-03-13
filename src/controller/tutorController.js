@@ -3,6 +3,7 @@ const TeacherProfileModel = require("../model/teacherProfileModel");
 const CourseModel = require("../model/CourseModel");
 const BookingModel = require("../model/bookingModel");
 const studentModel = require("../model/studentProfileModel");
+const CalendarModel = require("../model/calenderModel");
 
 exports.getTutors = async (req, res) => {
   try {                         
@@ -214,11 +215,10 @@ exports.getTutors = async (req, res) => {
   }
 };
 
-
 exports.getAvailabilityCalendarByTeacherId=async(req,res)=>{
   try {
       const userId=req.params.teacherId;
-      const teacherCalendar=await CalenderModel.findOne({userId});
+      const teacherCalendar=await CalendarModel.findOne({userId});
       if(!teacherCalendar)
           return res.json({success:false,message:"Availablity Calendar not found"})
       res.json({  
@@ -235,9 +235,6 @@ exports.getAvailabilityCalendarByTeacherId=async(req,res)=>{
       })
   }
 }
-
-
-
 
 exports.getDashboard = async (req, res) => {
   try {

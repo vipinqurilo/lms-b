@@ -18,6 +18,9 @@ const bookingSchema=new mongoose.Schema({
     rescheduleRequest: {
       newTime: { type: String },
       reason: { type: String },
+      rescheduleBy: { 
+        type:mongoose.Schema.Types.ObjectId,ref:'User'
+      },
       status: {
         type: String,
         enum: ["pending", "accepted", "denied"],
