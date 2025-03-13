@@ -6,6 +6,7 @@ const moment = require("moment");
 const bookingModel = require("../model/bookingModel");
 const paymentModel = require("../model/paymentModel");
 const UserModel = require("../model/UserModel");
+const CourseSubCategoryModel = require("../model/courseSubCategoryModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const emailService = require("../services/emailService");
 exports.createBooking = async (req, res) => {
@@ -33,16 +34,30 @@ exports.createBooking = async (req, res) => {
       const teacher=await UserModel.findOne({
         _id:session.metadata.teacherId
       })
+      
+      // Fetch subject information safely
+      let courseName = "Course";
+      try {
+        const subject = await CourseSubCategoryModel.findById(session.metadata.subjectId);
+        if (subject) {
+          courseName = subject.name;
+        }
+      } catch (subjectError) {
+        console.error("Error fetching subject:", subjectError);
+      }
+      
+      const sessionTitle = `${courseName} (${session.metadata.sessionDuration} Minutes)`;
+      
     if(existingBooking){
       return res.json({
         success: true,
         message: "Booking already created",
         data:{
-          sessionTitle:"Subject English Lesson of 30 Minutes",
-          teacherName:teacher.firstName+teacher.lastName,
-          transactionId:session.payment_intent,
-          sessionDate:session.metadata.sessionDate,
-          sessionStartDate:session.metadata.sessionStartTime,
+          sessionTitle: sessionTitle,
+          teacherName: teacher.firstName + teacher.lastName,
+          transactionId: session.payment_intent,
+          sessionDate: session.metadata.sessionDate,
+          sessionStartDate: session.metadata.sessionStartTime,
         }
       });
     }
@@ -78,33 +93,38 @@ exports.createBooking = async (req, res) => {
       const student = await UserModel.findById(studentId);
       const teacher = await UserModel.findById(teacherId);
       
-      // Send booking confirmation emails
+      // Format dates for email
+      const formattedDate = moment(session.metadata.sessionDate).format('MMMM D, YYYY');
+      const formattedStartTime = moment(session.metadata.sessionStartTime).format('h:mm A');
+      const formattedEndTime = moment(session.metadata.sessionEndTime).format('h:mm A');
+      
+      // Send booking scheduled emails (not confirmation yet)
       try {
-        await emailService.sendBookingConfirmation({
+        await emailService.sendBookingScheduled({
           studentEmail: student.email,
           studentName: student.firstName + ' ' + student.lastName,
           teacherName: teacher.firstName + ' ' + teacher.lastName,
           teacherEmail: teacher.email,
-          bookingDate: session.metadata.sessionDate,
-          startTime: session.metadata.sessionStartTime,
-          endTime: session.metadata.sessionEndTime,
-          courseName: "Subject English Lesson of 30 Minutes",
-         
+          bookingDate: formattedDate,
+          startTime: formattedStartTime,
+          endTime: formattedEndTime,
+          courseName: sessionTitle,
+          amount: amount
         });
-        console.log("Booking confirmation emails sent successfully");
+        console.log("Booking scheduled emails sent successfully");
       } catch (emailError) {
-        console.error("Error sending booking confirmation emails:", emailError);
-        // Continue with the response even if email sending fails
+        console.error("Error sending booking scheduled emails:", emailError);
       }
       
       res.json({
         success: true,
         message: "Booking created successfully",
-        data:{sessionTitle:"Subject English Lesson of 30 Minutes",
-        teacherName:teacher.firstName+teacher.lastName,
-        transactionId:session.payment_intent,
-        sessionDate:session.metadata.sessionDate,
-        sessionStartDate:session.metadata.sessionStartTime
+        data:{
+          sessionTitle: sessionTitle,
+          teacherName: teacher.firstName + teacher.lastName,
+          transactionId: session.payment_intent,
+          sessionDate: session.metadata.sessionDate,
+          sessionStartDate: session.metadata.sessionStartTime
         }
       });
     } else {
@@ -491,7 +511,6 @@ exports.getBookings = async (req, res) => {
       });
   }
 };
-
 //Get Booking for Tutor 
 exports.getBookingsForTutor = async (req, res) => {
   try {
@@ -633,6 +652,49 @@ exports.confirmBooking = async (req, res) => {
 
     await booking.save();
 
+    // Get student and teacher details for email
+    const student = await UserModel.findById(booking.studentId);
+    const teacher = await UserModel.findById(booking.teacherId);
+    
+    // Format dates for email
+    const formattedDate = moment(booking.sessionDate).format('MMMM D, YYYY');
+    const formattedStartTime = moment(booking.sessionStartTime).format('h:mm A');
+    const formattedEndTime = moment(booking.sessionEndTime).format('h:mm A');
+    
+    // Get subject information
+    let courseName = "Course";
+    try {
+      const subject = await CourseSubCategoryModel.findById(booking.subjectId);
+      if (subject) {
+        courseName = subject.name;
+      }
+    } catch (subjectError) {
+      console.error("Error fetching subject:", subjectError);
+    }
+    
+    const sessionTitle = `${courseName} (${booking.sessionDuration} Minutes)`;
+    
+    // Send booking confirmation emails
+    try {
+      await emailService.sendBookingConfirmation({
+        studentEmail: student.email,
+        studentName: student.firstName + ' ' + student.lastName,
+        teacherName: teacher.firstName + ' ' + teacher.lastName,
+        teacherEmail: teacher.email,
+        bookingDate: formattedDate,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        courseName: sessionTitle,
+        meetingPlatform: booking.meetingPlatform,
+        meetingLink: booking.meetingLink,
+        amount: booking.amount
+      });
+      console.log("Booking confirmation emails sent successfully");
+    } catch (emailError) {
+      console.error("Error sending booking confirmation emails:", emailError);
+      // Continue with the response even if email sending fails
+    }
+
     res
       .status(200)
       .json({ message: "Booking confirmed successfully", booking });
@@ -665,12 +727,60 @@ exports.editBookingMeetingInfo = async (req, res) => {
         });
     }
 
+    const oldMeetingPlatform = booking.meetingPlatform;
+    const oldMeetingLink = booking.meetingLink;
+
     booking.meetingPlatform = meetingPlatform || booking.meetingPlatform;
     booking.meetingLink = meetingLink || booking.meetingLink;
     booking.meetingUsername = meetingUsername || booking.meetingUsername;
     booking.meetingPassword = meetingPassword || booking.meetingPassword;
 
     await booking.save();
+
+    // Only send an email if the platform or link has changed
+    if (oldMeetingPlatform !== booking.meetingPlatform || oldMeetingLink !== booking.meetingLink) {
+      // Get student and teacher details for email
+      const student = await UserModel.findById(booking.studentId);
+      const teacher = await UserModel.findById(booking.teacherId);
+      
+      // Format dates for email
+      const formattedDate = moment(booking.sessionDate).format('MMMM D, YYYY');
+      const formattedStartTime = moment(booking.sessionStartTime).format('h:mm A');
+      const formattedEndTime = moment(booking.sessionEndTime).format('h:mm A');
+      
+      // Get subject information
+      let courseName = "Course";
+      try {
+        const subject = await CourseSubCategoryModel.findById(booking.subjectId);
+        if (subject) {
+          courseName = subject.name;
+        }
+      } catch (subjectError) {
+        console.error("Error fetching subject:", subjectError);
+      }
+      
+      const sessionTitle = `${courseName} (${booking.sessionDuration} Minutes)`;
+      
+      // Send updated meeting info emails
+      try {
+        await emailService.sendBookingConfirmation({
+          studentEmail: student.email,
+          studentName: student.firstName + ' ' + student.lastName,
+          teacherName: teacher.firstName + ' ' + teacher.lastName,
+          teacherEmail: teacher.email,
+          bookingDate: formattedDate,
+          startTime: formattedStartTime,
+          endTime: formattedEndTime,
+          courseName: sessionTitle,
+          meetingPlatform: booking.meetingPlatform,
+          meetingLink: booking.meetingLink,
+          amount: booking.amount
+        });
+        console.log("Meeting update emails sent successfully");
+      } catch (emailError) {
+        console.error("Error sending meeting update emails:", emailError);
+      }
+    }
 
     res
       .status(200)
@@ -754,6 +864,24 @@ exports.cancelBooking = async (req, res) => {
     const student = await UserModel.findById(booking.studentId);
     const teacher = await UserModel.findById(booking.teacherId);
     
+    // Format dates for email
+    const formattedDate = moment(booking.sessionDate).format('MMMM D, YYYY');
+    const formattedStartTime = moment(booking.sessionStartTime).format('h:mm A');
+    const formattedEndTime = moment(booking.sessionEndTime).format('h:mm A');
+    
+    // Get subject information
+    let courseName = "Course";
+    try {
+      const subject = await CourseSubCategoryModel.findById(booking.subjectId);
+      if (subject) {
+        courseName = subject.name;
+      }
+    } catch (subjectError) {
+      console.error("Error fetching subject:", subjectError);
+    }
+    
+    const sessionTitle = `${courseName} (${booking.sessionDuration} Minutes)`;
+    
     // Send booking cancellation emails
     try {
       await emailService.sendBookingCancellation({
@@ -761,10 +889,10 @@ exports.cancelBooking = async (req, res) => {
         studentName: student.firstName + ' ' + student.lastName,
         teacherName: teacher.firstName + ' ' + teacher.lastName,
         teacherEmail: teacher.email,
-        bookingDate: booking.sessionDate,
-        startTime: booking.sessionStartTime,
-        endTime: booking.sessionEndTime,
-        courseName: "Subject English Lesson of 30 Minutes",
+        bookingDate: formattedDate,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        courseName: sessionTitle,
         cancelledBy: req.user.role, // 'student' or 'teacher'
         cancellationReason
       });
@@ -845,15 +973,33 @@ exports.rescheduleRequestBooking = async (req, res) => {
     
     // Parse the new time to get date and time components
     const newTimeObj = new Date(newTime);
-    const newBookingDate = moment(newTimeObj).format('YYYY-MM-DD');
-    const newStartTime = moment(newTimeObj).format('HH:mm');
+    const newBookingDate = moment(newTimeObj).format('MMMM D, YYYY');
+    const newStartTime = moment(newTimeObj).format('h:mm A');
     
     // Calculate end time (assuming same duration as original booking)
     const originalStartTime = new Date(booking.sessionStartTime);
     const originalEndTime = new Date(booking.sessionEndTime);
     const durationMs = originalEndTime - originalStartTime;
     const newEndTimeObj = new Date(newTimeObj.getTime() + durationMs);
-    const newEndTime = moment(newEndTimeObj).format('HH:mm');
+    const newEndTime = moment(newEndTimeObj).format('h:mm A');
+    
+    // Format original dates for email
+    const formattedDate = moment(booking.sessionDate).format('MMMM D, YYYY');
+    const formattedStartTime = moment(booking.sessionStartTime).format('h:mm A');
+    const formattedEndTime = moment(booking.sessionEndTime).format('h:mm A');
+    
+    // Get subject information
+    let courseName = "Course";
+    try {
+      const subject = await CourseSubCategoryModel.findById(booking.subjectId);
+      if (subject) {
+        courseName = subject.name;
+      }
+    } catch (subjectError) {
+      console.error("Error fetching subject:", subjectError);
+    }
+    
+    const sessionTitle = `${courseName} (${booking.sessionDuration} Minutes)`;
     
     // Send reschedule request emails
     try {
@@ -862,10 +1008,10 @@ exports.rescheduleRequestBooking = async (req, res) => {
         studentName: student.firstName + ' ' + student.lastName,
         teacherName: teacher.firstName + ' ' + teacher.lastName,
         teacherEmail: teacher.email,
-        bookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
-        startTime: moment(booking.sessionStartTime).format('HH:mm'),
-        endTime: moment(booking.sessionEndTime).format('HH:mm'),
-        courseName: "Subject English Lesson of 30 Minutes",
+        bookingDate: formattedDate,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        courseName: sessionTitle,
         newBookingDate,
         newStartTime,
         newEndTime,
@@ -951,15 +1097,33 @@ exports.rescheduleResponseBooking = async (req, res) => {
     
     // Parse the new time to get date and time components
     const newTimeObj = new Date(booking.rescheduleRequest.newTime);
-    const newBookingDate = moment(newTimeObj).format('YYYY-MM-DD');
-    const newStartTime = moment(newTimeObj).format('HH:mm');
+    const newBookingDate = moment(newTimeObj).format('MMMM D, YYYY');
+    const newStartTime = moment(newTimeObj).format('h:mm A');
     
     // Calculate end time (assuming same duration as original booking)
     const originalStartTime = new Date(booking.sessionStartTime);
     const originalEndTime = new Date(booking.sessionEndTime);
     const durationMs = originalEndTime - originalStartTime;
     const newEndTimeObj = new Date(newTimeObj.getTime() + durationMs);
-    const newEndTime = moment(newEndTimeObj).format('HH:mm');
+    const newEndTime = moment(newEndTimeObj).format('h:mm A');
+    
+    // Format original dates for email
+    const formattedDate = moment(booking.sessionDate).format('MMMM D, YYYY');
+    const formattedStartTime = moment(booking.sessionStartTime).format('h:mm A');
+    const formattedEndTime = moment(booking.sessionEndTime).format('h:mm A');
+    
+    // Get subject information
+    let courseName = "Course";
+    try {
+      const subject = await CourseSubCategoryModel.findById(booking.subjectId);
+      if (subject) {
+        courseName = subject.name;
+      }
+    } catch (subjectError) {
+      console.error("Error fetching subject:", subjectError);
+    }
+    
+    const sessionTitle = `${courseName} (${booking.sessionDuration} Minutes)`;
     
     // Send appropriate emails based on the action
     try {
@@ -969,13 +1133,13 @@ exports.rescheduleResponseBooking = async (req, res) => {
           studentName: student.firstName + ' ' + student.lastName,
           teacherName: teacher.firstName + ' ' + teacher.lastName,
           teacherEmail: teacher.email,
-          oldBookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
-          oldStartTime: moment(booking.sessionStartTime).format('HH:mm'),
-          oldEndTime: moment(booking.sessionEndTime).format('HH:mm'),
+          oldBookingDate: formattedDate,
+          oldStartTime: formattedStartTime,
+          oldEndTime: formattedEndTime,
           newBookingDate,
           newStartTime,
           newEndTime,
-          courseName: "Subject English Lesson of 30 Minutes",
+          courseName: sessionTitle,
           rescheduleReason: booking.rescheduleRequest.reason,
           requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
         });
@@ -985,13 +1149,13 @@ exports.rescheduleResponseBooking = async (req, res) => {
           studentName: student.firstName + ' ' + student.lastName,
           teacherName: teacher.firstName + ' ' + teacher.lastName,
           teacherEmail: teacher.email,
-          bookingDate: moment(booking.sessionDate).format('YYYY-MM-DD'),
-          startTime: moment(booking.sessionStartTime).format('HH:mm'),
-          endTime: moment(booking.sessionEndTime).format('HH:mm'),
+          bookingDate: formattedDate,
+          startTime: formattedStartTime,
+          endTime: formattedEndTime,
           newBookingDate,
           newStartTime,
           newEndTime,
-          courseName: "Subject English Lesson of 30 Minutes",
+          courseName: sessionTitle,
           rescheduleReason: booking.rescheduleRequest.reason,
           rejectionReason: req.body.rejectionReason || "No reason provided",
           requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
@@ -1014,9 +1178,100 @@ exports.rescheduleResponseBooking = async (req, res) => {
 
 exports.addPayment = async (req, res) => {
   try {
+    // Get payment details from request
+    const { 
+      studentId, 
+      teacherId, 
+      subjectId, 
+      amount, 
+      sessionDate, 
+      sessionStartTime, 
+      sessionEndTime, 
+      sessionDuration,
+      paymentSessionId
+    } = req.body;
 
+    // Create payment record
+    const payment = await paymentModel.create({
+      studentId,
+      teacherId,
+      amount,
+      sessionId: paymentSessionId,
+      status: "pending",
+      paymentStatus: "pending"
+    });
+
+    // Create booking in scheduled state
+    const bookingObj = {
+      teacherId,
+      studentId,
+      subjectId,
+      amount,
+      sessionDate,
+      sessionStartTime,
+      sessionEndTime,
+      sessionDuration,
+      status: "scheduled",
+      paymentId: payment._id
+    };
     
+    const booking = await BookingModel.create(bookingObj);
+    
+    // Get student and teacher details for email
+    const student = await UserModel.findById(studentId);
+    const teacher = await UserModel.findById(teacherId);
+    
+    // Format dates for email
+    const formattedDate = moment(sessionDate).format('MMMM D, YYYY');
+    const formattedStartTime = moment(sessionStartTime).format('h:mm A');
+    const formattedEndTime = moment(sessionEndTime).format('h:mm A');
+    
+    // Get subject information
+    let courseName = "Course";
+    try {
+      const subject = await CourseSubCategoryModel.findById(subjectId);
+      if (subject) {
+        courseName = subject.name;
+      }
+    } catch (subjectError) {
+      console.error("Error fetching subject:", subjectError);
+    }
+    
+    const sessionTitle = `${courseName} (${sessionDuration} Minutes)`;
+    
+    // Send booking scheduled emails
+    try {
+      await emailService.sendBookingScheduled({
+        studentEmail: student.email,
+        studentName: student.firstName + ' ' + student.lastName,
+        teacherName: teacher.firstName + ' ' + teacher.lastName,
+        teacherEmail: teacher.email,
+        bookingDate: formattedDate,
+        startTime: formattedStartTime,
+        endTime: formattedEndTime,
+        courseName: sessionTitle,
+        amount
+      });
+      console.log("Booking scheduled emails sent successfully");
+    } catch (emailError) {
+      console.error("Error sending booking scheduled emails:", emailError);
+    }
 
-  } catch (error) {}
+    return res.status(200).json({
+      success: true,
+      message: "Payment and booking created successfully",
+      data: {
+        booking,
+        payment
+      }
+    });
+  } catch (error) {
+    console.error("Error in addPayment:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error creating payment and booking",
+      error: error.message
+    });
+  }
 };
  
