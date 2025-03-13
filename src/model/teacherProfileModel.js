@@ -15,13 +15,15 @@ const teacherProfileSchema = new mongoose.Schema({
     introVideo:{type:String},
     courses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     tutionBookings:[{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
+    stripeAccountId: { type: String },  
     paymentInfo: {
         bankName: { type: String },
         accountNumber: { type: String },
         accountHolderName: { type: String },
         ifscCode: { type: String },
         bankAddress: { type: String },
-        paypalEmail: { type: String }
+        paypalEmail: { type: String },
+        stripeBankAccountId: { type: String },  
     },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "TutorReview" }],
     calendar: { type: mongoose.Schema.Types.ObjectId, ref: "Calendar" },
