@@ -72,6 +72,8 @@ const transporter = nodemailer.createTransport({
 
 
 
+
+
 exports.registerUser = async (req, res) => {
   try {
     let newUser;
@@ -86,7 +88,7 @@ exports.registerUser = async (req, res) => {
       email: data.email,
       password: data.password,
       role: data.role,
-      verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1d" }),
+      verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
       isVerified: false,
     };
 
@@ -153,6 +155,130 @@ exports.registerUser = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+async function sendVerificationEmail(user) {
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: "Verify Your Email",
+    html: `<p>Click the link below to verify your email:</p>
+           <a href="${verificationLink}">Verify Email</a>`
+  });
+}
+
+
+
+
+
+// Function to resend verification email
+// exports.resendVerificationEmail = async (req, res) => { 
+//   try {
+//     const { email } = req.body;
+//     console.log(email, "resendVerificationEmail");
+//     const user = await UserModel.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "User not found",
+//       });
+//     }
+
+//     if (user.isVerified) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "User is already verified",
+//       });
+//     }
+
+//     // Generate new verification token
+//     user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+//     await user.save();
+
+//     // Send verification email
+//     await sendVerificationEmail(user);
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Verification email sent again successfully.",
+//     });
+//   } catch (error) {
+//     console.error("Error resending verification email:", error);
+//     res.status(500).json({
+//       status: "error",
+//       message: "Something went wrong",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+exports.resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(email, "resendVerificationEmail");
+    
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        status: "failed",
+        message: "User is already verified",
+      });
+    }
+
+    // Check if the existing verification token is still valid
+    if (user.verificationToken) {
+      try {
+        const decoded = jwt.verify(user.verificationToken, process.env.JWT_SECRET);
+        return res.status(400).json({
+          status: "failed",
+          message: "Verification email has already been sent. Please check your email.",
+        });
+      } catch (err) {
+        if (err.name !== "TokenExpiredError") {
+          return res.status(500).json({
+            status: "error",
+            message: "Something went wrong while verifying token",
+          });
+        }
+      }
+    }
+
+    // Generate a new verification token since the old one is expired or missing
+    user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    await user.save();
+
+    // Send verification email
+    await sendVerificationEmail(user);
+
+    res.status(200).json({
+      status: "success",
+      message: "Verification email sent again successfully.",
+    });
+  } catch (error) {
+    console.error("Error resending verification email:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+
 
 
 
@@ -254,6 +380,10 @@ exports.userLogin = async (req, res) => {
   }
 };
 
+
+
+
+
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -282,6 +412,11 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 exports.validateToken = async (req, res) => {
   const user = await UserModel.findById(req.user.id).select(
