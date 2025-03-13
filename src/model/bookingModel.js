@@ -7,7 +7,7 @@ const bookingSchema=new mongoose.Schema({
     sessionStartTime:{type:Date,required:true},
     sessionEndTime:{type:Date,required:true},
     sessionDuration:{type:Number,required:true},
-    status:{type:String,required:true,enum: ["scheduled", "confirmed","reschedule_in_progress","rescheduled", "cancelled", "completed"], 
+    status:{type:String,required:true,enum: ["scheduled", "confirmed","rescheduled", "cancelled", "completed"], 
         default: "scheduled"},
     amount:{type:Number,required:true},
     paymentId:{type:mongoose.Schema.Types.ObjectId,ref:'Payment',required:true},
