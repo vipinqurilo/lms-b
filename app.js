@@ -31,6 +31,7 @@ const routereeee = require("./src/route/testing");
 
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -51,6 +52,7 @@ const corsOption = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOption));
+app.use(cookieParser())
 app.use((req, res, next) => {
   // console.log(req)
   next();

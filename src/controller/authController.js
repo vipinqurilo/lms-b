@@ -6,52 +6,58 @@ const StudentProfileModel = require("../model/studentProfileModel");
 
 exports.registerUser = async (req, res) => {
   try {
-    let newUser;
     const data = req.body;
-
-    // Generate a unique username for all roles
-    const randomNumber = Math.floor(1000 + Math.random() * 9000);
-    const userName = `${data.firstName.toLowerCase()}${randomNumber}`;
-
-    const userObj = {
-      firstName: data.firstName,
-      lastName: data.lastName,
+    
+    let userObj = {
       email: data.email,
       password: data.password,
       role: data.role,
-      userName: userName,
     };
 
+    // Generate username for non-teachers
+    if (data.role !== "teacher") {
+      const randomNumber = Math.floor(1000 + Math.random() * 9000);
+      userObj.userName = `${data.firstName.toLowerCase()}${randomNumber}`;
+      userObj.firstName = data.firstName;
+      userObj.lastName = data.lastName;
+    }
+
     // Check if email already exists
-    const existingUserWithEmail = await UserModel.findOne({
-      email: userObj.email,
-    });
-    if (existingUserWithEmail) {
+    const existingUser = await UserModel.findOne({ email: userObj.email });
+    if (existingUser) {
       return res.status(400).json({
         status: "failed",
         message: "Email already registered",
       });
     }
 
-    // Create user based on role
     if (data.role === "teacher") {
       userObj.userStatus = "pending";
-      newUser = await UserModel.create(userObj);
-    } else if (data.role === "student") {
-      newUser = await UserModel.create(userObj);
+    }
+
+    let newUser = await UserModel.create(userObj);
+
+    // If role is student, create student profile
+    if (data.role === "student") {
       const studentProfile = await StudentProfileModel.create({
         userId: newUser._id,
       });
       newUser.studentProfile = studentProfile._id;
       await newUser.save();
-    } else {
-      newUser = await UserModel.create(userObj);
     }
 
+    // Generate JWT token
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
     );
+
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 86400000),
+      secure: true,
+      httpOnly: true,
+      sameSite: "None",
+    });
 
     res.status(201).json({
       status: "success",
@@ -61,7 +67,7 @@ exports.registerUser = async (req, res) => {
         email: newUser.email,
         role: newUser.role,
         userName: newUser.userName,
-        userStatus: newUser.userStatus,
+        userStatus: newUser.userStatus || null,
       },
       token: token,
     });
@@ -99,6 +105,14 @@ exports.userLogin = async (req, res) => {
         { email: user.email, role: user.role, id: user._id },
         process.env.JWT_SECRET
       );
+
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 86400000),
+        secure: true,
+        httpOnly: true,
+        sameSite: "None",
+      });
+
       return res.json({
         status: "success",
         message: "Login successfully",
