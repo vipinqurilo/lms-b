@@ -58,11 +58,9 @@ exports.createBooking = async (req, res) => {
       sessionEndTime: session.metadata.sessionEndTime,
       sessionDuration: session.metadata.sessionDuration,
       status:"scheduled",
-      paymentId:payment?._id,
-      meetingPlatform: meetingPlatform || "Zoom",
-      meetingLink: meetingLink || `https://zoom.us/j/${Math.floor(100000000 + Math.random() * 900000000)}` // Generate a random meeting ID if not provided
+      paymentId:payment?._id
      }
-    
+     
     const newBooking = await BookingModel.create(newBookingObj)
     if (newBooking) {
       const studentProfile = await StudentProfileModel.findOne({
@@ -91,8 +89,7 @@ exports.createBooking = async (req, res) => {
           startTime: session.metadata.sessionStartTime,
           endTime: session.metadata.sessionEndTime,
           courseName: "Subject English Lesson of 30 Minutes",
-          meetingPlatform: newBookingObj.meetingPlatform,
-          meetingLink: newBookingObj.meetingLink
+         
         });
         console.log("Booking confirmation emails sent successfully");
       } catch (emailError) {
@@ -202,7 +199,7 @@ exports.getBookings = async (req, res) => {
           as: "teacher",
         },
       },
-      { $unwind: "$teacher" },
+      { $unwind: "$teacher" }, 
 
       // // Lookup subject details
       {
@@ -615,16 +612,16 @@ exports.confirmBooking = async (req, res) => {
     const bookingId = req.params.bookingId;
     const { meetingPlatform, meetingLink, meetingUsername, meetingPassword } =
       req.body;
-    console.log(req.body, userId, bookingId);
-    const booking = await bookingModel.findOne({
-      _id: bookingId,
-      teacherId: userId,
-    });
+      const booking = await bookingModel.findOne({
+        _id: bookingId,
+        teacherId: userId,
+      });
+      console.log(booking, userId, bookingId);
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    if (booking.status !== "scheduled") {
+    if (booking.status !== "scheduled" && booking.status !== "rescheduled") {
       return res.status(400).json({ message: "Booking cannot be confirmed" });
     }
 
@@ -805,10 +802,10 @@ exports.rescheduleRequestBooking = async (req, res) => {
       return res.status(403).json({ success: false, message: "Unauthorized" });
     }
 
-    if (booking.status === "reschedule_in_progress" || booking.status === "rescheduled") {
+    if ( booking.status === "rescheduled") {
       return res.status(400).json({
         success: false,
-        message: "Booking either in progress or already scheduled",
+        message: "Booking already rescheduled",
       });
     }
 
@@ -826,12 +823,21 @@ exports.rescheduleRequestBooking = async (req, res) => {
       status: "pending",
       rescheduleBy: req.user.id // Store the User ObjectId instead of "teacher"/"student" string
     };
-    booking.status = "reschedule_in_progress";
 
     await booking.save();
 
-    // Populate the rescheduleBy user data before sending response
-    await booking.populate('rescheduleRequest.rescheduleBy', '_id firstName lastName email role');
+    // Get the user data to include as rescheduleByUser
+    const rescheduleByUser = await UserModel.findById(req.user.id, {
+      _id: 1,
+      firstName: 1,
+      lastName: 1,
+      email: 1,
+      profilePhoto: 1,
+      role: 1
+    });
+
+    // Add the user data to the booking object for the response
+    booking._doc.rescheduleRequest.rescheduleByUser = rescheduleByUser;
 
     // Get student and teacher details for email
     const student = await UserModel.findById(booking.studentId);
