@@ -7,7 +7,7 @@ const router=require("express").Router();
 const { authMiddleware } = require("../middleware/authMiddleware");
 const authorizeRoles = require("../middleware/roleMiddleware");
 router.get("/teacher/:teacherId",getTeacherProfile)
-router.use(authMiddleware)
+router.use(authMiddleware);
 
 //User Personal Info and Profile
 router.get("/",getMyProfile);
