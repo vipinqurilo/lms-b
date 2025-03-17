@@ -431,15 +431,15 @@ const createConnectedAccount = async (userId, email, paymentInfo) => {
     // ✅ Create a Connected Account
     const account = await stripe.accounts.create({
       type: "custom",
-      country: "ZA",
+      country: "US",
       email,
       business_type: "individual",
       capabilities: {
         transfers: { requested: true },
       },
-      tos_acceptance: {
-        service_agreement: "recipient",
-      },
+      // tos_acceptance: {
+      //   service_agreement: "recipient",
+      // },
     });
 
     // console.log("Stripe account created successfully: by kd", account);
@@ -463,8 +463,8 @@ const createConnectedAccount = async (userId, email, paymentInfo) => {
       {
         external_account: {
           object: "bank_account",
-          country: "ZA",
-          currency: "ZAR",
+          country: "US",
+          currency: "USD",
           account_holder_name: paymentInfo.name,
           account_holder_type: "individual",
           account_number: paymentInfo.accountNumber,

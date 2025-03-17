@@ -72,6 +72,7 @@ exports.requestWithdrawal = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 exports.getWtihdrawals = async (req, res) => {
   try {
     const {
@@ -198,7 +199,7 @@ async function finBankAccount() {
     "acct_1R25YOPTF4roHIXv", // Your connected account ID
     { object: "bank_account" }
   );
-  
+
   console.log(accounts);
 }
 // finBankAccount();
@@ -206,29 +207,32 @@ async function finBankAccount() {
 async function retreiveInfo() {
   const account = await stripe.accounts.retrieve("acct_1R25YOPTF4roHIXv");
   console.log(account.payouts_enabled); // Should be true
-  console.log(account.requirements); 
-  console.log(account.capabilities); 
+  console.log(account.requirements);
+  console.log(account.capabilities);
 }
 retreiveInfo();
 
-
-async function processStripeBankTransfer({ stripeBankAccountId, amount }) {
+async function processStripeBankTransfer({
+  stripeBankAccountId,
+  amount,
+  stripeAccountId,
+}) {
   try {
     const transfer = await stripe.transfers.create({
       amount: 100,
       currency: "zar",
-      destination: 'acct_1R25YOPTF4roHIXv',
+      destination: stripeAccountId,
     });
 
     const payout = await stripe.payouts.create(
       {
         amount: Math.round(amount * 100),
         currency: "zar",
-        destination: 'acct_1R25YOPTF4roHIXv',
+        destination: stripeAccountId,
         method: "standard",
       },
       {
-        stripeAccount: "acct_1R25YOPTF4roHIXv",
+        stripeAccount: stripeAccountId,
       }
     );
 
@@ -299,6 +303,7 @@ exports.approveOrRejectWithdrawals = async (req, res) => {
         const stripePayout = await processStripeBankTransfer({
           stripeBankAccountId: paymentInfo.stripeBankAccountId,
           amount: 100,
+          stripeAccountId: teacherProfile.stripeAccountId,
         });
 
         if (stripePayout.success) {
