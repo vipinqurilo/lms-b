@@ -79,6 +79,7 @@ app.use("/api/students", studentRouter);
 app.use("/api/teachers", teacherRouter);
 app.use("/api/forgotpassword", passwordRouter);
 app.use("/api/email", routereeee);
+app.use("/api/email-test", emailTestRoutes);
 
 app.get("/template", (req, res) => {
   const templateData = {
