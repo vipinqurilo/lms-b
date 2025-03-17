@@ -71,7 +71,20 @@ const sendBookingConfirmation = async (bookingData) => {
   console.log(bookingData,'bookingData');
   // Validate required fields
   if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !meetingPlatform || !meetingLink || !amount) {
-    throw new Error("Missing required fields for booking confirmation email");
+    const missingFields = [
+      !studentEmail && 'studentEmail',
+      !studentName && 'studentName', 
+      !teacherName && 'teacherName',
+      !teacherEmail && 'teacherEmail',
+      !bookingDate && 'bookingDate',
+      !startTime && 'startTime',
+      !endTime && 'endTime',
+      !courseName && 'courseName',
+      !meetingPlatform && 'meetingPlatform',
+      !meetingLink && 'meetingLink',
+      !amount && 'amount'
+    ].filter(Boolean);
+    throw new Error(`Missing required fields for booking confirmation email: ${missingFields.join(', ')}`);
   }
 
   const defaultData = {
@@ -152,7 +165,17 @@ const sendBookingCancellation = async (bookingData) => {
 
   // Validate required fields
   if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !amount) {
-    throw new Error("Missing required fields for booking cancellation email");
+    throw new Error(`Missing required fields for booking cancellation email. Required fields: ${[
+      !studentEmail && 'studentEmail',
+      !studentName && 'studentName', 
+      !teacherName && 'teacherName',
+      !teacherEmail && 'teacherEmail',
+      !bookingDate && 'bookingDate',
+      !startTime && 'startTime',
+      !endTime && 'endTime',
+      !courseName && 'courseName',
+      !amount && 'amount'
+    ].filter(Boolean).join(', ')}`);
   }
 
   const defaultData = {

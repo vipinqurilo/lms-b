@@ -894,8 +894,9 @@ exports.cancelBooking = async (req, res) => {
         endTime: formattedEndTime,
         courseName: sessionTitle,
         cancelledBy: req.user.role, // 'student' or 'teacher'
-        cancellationReason
-      });
+        cancellationReason,
+        amount: booking.amount
+      });        
       console.log("Booking cancellation emails sent successfully");
     } catch (emailError) {
       console.error("Error sending booking cancellation emails:", emailError);
@@ -1016,7 +1017,8 @@ exports.rescheduleRequestBooking = async (req, res) => {
         newStartTime,
         newEndTime,
         rescheduleReason: reason,
-        requestedBy: isTeacher ? "teacher" : "student"
+        requestedBy: isTeacher ? "teacher" : "student",
+        amount: booking.amount
       });
       console.log("Reschedule request emails sent successfully");
     } catch (emailError) {
@@ -1043,7 +1045,7 @@ exports.rescheduleResponseBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ success: false, message: "Booking not found" });
     }
-
+    console.log(booking, "booking.rescheduleRequest");
     // Check if there's a pending reschedule request
     if (booking.rescheduleRequest.status !== "pending") {
       return res.status(400).json({
@@ -1060,9 +1062,9 @@ exports.rescheduleResponseBooking = async (req, res) => {
     const isValidResponder = (
       (requestedById === booking.studentId.toString() && responderId === booking.teacherId.toString()) ||
       (requestedById === booking.teacherId.toString() && responderId === booking.studentId.toString())
-    );
-
-    if (!isValidResponder) {
+    ); 
+ 
+    if (!isValidResponder) { 
       return res.status(403).json({ 
         success: false, 
         message: "Unauthorized. Only the other party can respond to the reschedule request" 
@@ -1141,7 +1143,8 @@ exports.rescheduleResponseBooking = async (req, res) => {
           newEndTime,
           courseName: sessionTitle,
           rescheduleReason: booking.rescheduleRequest.reason,
-          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
+          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student",
+          amount: booking.amount
         });
       } else {
         await emailService.sendRescheduleRejection({
@@ -1158,7 +1161,8 @@ exports.rescheduleResponseBooking = async (req, res) => {
           courseName: sessionTitle,
           rescheduleReason: booking.rescheduleRequest.reason,
           rejectionReason: req.body.rejectionReason || "No reason provided",
-          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student"
+          requestedBy: requestedById === booking.teacherId.toString() ? "teacher" : "student",
+          amount: booking.amount
         });
       }
     } catch (emailError) {
