@@ -16,15 +16,17 @@ const bookingSchema=new mongoose.Schema({
     meetingUsername: { type: String, default: null },
     meetingPassword: { type: String, default: null },
     rescheduleRequest: {
-      newTime: { type: String },
-      reason: { type: String },
-      rescheduleBy: { 
-        type:mongoose.Schema.Types.ObjectId,ref:'User'
+      newTime: { type: String, default: null },
+      reason: { type: String, default: null },
+      rescheduleBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
       },
       status: {
         type: String,
         enum: ["pending", "accepted", "denied"],
-        default: "pending",
+        default: null,
       },
     },
     cancellationReason: { type: String },
