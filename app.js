@@ -6,7 +6,6 @@ const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
 const languageRouter = require("./src/route/languageRoute");
-const requestRouter = require("./src/route/requestRoutes");
 const profileRouter = require("./src/route/profileRoute");
 const tutorRouter = require("./src/route/tutorRoutes");
 const bookingRouter = require("./src/route/bookingRoute");
@@ -23,6 +22,8 @@ const studentRouter = require("./src/route/studentRoutes");
 const teacherRouter = require("./src/route/teacherRoutes");
 const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
+const adminRoute = require("./src/route/adminRoute");
+const emailTestRoutes = require("./src/routes/emailTestRoutes");
 
 const passwordRouter = require("./src/route/forgotPasswordRoutes");
 const routereeee = require("./src/route/testing");
@@ -48,6 +49,8 @@ const corsOption = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOption));
+
+
 app.use((req, res, next) => {
   // console.log(req)
   next();
@@ -77,39 +80,38 @@ app.use("/api/teachers", teacherRouter);
 app.use("/api/forgotpassword", passwordRouter);
 app.use("/api/email", routereeee);
 
-// app.get("/template", (req, res) => {
-// const templateData = {
-//   logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-//   title: "Booking Confirmation",
-//   courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
-//   studentName: "Diana",
-//   teacherName: "John Doe",
-//   bookingDate: "Monday, January 15, 2024",
-//   startTime: "10:00 AM",
-//   endTime: "11:00 AM",
-//   courseName: "Introduction to Mathematics",
-//   nextStepOne: "You will receive a meeting link 15 minutes before the session.",
-//   nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
-//   buttonText: "View Booking Details",
-//   address: "Address - 65 Rz- London, United Kingdom Nd-",
-//   year: new Date().getFullYear(),
-
-//   };
-
-app.get("/template1", (req, res) => {
-  const templateData1 = {
-    status: "rejected",
-    teacherName: "Jaduw",
-    email: "amandev307@gmail.com",
-    number: "0988567746",
-    date: "January 15, 2024"
+app.get("/template", (req, res) => {
+  const templateData = {
+    logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
+    title: "Booking Confirmation",
+    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    studentName: "Diana",
+    teacherName: "John Doe",
+    bookingDate: "Monday, January 15, 2024",
+    startTime: "10:00 AM",
+    endTime: "11:00 AM",
+    courseName: "Introduction to Mathematics",
+    nextStepOne: "You will receive a meeting link 15 minutes before the session.",
+    nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
+    buttonText: "View Booking Details",
+    address: "Address - 65 Rz- London, United Kingdom Nd-",
+    year: new Date().getFullYear(),
+    recipientEmail: "nethead321@gmail.com", // Student email from memory
+    studentEmail: "nethead321@gmail.com", // Student email from memory
+    teacherEmail: "sakshi04002@gmail.com", // Teacher email from memory
+    meetingPlatform: "Zoom",
+    meetingLink: "https://zoom.us/j/example" // Example meeting link
   };
   res.render("template1", templateData1);
 });
 
 app.get("/login", (req, res) => {
   res.render("login");
-});
+
+});app.use("/api/admin", adminRoute);
+
+
+
 //Payment Routes
 
 app.use("/api/payment", paymentRouter);

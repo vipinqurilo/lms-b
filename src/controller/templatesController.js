@@ -363,7 +363,6 @@ const sendBookingConfirmation = async (req, res) => {
   }
 };
 
-// Add to module.exports
 module.exports = {
   signup,
   signupUser,

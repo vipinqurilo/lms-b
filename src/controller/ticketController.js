@@ -33,33 +33,45 @@ exports.addTicket = async (req, res) => {
 exports.getTickets = async (req, res) => {
   try {
     let { page, limit, status } = req.query;
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
-    const skip = (page - 1) * limit;
 
     const query = { user: req.user.id };
     if (status) {
       query.status = status;
     }
 
-    const tickets = await TicketModel.find(query)
-      .populate("messages.sender")
-      .populate("messages.receiver")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    let tickets;
+    let totalTickets = await TicketModel.countDocuments(query);
 
-    const totalTickets = await TicketModel.countDocuments(query);
+    if (!page || !limit) {
+      tickets = await TicketModel.find(query)
+        .populate("messages.sender")
+        .populate("messages.receiver")
+        .sort({ createdAt: -1 });
+    } else {
+      page = parseInt(page) || 1;
+      limit = parseInt(limit) || 10;
+      const skip = (page - 1) * limit;
+
+      tickets = await TicketModel.find(query)
+        .populate("messages.sender")
+        .populate("messages.receiver")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+    }
 
     return res.json({
       status: "success",
       message: "Tickets fetched successfully.",
       data: tickets,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalTickets / limit),
-        totalTickets,
-      },
+      pagination:
+        page && limit
+          ? {
+              currentPage: page,
+              totalPages: Math.ceil(totalTickets / limit),
+              totalTickets,
+            }
+          : null,
     });
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -97,35 +109,46 @@ exports.filterByStatus = async (req, res) => {
 exports.adminTicketsGet = async (req, res) => {
   try {
     const adminId = req.user.id;
-
     let { page, limit, status } = req.query;
-    page = parseInt(page) || 1;
-    limit = parseInt(limit) || 10;
-    const skip = (page - 1) * limit;
 
     const query = { "messages.receiver": adminId };
     if (status) {
       query.status = status;
     }
 
-    const tickets = await TicketModel.find(query)
-      .populate("messages.sender")
-      .populate("messages.receiver")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    let tickets;
+    let totalTickets = await TicketModel.countDocuments(query);
 
-    const totalTickets = await TicketModel.countDocuments(query);
+    if (!page || !limit) {
+      tickets = await TicketModel.find(query)
+        .populate("messages.sender")
+        .populate("messages.receiver")
+        .sort({ createdAt: -1 });
+    } else {
+      page = parseInt(page) || 1;
+      limit = parseInt(limit) || 10;
+      const skip = (page - 1) * limit;
+
+      tickets = await TicketModel.find(query)
+        .populate("messages.sender")
+        .populate("messages.receiver")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+    }
 
     res.json({
       status: "success",
       message: "Tickets fetched successfully",
       data: tickets,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalTickets / limit),
-        totalTickets,
-      },
+      pagination:
+        page && limit
+          ? {
+              currentPage: page,
+              totalPages: Math.ceil(totalTickets / limit),
+              totalTickets,
+            }
+          : null,
     });
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -201,7 +224,13 @@ exports.addTicketMessage = async (req, res) => {
 
 exports.statusUpdate = async (req, res) => {
   try {
-    const { status, id } = req.params;
+    const { status, id } = req.query;
+
+    if (status !== "close") {
+      return res
+        .status(400)
+        .json({ status: "failed", message: "Invalid status." });
+    }
 
     // Validate ID and status
     if (!id || !status) {

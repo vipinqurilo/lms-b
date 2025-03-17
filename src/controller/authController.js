@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
+const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
 
 
@@ -79,8 +80,11 @@ exports.registerUser = async (req, res) => {
     let newUser;
     const data = req.body;
 
-    // Generate a unique username for all roles
+    let userName = '';
     
+    if (data.role !== "teacher") {
+      userName = generateUsername(data.firstName);
+    }
 
     const userObj = {
       firstName: data.firstName,
@@ -90,6 +94,7 @@ exports.registerUser = async (req, res) => {
       role: data.role,
       verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
       isVerified: false,
+      userName: userName,
     };
 
     // Check if email already exists
@@ -142,7 +147,7 @@ exports.registerUser = async (req, res) => {
         role: newUser.role,
         userName: newUser.userName,
         userStatus: newUser.userStatus,
-        name: !newUser.firstName ? `${newUser.role.toUpperCase()}` : `${newUser.firstName} ${newUser.lastName || ""}`,
+        name:!newUser.firstName?`${newUser.role.toUpperCase()}`:`${newUser.firstName} ${newUser.lastName||""}`
       },
       token: token,
     });
@@ -330,6 +335,13 @@ exports.userLogin = async (req, res) => {
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
 
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "user not found",
+      });
+    }
+
         // Check if the user is verified
         if (!user.isVerified) {
           return res.status(403).json({
@@ -338,9 +350,10 @@ exports.userLogin = async (req, res) => {
           });
         }
 
-    if(!user)
-      return res.status(404).json({status:"success",message:"User not Found"})
+ 
+   
     const match = isValidPassword(data.password, user.password);
+
     if (match) {
       if (user.userStatus == "inactive") {
         return res.status(401).json({
@@ -359,20 +372,64 @@ exports.userLogin = async (req, res) => {
           _id: user._id,
           email: user.email,
           role: user.role,
-          name:user.firstName+" "+user.lastName,
+          name: user.firstName + " " + user.lastName,
           userStatus: user.userStatus,
         },
         token: token,
       });
     } else {
-     return  res.status(400).json({
+      return res.status(400).json({
         status: "failed",
-        message: "Password not match",
+        message: "password is incorrect",
       });
     }
   } catch (error) {
     console.log(error);
-   return  res.status(500).json({
+    return res.status(500).json({
+      status: "failed",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+exports.generateLoginToken = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({
+        status: "failed",
+        message: "userId is required",
+      });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+    }
+
+    const token = jwt.sign(
+      { email: user.email, role: user.role, id: user._id },
+      process.env.JWT_SECRET
+    );
+
+    res.json({
+      status: "success",
+      message: "token generated successfully",
+      data: {
+        _id: user._id,
+        email: user.email,
+        name: user.firstName + " " + user.lastName,
+        role: user.role,
+        userStatus: user.userStatus,
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({
       status: "failed",
       message: "Something went wrong",
       error: error.message,
@@ -419,20 +476,38 @@ exports.changePassword = async (req, res) => {
 
 
 exports.validateToken = async (req, res) => {
-  const user = await UserModel.findById(req.user.id).select(
-    "email role _id userStatus firstName lastName"
-  );
-  const { userStatus, role, email, firstName, lastName, _id } = user;
-  const userData = {
-    _id,
-    name: firstName +" "+lastName,
-    userStatus,
-    role,
-    email,
-  };
-  return res.json({
-    success: true,
-    message: "Token validated successfully",
-    data: userData,
-  });
+  try {
+    const user = await UserModel.findById(req.user.id).select(
+      "email role _id userStatus firstName lastName"
+    );
+     
+    if (!user) {
+      return res.status(404).json({
+        success: false, 
+        message: "User not found"
+      });
+    }
+
+    const { userStatus, role, email, firstName, lastName, _id } = user;
+    const userData = {
+      _id,
+      name: firstName + " " + lastName,
+      userStatus,
+      role,
+      email,
+    };
+    
+    return res.json({
+      success: true,
+      message: "Token validated successfully",
+      data: userData,
+    });
+  } catch (error) {
+    console.error("Error validating token:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+      error: error.message
+    });
+  }
 };
