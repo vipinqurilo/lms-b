@@ -511,6 +511,7 @@ exports.getBookings = async (req, res) => {
       });
   }
 };
+
 //Get Booking for Tutor 
 exports.getBookingsForTutor = async (req, res) => {
   try {
@@ -520,13 +521,11 @@ exports.getBookingsForTutor = async (req, res) => {
       teacherId,
     } = req.query;
     console.log(teacherId, startDate, endDate,"getBookingForTutor");
-  
     let query = {status:{$ne:"cancelled"}};
     //Filter with Teacher Id
     if (teacherId) {
       query.teacherId = new mongoose.Types.ObjectId(teacherId);
     }
-
     // Date range filtering
     if (startDate || endDate) {
       query.sessionDate = {};
@@ -1278,4 +1277,4 @@ exports.addPayment = async (req, res) => {
     });
   }
 };
- 
+  

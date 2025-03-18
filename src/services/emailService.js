@@ -18,7 +18,7 @@ const createTransporter = () => {
  * @param {Object} options - Email options
  * @param {string} options.to - Recipient email
  * @param {string} options.subject - Email subject
- * @param {Object} options.templateData - Data to be passed to the template
+ * @param {Object} options.  - Data to be passed to the template
  * @returns {Promise} - Nodemailer send result
  */
 const sendTemplatedEmail = async (options) => {
@@ -89,7 +89,7 @@ const sendBookingConfirmation = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742290473/luxe/vqyts6joemuxzrlqv4uj.png",
     bookingDate,
     startTime,
     endTime,
@@ -180,7 +180,7 @@ const sendBookingCancellation = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302660/luxe/k1b9kalcufrxti3rcjvs.png",
     bookingDate,
     startTime,
     endTime,
@@ -264,7 +264,7 @@ const sendRescheduleRequest = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate,
     startTime,
     endTime,
@@ -278,7 +278,8 @@ const sendRescheduleRequest = async (bookingData) => {
       { url: "https://example.com/twitter.png", alt: "Twitter" },
       { url: "https://example.com/instagram.png", alt: "Instagram" }
     ],
-    amount
+    amount,
+    cancellationReason: rescheduleReason
   };
 
   const requestedByStudent = requestedBy === "student";
@@ -349,7 +350,7 @@ const sendRescheduleConfirmation = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate: newBookingDate,
     startTime: newStartTime,
     endTime: newEndTime,
@@ -405,6 +406,7 @@ const sendRescheduleConfirmation = async (bookingData) => {
 /**
  * Send reschedule rejection emails to both student and teacher
  */
+
 const sendRescheduleRejection = async (bookingData) => {
   const {
     studentEmail,
@@ -433,7 +435,7 @@ const sendRescheduleRejection = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate,
     startTime,
     endTime,
@@ -492,7 +494,7 @@ const sendRescheduleRejection = async (bookingData) => {
 
   return { success: true, message: "Reschedule rejection emails sent successfully" };
 };
-
+ 
 /**
  * Send booking scheduled emails to both student and teacher
  * This is sent at the very first stage when a student attempts to book a session
@@ -530,7 +532,7 @@ const sendBookingScheduled = async (bookingData) => {
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742281964/luxe/jdpsyhelqvy74p1qvxw4.png",
     bookingDate,
     startTime,
     endTime,
