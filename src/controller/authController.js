@@ -53,6 +53,13 @@ exports.registerUser = async (req, res) => {
       process.env.JWT_SECRET
     );
 
+    res.cookie("token", token, {
+      samesite: "none",
+      secure: true,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      http: true,
+    });
+
     res.status(201).json({
       status: "success",
       message: "User Registered successfully",
@@ -99,6 +106,14 @@ exports.userLogin = async (req, res) => {
         { email: user.email, role: user.role, id: user._id },
         process.env.JWT_SECRET
       );
+
+      res.cookie("token", token, {
+        samesite: "none",
+        secure: true,
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        http: true,
+      });
+
       return res.json({
         status: "success",
         message: "Login successfully",
@@ -149,6 +164,13 @@ exports.generateLoginToken = async (req, res) => {
       { email: user.email, role: user.role, id: user._id },
       process.env.JWT_SECRET
     );
+
+    res.cookie("token", token, {
+      samesite: "none",
+      secure: true,
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      http: true,
+    });
 
     res.json({
       status: "success",

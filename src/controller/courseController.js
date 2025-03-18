@@ -176,31 +176,59 @@ exports.getcourseFilter = async (req, res) => {
 exports.getCourseInstructor = async (req, res) => {
   try {
     const id = req.user.id;
-
     const { status, page = 1, limit = 10 } = req.query;
 
     const pageNumber = parseInt(page, 10) || 1;
-    const pageSize = parseInt(limit, 10) || 1;
+    const pageSize = parseInt(limit, 10) || 10;
     const skip = (pageNumber - 1) * pageSize;
 
     let query = { courseInstructor: id, inActive: false };
-
     if (status) {
       query.status = status;
     }
+
+    // Get total course count
     const totalCourses = await CourseModel.countDocuments(query);
 
-    const course = await CourseModel.find(query)
+    // Fetch courses with pagination
+    const courses = await CourseModel.find(query)
       .populate("courseSubCategory")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(pageSize)
       .exec();
 
+    // Get all course IDs
+    const courseIds = courses.map(course => course._id);
+
+    // Count students enrolled in each course
+    const studentEnrollments = await StudentProfileModel.aggregate([
+      { $unwind: "$enrolledCourses" },
+      { $match: { "enrolledCourses.courseId": { $in: courseIds } } },
+      {
+        $group: {
+          _id: "$enrolledCourses.courseId",
+          studentCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Create a mapping of courseId -> student count
+    const enrollmentsMap = studentEnrollments.reduce((acc, item) => {
+      acc[item._id.toString()] = item.studentCount;
+      return acc;
+    }, {});
+
+    // Add student count to courses
+    const courseData = courses.map(course => ({
+      ...course._doc,
+      studentsEnrolled: enrollmentsMap[course._id.toString()] || 0,
+    }));
+
     res.json({
       status: "success",
-      message: "course fetched successfully",
-      data: course,
+      message: "Courses fetched successfully",
+      data: courseData,
       pagination: {
         totalCourses,
         currentPage: pageNumber,
@@ -209,13 +237,14 @@ exports.getCourseInstructor = async (req, res) => {
       },
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       status: "failed",
-      message: "something went wrong",
+      message: "Something went wrong",
       error: error.message,
     });
   }
 };
+
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
@@ -255,9 +284,29 @@ exports.getAllCourseByAdmin = async (req, res) => {
 
     console.log("Courses Fetched:", courses.length); // Debugging log
 
-    // fetch reviews and caluclate ratings for each course
+    // Get all course IDs
+    const courseIds = courses.map((course) => course._id);
 
-    const courseWithRatings = await Promise.all(
+    // Count students enrolled in each course
+    const studentEnrollments = await StudentProfileModel.aggregate([
+      { $unwind: "$enrolledCourses" },
+      { $match: { "enrolledCourses.courseId": { $in: courseIds } } },
+      {
+        $group: {
+          _id: "$enrolledCourses.courseId",
+          studentCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Create a mapping of courseId -> student count
+    const enrollmentsMap = studentEnrollments.reduce((acc, item) => {
+      acc[item._id.toString()] = item.studentCount;
+      return acc;
+    }, {});
+
+    // Fetch reviews and calculate ratings for each course
+    const courseWithDetails = await Promise.all(
       courses.map(async (course) => {
         const reviews = await ReviewModel.find(
           { course: course._id },
@@ -278,6 +327,7 @@ exports.getAllCourseByAdmin = async (req, res) => {
           sumOfRatings,
           averageRating: averageRating.toFixed(2),
           reviews,
+          studentsEnrolled: enrollmentsMap[course._id.toString()] || 0,
         };
       })
     );
@@ -285,7 +335,7 @@ exports.getAllCourseByAdmin = async (req, res) => {
     res.json({
       status: "success",
       message: "Courses fetched successfully",
-      data: courseWithRatings,
+      data: courseWithDetails,
       pagination: {
         totalCourses,
         currentPage: pageNumber,
