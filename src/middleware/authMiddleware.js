@@ -1,7 +1,10 @@
 const jwt = require("jsonwebtoken");
 exports.authMiddleware = async (req, res, next) => {
     try {
-        const token = req.headers["authorization"].split(" ")[1];
+        // console.log(req.cookies, 'token');
+        console.log(req.headers["authorization"].split(" ")[1], 'token');
+
+        const token =  req.headers["authorization"].split(" ")[1];
         const decord = jwt.verify(token, process.env.JWT_SECRET);
         if(!decord){
             return res.json({
