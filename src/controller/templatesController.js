@@ -2,18 +2,21 @@ const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const path = require("path");
 require("dotenv").config();
+ 
 
-const sendEmail = async (req, res) => {
+
+
+const signup = async (req, res) => {
   try {
-    const { to, subject, name, message } = req.body;
+    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, userName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
 
-    // Render the EJS template
+    
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/signup.ejs"),
-      { name, message }
+      { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
     );
 
-    // Configure Nodemailer transporter
+    // Configure Nodemailer transportera
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -24,24 +27,68 @@ const sendEmail = async (req, res) => {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to,
-      subject,
+      to: teacherEmail,
+      subject: "Signup Confirmation",
       html: emailTemplate,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ success: true, message: "Email sent successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: ` sent successfully to ${teacherEmail}` });
   } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ success: false, message: "Failed to send email" });
+    console.error("Error during payment settlement:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-const loginUser = async (req, res) => {
+const verifyEmail = async (req, res) => {
   try {
-    const { email } = req.body;
+    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, userName ,email, bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings } = req.body;
 
+    
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/verifyEmail.ejs"),
+      { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,email ,Commission,NetEarnings}
+    );
+
+    // Configure Nodemailer transportera
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Verification Email",
+      html: emailTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res
+      .status(200)
+      .json({ success: true, message: ` sent successfully to ${email}` });
+  } catch (error) {
+     
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
+
+const signupUser = async (req, res) => {
+  try {
+    const { email ,title ,userName, nextStepTwo,  nextStepOne ,buttonText, address ,year ,teacherName  , welcomeTittle} = req.body;
+
+    console.log(userName,"pppp")
     if (!email) {
       return res
         .status(400)
@@ -51,7 +98,7 @@ const loginUser = async (req, res) => {
     // Render the EJS template for login email
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../view/login.ejs"),
-      { name: email.split("@")[0] } // Extract username from email
+      { name: email.split("@")[0] ,title ,userName ,nextStepTwo,nextStepOne ,buttonText ,address ,year ,teacherName , welcomeTittle} // Extract username from email
     );
 
     // Configure Nodemailer transporter
@@ -66,7 +113,7 @@ const loginUser = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Login Successful",
+      subject: "Signup Confirmation",
       html: emailTemplate,
     };
 
@@ -74,7 +121,7 @@ const loginUser = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Login successful, email sent!" });
+      .json({ success: true, message: "Signup Confirmation, email sent!" });
   } catch (error) {
     console.error("Error during login:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -83,18 +130,21 @@ const loginUser = async (req, res) => {
 
 const handleCourseRequest = async (req, res) => {
   try {
-    const { email, courseName, status, reason } = req.body;
+    const { email, courseName, teacherName, status,  title ,nextStepOne ,reason ,nextStepTwo ,publishDate ,category , } = req.body;
 
-    if (!email || !courseName || !status) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields" });
-    }
+    console.log(email)
+    // if (!email || !courseName || !status || !teacherName || !title || !nextStepOne || !nextStepTwo) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: "Missing required fields" });
+    // }
 
     // Render the EJS template
+
+
     const emailTemplate = await ejs.renderFile(
       path.join(__dirname, "../emailTemplates/coursePublish.ejs"),
-      { courseName, reason, status }
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,reason ,publishDate ,category , }
     );
 
     // Configure Nodemailer transporter
@@ -111,8 +161,8 @@ const handleCourseRequest = async (req, res) => {
       to: email,
       subject:
         status === "approved"
-          ? "Course Published Successfully"
-          : "Course Rejected",
+          ? "Course Published Request"
+          : "Course Published  Request",
       html: emailTemplate,
     };
 
@@ -130,20 +180,71 @@ const handleCourseRequest = async (req, res) => {
   }
 };
 
+
+
+
+const teacherRequest = async (req, res) => {
+  try {
+    const { email, courseName, teacherName, status,  title ,nextStepOne  ,nextStepTwo ,subject ,date ,endTime ,number} = req.body;
+
+    console.log(number)
+    
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/teacherRequest.ejs"),
+      { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,subject ,date ,endTime ,number ,email}
+    );
+
+    // Configure Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject:
+        status === "approved"
+          ? "Teacher Request"
+          : "Teacher Request",
+      html: emailTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({
+      success: true,
+      message: `Teacher ${
+        status === "approved" ? "approved" : "rejected"
+      } email sent successfully.`,
+    });
+  } catch (error) {
+    console.error("Error handling course request:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+
+
+
+
 const sendMoney = async (req, res) => {
     try {
-      const { teacherEmail, teacherName, amount } = req.body;
+      const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, studentName , bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings} = req.body;
   
-      if (!teacherEmail || !teacherName || !amount) {
-        return res
-          .status(400)
-          .json({ success: false, message: "All fields are required" });
-      }
+      // if (!teacherEmail || !teacherName || !amount) {
+      //   return res
+      //     .status(400)
+      //     .json({ success: false, message: "All fields are required" });
+      // }
   
       // Render the EJS template for payment settlement email
       const emailTemplate = await ejs.renderFile(
         path.join(__dirname, "../emailTemplates/settlement.ejs"),
-        { teacherName, amount }
+        { teacherEmail, courseName, teacherName, status, studentName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
       );
   
       // Configure Nodemailer transporter
@@ -166,7 +267,7 @@ const sendMoney = async (req, res) => {
   
       return res
         .status(200)
-        .json({ success: true, message: `₹${amount} sent successfully to ${teacherEmail}` });
+        .json({ success: true, message: ` sent successfully to ${teacherEmail}` });
     } catch (error) {
       console.error("Error during payment settlement:", error);
       res.status(500).json({ success: false, message: "Server error" });
@@ -300,9 +401,11 @@ const sendBookingConfirmation = async (req, res) => {
 };
 
 module.exports = {
-  sendEmail,
-  loginUser,
+  signup,
+  signupUser,
   handleCourseRequest,
   sendMoney,
-  sendBookingConfirmation, 
+  sendBookingConfirmation, // Add this line
+  teacherRequest,
+  verifyEmail
 };

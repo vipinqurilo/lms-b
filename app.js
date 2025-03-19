@@ -36,9 +36,9 @@ const app = express();
 // app.set("view engine", "ejs");
 
 // // // Define the correct views directory
-// app.set("views", path.join(__dirname, "src", "emailTemplates")); 
+  // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
 
-// app.set("views", path.join(__dirname, "src", "emailTemplates"));
+ // app.set("views", path.join(__dirname, "src", "emailTemplates"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
@@ -58,34 +58,36 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static("public"));
-app.use("/api/auth",authController);
-app.use("/api/course",courseRouter);
-app.use("/api/category",categoryRouter);
-app.use("/api/languages",languageRouter);
-app.use("/api/bookings",bookingRouter);
-app.use("/api/profile",profileRouter)
-app.use("/api/tutors",tutorRouter);
-app.use("/api/subcategory",subcategoryRouter);
-app.use("/api/whishlist",wishListRouter);
-app.use('/api/order',orderRouter)
-app.use('/api/review',reviewRoute)
-app.use('/api/tutorReview',tutorReviewRoute)
-app.use('/api/ticket',ticketRouter)
-app.use('/api/users',userRoutes)
-app.use('/api/stripe',stripeRoute)
-app.use('/api/wallet',walletRouter)
-app.use('/api/withdrawals',withdrawRouter)
-app.use('/api/students',studentRouter)
-app.use('/api/teachers',teacherRouter)
-app.use('/api/forgotpassword',passwordRouter)
-app.use("/api/email",  routereeee);
+
+// app.use("/api/requests", requestRouter);
+app.use("/api/auth", authController);
+app.use("/api/course", courseRouter);
+app.use("/api/category", categoryRouter);
+app.use("/api/languages", languageRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/tutors", tutorRouter);
+app.use("/api/subcategory", subcategoryRouter);
+app.use("/api/whishlist", wishListRouter);
+app.use("/api/order", orderRouter);
+app.use("/api/review", reviewRoute);
+app.use("/api/tutorReview", tutorReviewRoute);
+app.use("/api/ticket", ticketRouter);
+app.use("/api/users", userRoutes);
+app.use("/api/stripe", stripeRoute);
+app.use("/api/wallet", walletRouter);
+app.use("/api/withdrawals", withdrawRouter);
+app.use("/api/students", studentRouter);
+app.use("/api/teachers", teacherRouter);
+app.use("/api/forgotpassword", passwordRouter);
+app.use("/api/email", routereeee);
 app.use("/api/email-test", emailTestRoutes);
 
 app.get("/template", (req, res) => {
   const templateData = {
     logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    title: "Booking Confirmation",
-    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    title: "Verification Email",
+    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1742284693/luxe/nuud24kdorki4v1ry2jl.png",
     studentName: "Diana",
     teacherName: "John Doe",
     bookingDate: "Monday, January 15, 2024",
@@ -103,9 +105,9 @@ app.get("/template", (req, res) => {
     meetingPlatform: "Zoom",
     meetingLink: "https://zoom.us/j/example" // Example meeting link
   };
-
   res.render("template", templateData);
 });
+
 app.get("/login", (req, res) => {
   res.render("login");
 });
