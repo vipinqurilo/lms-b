@@ -36,7 +36,9 @@ const app = express();
 // app.set("view engine", "ejs");
 
 // // // Define the correct views directory
-// app.set("views", path.join(__dirname, "src", "emailTemplates"));
+  // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
+
+ // app.set("views", path.join(__dirname, "src", "emailTemplates"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
@@ -108,13 +110,11 @@ app.get("/template", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
-
-});app.use("/api/admin", adminRoute);
-
+});
+app.use("/api/admin", adminRoute);
 
 
 //Payment Routes
-
 app.use("/api/payment", paymentRouter);
 
 //Order Routes
