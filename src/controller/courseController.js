@@ -199,7 +199,7 @@ exports.getCourseInstructor = async (req, res) => {
       .exec();
 
     // Get all course IDs
-    const courseIds = courses.map(course => course._id);
+    const courseIds = courses.map((course) => course._id);
 
     // Count students enrolled in each course
     const studentEnrollments = await StudentProfileModel.aggregate([
@@ -220,7 +220,7 @@ exports.getCourseInstructor = async (req, res) => {
     }, {});
 
     // Add student count to courses
-    const courseData = courses.map(course => ({
+    const courseData = courses.map((course) => ({
       ...course._doc,
       studentsEnrolled: enrollmentsMap[course._id.toString()] || 0,
     }));
@@ -244,7 +244,6 @@ exports.getCourseInstructor = async (req, res) => {
     });
   }
 };
-
 
 exports.getAllCourseByAdmin = async (req, res) => {
   try {
@@ -409,6 +408,7 @@ exports.updateCourseInstrustor = async (req, res) => {
   try {
     const id = req.user.id;
     const data = req.body;
+    const courseId = req.params.id;
 
     console.log(data, "samosa kd");
 
@@ -422,13 +422,15 @@ exports.updateCourseInstrustor = async (req, res) => {
       courseVideo: data.courseVideo,
       coursePrice: data.coursePrice,
       // courseDuration: videoDuration,
-      courseContent: JSON.parse(data.courseContent),
-      courseLearning: JSON.parse(data.courseLearning),
-      courseRequirements: JSON.parse(data.courseRequirements),
+      courseContent: data.courseContent,
+      courseLearning: data.courseLearning,
+      courseRequirements: data.courseRequirements,
       status: "pending",
     };
-    const updateStatus = await CourseModel.findByIdAndUpdate(id, objData, {
+    
+    const updateStatus = await CourseModel.findByIdAndUpdate(courseId, objData, {
       new: true,
+      runValidators:true
     });
     if (!updateStatus)
       return res.json({ status: "failed", message: "status not updated" });
