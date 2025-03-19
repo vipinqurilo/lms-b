@@ -7,8 +7,6 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 
 router.get(
   "/dashboard",
-  authMiddleware,
-  authorizeRoles("admin"),
   adminController.getAdminDashboard
 );
 

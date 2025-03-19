@@ -184,10 +184,13 @@ const generateCertificate = async (req, res) => {
     }
 
     const studentData = {
+      certificateId: req.user.id,
       studentName: enrolledCourse.certificate.studentName,
       courseTitle: enrolledCourse.certificate.courseTitle,
       completionDate: enrolledCourse.certificate.completionDate.split("T")[0],
       instructorName: enrolledCourse.certificate.instructorName,
+      organizationName: "Your Organization",
+      // completionDate: "2025-03-11",
     };
 
     const html = await new Promise((resolve, reject) => {
@@ -205,14 +208,14 @@ const generateCertificate = async (req, res) => {
 
     pdf
       .create(html, {
-        format: "letter",
-        orientation: "landscape",
-        border: {
-          top: "10mm",
-          right: "10mm",
-          bottom: "10mm",
-          left: "10mm",
-        },
+        format: "pdf",
+        // orientation: "landscape",
+        // border: {
+        //   top: "10mm",
+        //   right: "10mm",
+        //   bottom: "10mm",
+        //   left: "10mm",
+        // },
       })
       .toFile(pdfPath, async (err) => {
         if (err) {
@@ -229,34 +232,24 @@ const generateCertificate = async (req, res) => {
         cloudinary.uploader.upload(
           fileStr,
           {
-            resource_type: "raw",
+            resource_type: "auto",
+            format: "pdf",
             folder: "certificates",
           },
-          async (error, result) => {
+          (error, result) => {
             if (error) {
+              console.error("Upload Error:", error);
               return res.status(500).json({ error: "Failed to upload PDF" });
             }
 
-            // Delete the local file after successful upload
-            fs.unlinkSync(pdfPath);
-
-          //  update the certificate URL in the database
-            await StudentProfileModel.findOneAndUpdate(
-              { userId, "enrolledCourses.courseId": courseId },
-              {
-                $set: {
-                  "enrolledCourses.$.certificate.certificateUrl":
-                    result.secure_url,
-                },
-              },
-              { new: true } 
-            );
-
-            res.status(200).json({
-              status: "success",
-              message: "Certificate generated",
-              pdfUrl: result.secure_url,
-            });
+            console.log("Cloudinary Upload Result:", result);
+            res
+              .status(200)
+              .json({
+                status: "success",
+                message: "pdf generated",
+                pdfUrl: result.secure_url,
+              });
           }
         );
       });

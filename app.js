@@ -38,6 +38,7 @@ const app = express();
 // // // Define the correct views directory
 // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
 
+// app.set("views", path.join(__dirname, "src", "emailTemplates"));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
@@ -107,21 +108,19 @@ app.get("/template", (req, res) => {
 });
 app.get("/login", (req, res) => {
   res.render("login");
-
-});app.use("/api/admin", adminRoute);
-
+});
+app.use("/api/admin", adminRoute);
 
 
 //Payment Routes
-
 app.use("/api/payment", paymentRouter);
 
 //Order Routes
-app.use("/api/order",orderRouter);
+app.use("/api/order", orderRouter);
 
 //Earning Routes
-app.use("/api/earnings",earningRouter)
+app.use("/api/earnings", earningRouter);
 
-//Sales Routes 
-app.use("/api/sales",saleRouter)
+//Sales Routes
+app.use("/api/sales", saleRouter);
 module.exports = app;
