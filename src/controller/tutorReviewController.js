@@ -1,5 +1,6 @@
 const TutorReviewModel = require("../model/tutorReviewModel");
 const TeacherProfileModel = require("../model/teacherProfileModel");
+const BookingModel = require("../model/bookingModel");
 
 exports.addReview = async (req, res) => {
     try {
@@ -20,10 +21,11 @@ exports.addReview = async (req, res) => {
                 { $push: { reviews: addReview._id } }
             );
 
+            const review = await TutorReviewModel.findById(addReview._id).populate("student", "_id userName profilePhoto");
             res.json({
                 status: "success",
                 message: "Review Added Successfully",
-                data: addReview 
+                data: review
             })
         }else{
             res.json({
@@ -144,6 +146,7 @@ exports.deleteReview = async (req, res) => {
         });
     }
 }
+
 exports.getReviewByTutorId = async (req, res) => {
     try {
         const tutorId = req.params.id;
@@ -178,3 +181,41 @@ exports.getReviewByTutorId = async (req, res) => {
         });
     }
 }
+
+exports.checkCompletedBooking = async (req, res) => {
+    try {
+        const studentId = req.user.id;
+        const tutorId = req.params.tutorId;
+        console.log(studentId, tutorId,'checkCompletedBooking');
+
+        // Check for completed booking between student and tutor
+        const completedBooking = await BookingModel.findOne({
+            studentId: studentId, 
+            teacherId: tutorId,
+            status: "completed"
+        });
+
+        // Check if student has already reviewed this tutor
+        const existingReview = await TutorReviewModel.findOne({
+            student: studentId,
+            tutorId: tutorId
+        });
+
+        console.log(completedBooking,'completedBooking');
+        res.json({
+            success: true,
+            canReview: !!completedBooking && !existingReview,
+            message: !completedBooking 
+                ? "No completed sessions found with this tutor"
+                : existingReview 
+                ? "You have already reviewed this tutor"
+                : "Student has completed sessions with this tutor"
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Something went wrong",
+            error: error.message
+        });
+    }
+};

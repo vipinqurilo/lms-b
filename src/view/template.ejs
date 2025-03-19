@@ -23,91 +23,89 @@
         <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
           <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
             <div class="" style="width: 100%; background-color: #ffffff; position: absolute;  "></div>
-            
             <img
-              src="http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png"
+              src="<%= courseImage %>"
               alt="Course Image"
               class="course-image"
               style="max-width: 100%; height: auto; width: 100%;"
             />
           </div>
-
           <div class="content" style="width: 100%;">
             <div style="width: 85%;  margin: 16px auto;"> 
               <% if (title === "Booking Confirmation") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     Your booking has been successfully confirmed with <%= teacherName %>. Here are your session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     A new session has been confirmed with <%= studentName %>. Here are your session details:
                   </p>
                 <% } %>
               <% } else if (title === "Booking Cancellation") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= cancelledBy === "student" ? "You have" : teacherName + " has" %> cancelled the booking. Here are the cancelled session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= cancelledBy === "teacher" ? "You have" : studentName + " has" %> cancelled the booking. Here are the cancelled session details:
                   </p>
                 <% } %>
               <% } else if (title === "Booking Scheduled") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     Your booking request has been scheduled with <%= teacherName %>. Here are your session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= studentName %> has requested to book a session with you. Here are the session details:
                   </p>
                 <% } %>
               <% } else if (title === "Reschedule Request") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= requestedBy === 'student' ? 'You have' : `${teacherName} has` %> requested to reschedule your session. Here are the current session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= requestedBy === 'teacher' ? 'You have' : `${studentName} has` %> requested to reschedule the session. Here are the current session details:
                   </p>
                 <% } %>
               <% } else if (title === "Reschedule Rejection") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= requestedBy === "student" ? "Your reschedule request has been rejected by " + teacherName : teacherName + " has cancelled their reschedule request" %>. Here are the session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     <%= requestedBy === "teacher" ? "Your reschedule request has been rejected by " + studentName : "You have rejected " + studentName + "'s reschedule request" %>. Here are the session details:
                   </p>
                 <% } %>
               <% } else if (title === "Booking Reschedule Confirmation") { %>
                 <% if (recipientEmail === studentEmail) { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= studentName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     Your session with <%= teacherName %> has been successfully rescheduled. Here are your updated session details:
                   </p>
                 <% } else { %>
-                  <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                  <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                   <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                     Your session with <%= studentName %> has been successfully rescheduled. Here are your updated session details:
                   </p>
                 <% } %>
               <% } else { %>
-                <h3 class="greeting" style="font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                <h3 class="greeting" style="font-size: 14px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
                 <p class="message" style="font-size: 14px; color: #4b5563; margin-top: 12px; padding: 0; text-align: left;">
                   A new booking has been scheduled with <%= studentName %>. Here are your session details:
                 </p>
@@ -115,27 +113,54 @@
             </div>
 
             <h3 class="section-title" style="font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">Session Details</h3>
-            <ul class="list session-details" style="font-size: 14px; color: #4b5563; text-align: left; padding: 0; margin: 24px auto; max-width: 90%; width: 90%; display: table; border-spacing: 0 8px;">
-              <li style="display: table-row;">
+            <table style="font-size: 14px; color: #4b5563; width: 90%; max-width: 90%; margin: 24px auto; border-collapse: separate; border-spacing: 0 8px;">
+              <tr>
                 <% if (recipientEmail === studentEmail) { %>
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Teacher:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= teacherName %></span>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Teacher:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= teacherName %></td>
                 <% } else { %>
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Student:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= studentName %></span>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Student:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= studentName %></td>
                 <% } %>
-              </li>
-              <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Date:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= bookingDate %></span>
-              </li>
-              <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Time:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= startTime %> - <%= endTime %></span>
-              </li>
-              <li style="display: table-row;">
-                <strong style="display: table-cell; padding: 8px 24px 8px 0; width: 35%; text-align: right; color: #4b5563; vertical-align: top;">Course:</strong><span style="width: 50%; display: table-cell; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= courseName %></span>
-              </li>
-            </ul>
+              </tr>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Date:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= bookingDate %></td>
+              </tr>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Time:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= startTime %> - <%= endTime %></td>
+              </tr>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Course:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= courseName %></td>
+              </tr>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Amount:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;">ZAR <%= amount %></td>
+              </tr>
+              <% if ((title === "Booking Confirmation" || title === "Booking Cancellation") && meetingPlatform && meetingLink) { %>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Platform:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><%= meetingPlatform %></td>
+              </tr>
+              <tr>
+                <th style="width: 45%; padding: 8px 5% 8px 0; text-align: right; color: #4b5563; vertical-align: top; font-weight: bold;">Meeting Link:</th>
+                <td style="width: 50%; padding: 8px 0; text-align: left; color: #1f2937; font-weight: 500; vertical-align: top;"><a href="<%= meetingLink %>" style="color: #2563eb; text-decoration: underline;"><%= meetingLink %></a></td>
+              </tr>
+              <% } %>
+            </table>
 
+            
             <h3 class="section-title" style="width: 85%;  margin: 16px auto; font-size: 18px; font-weight: bold; color: #000000; margin-top: 40px; text-align: center;">What's Next</h3>
+        
             <ul style="width: 85%;  margin: 16px auto; font-size: 14px; color: #000000; text-align: left; padding-left: 0; max-width: 100%; margin: 0 auto; list-style-type: none;">
+              <% if (title === "Booking Cancellation" || title === "Reschedule Request") { %>
+              <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
+                <span style="margin-right: 8px;">•</span>
+                <span style="color: #000000;"><span style="font-weight: bold;">Reason :</span> <%= cancellationReason %></span>
+              </li>
+              <% } %>
               <li style="margin-bottom: 8px; text-align: left; display: flex; color: #000000;">
                 <span style="margin-right: 8px;">•</span>
                 <span style="color: #000000;"><%= nextStepOne %></span>
