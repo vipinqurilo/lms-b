@@ -43,6 +43,43 @@ const signup = async (req, res) => {
   }
 };
 
+const verifyEmail = async (req, res) => {
+  try {
+    const {  teacherEmail, courseName, teacherName, title1, status, startDate,  endDate,  title, userName ,email, bookingDate,nextStepOne ,buttonText  ,year,nextStepTwo ,publishDate ,startTime ,endTime ,address,TotalEarnings,Commission,NetEarnings } = req.body;
+
+    
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/verifyEmail.ejs"),
+      { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,email ,Commission,NetEarnings}
+    );
+
+    // Configure Nodemailer transportera
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Verification Email",
+      html: emailTemplate,
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res
+      .status(200)
+      .json({ success: true, message: ` sent successfully to ${email}` });
+  } catch (error) {
+     
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 
 
 
@@ -369,5 +406,6 @@ module.exports = {
   handleCourseRequest,
   sendMoney,
   sendBookingConfirmation, // Add this line
-  teacherRequest
+  teacherRequest,
+  verifyEmail
 };

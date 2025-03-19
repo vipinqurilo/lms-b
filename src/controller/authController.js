@@ -263,7 +263,7 @@ exports.resendVerificationEmail = async (req, res) => {
     }
 
     // Generate a new verification token since the old one is expired or missing
-    user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1m" });
     await user.save();
 
     // Send verification email

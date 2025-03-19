@@ -57,7 +57,7 @@ app.use((req, res, next) => {
 });
 app.use(express.static("public"));
 
-app.use("/api/requests", requestRouter);
+// app.use("/api/requests", requestRouter);
 app.use("/api/auth", authController);
 app.use("/api/course", courseRouter);
 app.use("/api/category", categoryRouter);
@@ -84,8 +84,8 @@ app.use("/api/email-test", emailTestRoutes);
 app.get("/template", (req, res) => {
   const templateData = {
     logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    title: "Booking Confirmation",
-    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    title: "Verification Email",
+    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1742284693/luxe/nuud24kdorki4v1ry2jl.png",
     studentName: "Diana",
     teacherName: "John Doe",
     bookingDate: "Monday, January 15, 2024",
@@ -103,7 +103,7 @@ app.get("/template", (req, res) => {
     meetingPlatform: "Zoom",
     meetingLink: "https://zoom.us/j/example" // Example meeting link
   };
-  res.render("template1", templateData1);
+  res.render("template", templateData);
 });
 
 app.get("/login", (req, res) => {
