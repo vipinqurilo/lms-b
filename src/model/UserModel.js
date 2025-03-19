@@ -46,6 +46,9 @@ const UserSchema = new mongoose.Schema(
     earnings: { type: Number, default: 0 },
     forgotPasswordToken: { type: String, default: "" },
     forgotPasswordUsed: { type: Boolean, default: false },
+    verificationToken: { type: String, default: "" }, // Token for email verification
+    isVerified: { type: Boolean, default: false }, // Email verification flag
+
   },
   { timestamps: true }
 );

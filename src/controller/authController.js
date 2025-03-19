@@ -1,9 +1,79 @@
 const UserModel = require("../model/UserModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
+
+
+// exports.registerUser = async (req, res) => {
+//   try {
+//     let newUser;
+//     const data = req.body;
+//     const userObj = {
+//       firstName: data.firstName,
+//       lastName: data.lastName,
+//       email: data.email,
+//       password: data.password,
+//       role: data.role,
+//     };
+//     const existingUserWithEmail=await UserModel.findOne({email:userObj.email});
+//     if(existingUserWithEmail)
+//       return res.status(400).json({status:"failed",message:"Email already registered"})
+//     // const existingUserWithPhone=await UserModel.findOne({phone:userObj.phone});
+//     // if(!existingUserWithPhone)
+//     //   return res.status(400).json({status:"failed",message:"Mobile already registered"})
+//     if (data.role == "teacher") {
+//       userObj.userStatus = "pending";
+//       newUser = await UserModel.create(userObj);
+//     } else if (data.role == "student") {
+//       newUser = await UserModel.create(userObj);
+//       const studentProfile = await StudentProfileModel.create({
+//         userId: newUser._id,
+//       });
+//       newUser.studentProfile = studentProfile._id;
+//       await newUser.save();
+//     } else {
+//       newUser = await UserModel.create(userObj);
+//     }
+//     const token = jwt.sign(
+//       { email: newUser.email, role: newUser.role, id: newUser._id },
+//       process.env.JWT_SECRET
+//     );
+//     res.status(201).json({
+//       status: "success",
+//       message: "User Registered successfully",
+//       data: {
+//         _id: newUser._id,
+//         email: newUser.email,
+//         role: newUser.role,
+//         userStatus: newUser.userStatus,
+//       },
+//       token: token,
+//     });
+//   } catch (error) {
+//     console.log(error, "error");
+//     res.status(500).json({
+//       status: "error",
+//       message: "something went wrong",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Your email
+    pass: process.env.EMAIL_PASS, // Your email password or app password
+  },
+});
+
+
+
+
 
 exports.registerUser = async (req, res) => {
   try {
@@ -22,6 +92,8 @@ exports.registerUser = async (req, res) => {
       email: data.email,
       password: data.password,
       role: data.role,
+      verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
+      isVerified: false,
       userName: userName,
     };
 
@@ -51,6 +123,16 @@ exports.registerUser = async (req, res) => {
       newUser = await UserModel.create(userObj);
     }
 
+    // Send verification email
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: newUser.email,
+      subject: "Verify Your Email",
+      html: `<p>Click the link below to verify your email:</p>
+             <a href="${verificationLink}">Verify Email</a>`
+    });
+
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
@@ -65,7 +147,7 @@ exports.registerUser = async (req, res) => {
 
     res.status(201).json({
       status: "success",
-      message: "User Registered successfully",
+      message: "User registered successfully. Please verify your email.",
       data: {
         _id: newUser._id,
         email: newUser.email,
@@ -86,17 +168,197 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+
+
+
+
+async function sendVerificationEmail(user) {
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: user.email,
+    subject: "Verify Your Email",
+    html: `<p>Click the link below to verify your email:</p>
+           <a href="${verificationLink}">Verify Email</a>`
+  });
+}
+
+
+
+
+
+// Function to resend verification email
+// exports.resendVerificationEmail = async (req, res) => { 
+//   try {
+//     const { email } = req.body;
+//     console.log(email, "resendVerificationEmail");
+//     const user = await UserModel.findOne({ email });
+
+//     if (!user) {
+//       return res.status(404).json({
+//         status: "failed",
+//         message: "User not found",
+//       });
+//     }
+
+//     if (user.isVerified) {
+//       return res.status(400).json({
+//         status: "failed",
+//         message: "User is already verified",
+//       });
+//     }
+
+//     // Generate new verification token
+//     user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
+//     await user.save();
+
+//     // Send verification email
+//     await sendVerificationEmail(user);
+
+//     res.status(200).json({
+//       status: "success",
+//       message: "Verification email sent again successfully.",
+//     });
+//   } catch (error) {
+//     console.error("Error resending verification email:", error);
+//     res.status(500).json({
+//       status: "error",
+//       message: "Something went wrong",
+//       error: error.message,
+//     });
+//   }
+// };
+
+
+exports.resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    console.log(email, "resendVerificationEmail");
+    
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({
+        status: "failed",
+        message: "User is already verified",
+      });
+    }
+
+    // Check if the existing verification token is still valid
+    if (user.verificationToken) {
+      try {
+        const decoded = jwt.verify(user.verificationToken, process.env.JWT_SECRET);
+        return res.status(400).json({
+          status: "failed",
+          message: "Verification email has already been sent. Please check your email.",
+        });
+      } catch (err) {
+        if (err.name !== "TokenExpiredError") {
+          return res.status(500).json({
+            status: "error",
+            message: "Something went wrong while verifying token",
+          });
+        }
+      }
+    }
+
+    // Generate a new verification token since the old one is expired or missing
+    user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1m" });
+    await user.save();
+
+    // Send verification email
+    await sendVerificationEmail(user);
+
+    res.status(200).json({
+      status: "success",
+      message: "Verification email sent again successfully.",
+    });
+  } catch (error) {
+    console.error("Error resending verification email:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
+
+exports.verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    console.log(token, "opppoo");
+
+    if (!token) {
+      return res.status(400).json({ message: "Verification token is required" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded, "popooopoo");
+
+    if (!decoded) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    const user = await UserModel.findOne({ email: decoded.email, verificationToken: token });
+    console.log(user, "popooopoo");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "Email already verified" });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = "";
+    await user.save();
+
+    return res.json({ message: "Email verified successfully!" });
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+
+
+
 exports.userLogin = async (req, res) => {
   try {
     const data = req.body;
     console.log(data);
     const user = await UserModel.findOne({ email: data.email });
+
     if (!user) {
       return res.status(404).json({
         status: "failed",
         message: "user not found",
       });
     }
+
+        // Check if the user is verified
+        if (!user.isVerified) {
+          return res.status(403).json({
+            status: "failed",
+            message: "User is not verified. Please verify your account before logging in.",
+          });
+        }
+
+ 
+   
     const match = isValidPassword(data.password, user.password);
 
     if (match) {
@@ -197,6 +459,10 @@ exports.generateLoginToken = async (req, res) => {
   }
 };
 
+
+
+
+
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -225,6 +491,11 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 exports.validateToken = async (req, res) => {
   try {
