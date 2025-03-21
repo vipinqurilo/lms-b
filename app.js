@@ -33,13 +33,6 @@ const saleRouter = require("./src/route/saleRoutes");
 
 const app = express();
 
-// app.set("view engine", "ejs");
-
-// // // Define the correct views directory
-  // app.set("views", path.join(__dirname, "src", "emailTemplates")); 
-
- // app.set("views", path.join(__dirname, "src", "emailTemplates"));
-
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "src", "view"));
 
@@ -52,14 +45,12 @@ const corsOption = {
 };
 app.use(cors(corsOption));
 
-
 app.use((req, res, next) => {
   // console.log(req)
   next();
 });
 app.use(express.static("public"));
 
-// app.use("/api/requests", requestRouter);
 app.use("/api/auth", authController);
 app.use("/api/course", courseRouter);
 app.use("/api/category", categoryRouter);
@@ -113,16 +104,12 @@ app.get("/login", (req, res) => {
 });
 app.use("/api/admin", adminRoute);
 
-
-//Payment Routes
 app.use("/api/payment", paymentRouter);
 
-//Order Routes
 app.use("/api/order", orderRouter);
 
-//Earning Routes
 app.use("/api/earnings", earningRouter);
 
-//Sales Routes
 app.use("/api/sales", saleRouter);
+
 module.exports = app;
