@@ -335,7 +335,6 @@ exports.verifyEmail = async (req, res) => {
 
 
 
-
 exports.userLogin = async (req, res) => {
   try {
     const data = req.body;
@@ -407,6 +406,30 @@ exports.userLogin = async (req, res) => {
     });
   }
 };
+
+
+exports.userLogout = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+
+    return res.json({
+      status: "success",
+      message: "Logout successful",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: "failed",
+      message: "Something went wrong",
+      error: error.message,
+    });
+  }
+};
+
 
 exports.generateLoginToken = async (req, res) => {
   try {

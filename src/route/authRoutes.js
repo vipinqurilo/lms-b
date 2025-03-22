@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, userLogin, validateToken, verifyEmail, resendVerificationEmail,changePassword,generateLoginToken } = require("../controller/authController");
+const { registerUser, userLogin, validateToken, verifyEmail, resendVerificationEmail,changePassword,generateLoginToken, userLogout } = require("../controller/authController");
 
 
 const { authMiddleware } = require("../middleware/authMiddleware");
@@ -12,6 +12,7 @@ authController.post('/register',registerUser)
 authController.post('/resendverificationemail',resendVerificationEmail)
 authController.get("/verify-email/:token", verifyEmail );
 authController.post('/login',userLogin)
+authController.get('/logout',userLogout);
 authController.post('/verify-token',authMiddleware,validateToken)
 module.exports = authController;
 authController.get(
