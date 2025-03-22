@@ -140,7 +140,7 @@ exports.registerUser = async (req, res) => {
 
     res.cookie("token", token, {
       samesite: "none",
-      secure: true,
+      secure: process.env.COOKIE_SECURE,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       http: true,
     });
@@ -375,7 +375,7 @@ exports.userLogin = async (req, res) => {
 
       res.cookie("token", token, {
         samesite: "none",
-        secure: true,
+        secure: process.env.COOKIE_SECURE,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
         http: true,
       });
@@ -390,7 +390,7 @@ exports.userLogin = async (req, res) => {
           name: user.firstName + " " + user.lastName,
           userStatus: user.userStatus,
         },
-        token: token,
+        // token: token,
       });
     } else {
       return res.status(400).json({
@@ -433,7 +433,7 @@ exports.generateLoginToken = async (req, res) => {
 
     res.cookie("token", token, {
       samesite: "none",
-      secure: true,
+      secure: process.env.COOKIE_SECURE,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
       http: true,
     });

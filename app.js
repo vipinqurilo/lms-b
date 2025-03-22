@@ -1,12 +1,12 @@
 const express = require("express");
 const path = require("path");
-
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const courseRouter = require("./src/route/courseRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
 const languageRouter = require("./src/route/languageRoute");
-const profileRouter = require("./src/route/profileRoute");
+const profileRouter = require("./src/route/profileRoute"); 
 const tutorRouter = require("./src/route/tutorRoutes");
 const bookingRouter = require("./src/route/bookingRoute");
 const subcategoryRouter = require("./src/route/subCategoryRoute");
@@ -38,9 +38,11 @@ app.set("views", path.join(__dirname, "src", "view"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());  
 require("dotenv").config();
 const corsOption = {
-  origin: "*",
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOption));
