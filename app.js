@@ -32,6 +32,7 @@ const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
 const frontendSettingRouter = require("./src/route/frontendSettingRoute");
 const emailSettingRouter = require("./src/route/emailSettingRoute");
+const paymentSettingRouter = require("./src/route/paymentSettingRoute");
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.use("/api/email",  routereeee);
 app.use("/api/email-test", emailTestRoutes);
 app.use("/api/frontend-settings", frontendSettingRouter);
 app.use("/api/email-settings", emailSettingRouter);
+app.use("/api/payment-settings", paymentSettingRouter);
 
 app.get("/template", (req, res) => {
   const templateData = {
