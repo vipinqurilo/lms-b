@@ -338,8 +338,8 @@ exports.verifyEmail = async (req, res) => {
 exports.userLogin = async (req, res) => {
   try {
     const data = req.body;
-    console.log(data);
     const user = await UserModel.findOne({ email: data.email });
+    console.log(data,user, "user");
 
     if (!user) {
       return res.status(404).json({
