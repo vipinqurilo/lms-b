@@ -24,6 +24,5 @@ router.put("/payment-info",authorizeRoles("teacher"),editPaymentInfo);
 router.put("/social-links",authorizeRoles("teacher,student,teacher"),editSocialLinks);
 router.put("/tution-slots",editTutionSlots)
 router.patch('/change-password',changePassword);
-router.put("/footer-settings",authorizeRoles("admin"),editFooterSettings);
 const profileRouter=router;
 module.exports=profileRouter;
