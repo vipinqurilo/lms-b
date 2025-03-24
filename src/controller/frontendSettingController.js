@@ -2,18 +2,20 @@ const FrontendSetting = require("../model/frontendSetting");
 
 exports.createOrUpdateFrontendSetting = async (req, res) => {
   try {
-    const { logo, description, contactDetails, socialLinks } = req.body;
+    const { logo, description, contactDetails, socialLinks, title } = req.body;
 
     let settings = await FrontendSetting.findOne();
     if (settings) {
       settings.logo = logo;
       settings.description = description;
+      settings.title = title;
       settings.contactDetails = contactDetails;
       settings.socialLinks = socialLinks;
     } else {
       settings = new FrontendSetting({
         logo,
         description,
+        title,
         contactDetails,
         socialLinks,
       });
@@ -25,7 +27,7 @@ exports.createOrUpdateFrontendSetting = async (req, res) => {
       .json({
         status: "success",
         message: "Frontend settings updated successfully",
-        settings,
+        data:settings,
       });
   } catch (error) {
     res.status(500).json({ status: "failed", message: error.message });
@@ -40,7 +42,7 @@ exports.getFrontendSetting = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Frontend settings not found" });
     }
-    res.status(200).json({ status: "success", settings });
+    res.status(200).json({ status: "success", data:settings });
   } catch (error) {
     res.status(500).json({ status: "failed", message: error.message });
   }

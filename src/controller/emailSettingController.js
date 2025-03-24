@@ -25,7 +25,7 @@ exports.createOrUpdateEmailSettings = async (req, res) => {
       .json({
         status: "success",
         message: "Email settings saved successfully",
-        emailSetting,
+        data:emailSetting,
       });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
