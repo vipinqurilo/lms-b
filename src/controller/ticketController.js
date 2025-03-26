@@ -3,10 +3,11 @@ const TicketModel = require("../model/ticketModel");
 exports.addTicket = async (req, res) => {
   try {
     const data = req.body;
-    const messages =
-      typeof data.messages === "string"
-        ? JSON.parse(data.messages)
-        : data.messages;
+    const messages = typeof data.messages === "string" ? JSON.parse(data.messages) : data.messages;
+    
+    const attachments = data.attachments && Array.isArray(data.attachments)
+      ? data.attachments.slice(0, 4) 
+      : [];
 
     const newTicket = new TicketModel({
       user: req.user.id,
@@ -14,6 +15,7 @@ exports.addTicket = async (req, res) => {
       category: data.category,
       description: data.description,
       status: data.status || "open",
+      attachments: attachments, 
     });
 
     await newTicket.save();
@@ -29,6 +31,7 @@ exports.addTicket = async (req, res) => {
     });
   }
 };
+
 
 exports.getTickets = async (req, res) => {
   try {
@@ -175,7 +178,7 @@ exports.adminTicketsUpdate = async (req, res) => {
     if (tickets.length > 0) {
       for (let ticket of tickets) {
         ticket.messages.push(mes);
-        await ticket.save(); // Save each ticket separately
+        await ticket.save(); 
       }
 
       return res.json({

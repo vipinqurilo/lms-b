@@ -1,11 +1,152 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Payment Settlement</title>
-</head>
-<body>
-    <h2>Hello <%= teacherName %>,</h2>
-    <p>You have received a payment settlement of ₹<%= amount %>.</p>
-    <p>Thank you for your service.</p>
-</body>
+  </head>
+  <body style="box-sizing: border-box; width: 100%; background-color: #F5F5F6; font-family: Arial, sans-serif; margin: 0; min-height: 100vh;">
+    <div class="container" style="background-color: #F5F5F6; width: 100%; max-width: 100%; padding: 40px 0px; margin: 0 auto;">
+      <div class="card" style="padding-top: 24px; background-color: #FFFFFF; width: 100%; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); text-align: center; box-sizing: border-box; overflow: hidden;">
+        <!-- Logo -->
+        <div>
+          <img
+            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+            alt="Steam Institute"
+            class="logo"
+            style="max-width: 100%; height: auto; width: 96px; margin: 0 auto 16px;"
+          />
+        </div>
+        <!-- Welcome Message -->
+        <h2 style="font-size:22px; font-weight:bold; color:black; line-height:10px;">Payment Settlement</h2>
+
+        <div class="divider" style="border-bottom: 2px solid #D1D5DB; width: 80%; margin: 12px auto;"></div>
+        <div class="background-section" style=" background-size: 215%; background-position: calc(100% + 240px) calc(100% + 180px); padding: 4px 0;">
+          <div class="course-image-container" style=" width: 320px; height: 256px; margin: 8px auto 0; display: flex; justify-content: center; align-items: center; max-width: 320px;position: relative;">
+            <div class="" style="width: 100%; background-color: #FFFFFF; position: absolute;  "></div>
+            <img
+              src="http://res.cloudinary.com/daprkakyk/image/upload/v1741587682/luxe/zlsdoy6umr8gv7hzuv12.png"
+              alt="Course Image"
+              class="course-image"
+              style="max-width: 100%; height: auto; width: 100%;"
+            />
+          </div>
+          <div class="content" style="width: 100%;">
+            <div style="width: 85%;  margin: 16px auto;">
+             
+                <h3 class="greeting" style="font-size: 14px;  padding-left: 20px; font-weight: bold; color: #808080; text-align: left;">Hi <%= teacherName %> ,</h3>
+                <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; text-align: left;  padding-left: 20px;">
+                  Your weekly settlement for the duration <%= startDate %> - <%= endDate %> has been completed. Your total earnings were <%= TotalEarnings %>, with a commission of <%= Commission %>, resulting in net earnings of <%= NetEarnings %>, which have been transferred to your wallet.   </p>
+               
+              
+               
+            </div>
+
+
+            <div style="position: relative; width: full; height: 109px; background-repeat: no-repeat; background-image: url('http://res.cloudinary.com/daprkakyk/image/upload/v1741439688/luxe/hcw8tie9sfe8ezhpjirm.png');"
+            class="background-image"
+          >
+            <!--[if !mso]><!-->
+            <style type="text/css">
+              @media screen and (max-width: 600px) {
+                .background-image {
+                  background-image: none !important;
+                }
+              }
+            </style>
+            <!--<![endif]-->
+            
+          </div>
+
+ 
+
+          <div style="background-color: #F1F6FC; padding: 24px; border-radius: 9px; max-width: 100%; width: 430px; margin: auto; text-align: center; margin-top: 50px">
+            <h3 style="font-size: 24px; font-weight: bold; color: #000; margin: 0 0 16px;">Settlement Details</h3>
+            <div style="display: flex; justify-content: center; align-items: center;">
+              <table style="font-size: 14px; color: #4B5563;  text-align: left; margin: 16px auto 24px; width: 100%; max-width: 380px; border-collapse: collapse; ">
+                <tbody>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Weekly Duration:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= startDate %> - <%= endDate %></td>
+                  </tr>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Total Earnings:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= TotalEarnings %></td>
+                  </tr>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Commission:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= Commission %></td>
+                  </tr>
+                  <tr>
+                    <th style="padding: 8px 16px 8px 0; width: 50%; text-align: right; color: #4B5563; vertical-align: top; font-size: 14px;">Net Earnings:</th>
+                    <td style="padding: 8px 0; text-align: left; color: #1F2937; font-weight: 700; vertical-align: top; font-size: 15px;"><%= NetEarnings %></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <a href="https://your-dashboard-link.com" style="display: inline-block; background-color: black; color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-size: 14px;">Go to Dashboard</a>
+          </div>
+        </div>
+        </div>
+        <div style="padding: 20px; margin-top: 40px; text-align: center; color: #4B5563; border-top: 2px solid #DFDFDF; font-size: 14px;">
+          <img
+            src="https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png"
+            alt="STEAM Institute"
+            style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
+          />
+          <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
+          <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
+            <div style="text-align: center; margin-right: 16px;">
+              <div>Copyright &copy;2025</div>
+            </div>
+            <div  >
+              <% [
+              {
+                type: "Email",
+                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
+                alt: "Email",
+                link: "mailto:info@steaminstitute.online"
+              },
+              {
+                type: "Phone",
+                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
+                alt: "Phone",
+                link: "tel:+1234567890" // Replace with actual phone number
+              },
+              {
+                type: "Twitter",
+                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
+                alt: "Twitter",
+                link: "https://twitter.com/yourhandle" // Replace with actual Twitter handle
+              },
+              {
+                type: "Instagram",
+                imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
+                alt: "Instagram",
+                link: "https://instagram.com/yourhandle" // Replace with actual Instagram handle
+              }
+            ].forEach(function(icon) { %>
+                <a href="<%= icon.link %>" style="text-decoration: none;">
+                  <img style="width: <%= icon.type === 'Email' ? '20px' : (icon.type === 'Instagram' ? '25px' : '16px') %>; display: inline-block; margin: 0 8px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"
+                    src="<%= icon.imageUrl %>"
+                    alt="<%= icon.alt %>"
+                  />
+                </a>
+              <% }); %>
+            </div>
+          </div>
+        </div>
+        <table role="presentation" width="100%" style=" border-top: 2px solid #DFDFDF; color: #808080; font-size: small; border-collapse: collapse;">
+          <tr style="border-bottom: 2px solid #DFDFDF;">
+            <td align="left" style="padding: 10px 24px;">info@steaminstitute.online</td>
+            <td align="right" style="padding: 10px 24px;">
+              <a href="http://www.steaminstitute.online/" style="text-decoration: none; color: #808080;">
+                www.steaminstitute.online
+              </a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
 </html>

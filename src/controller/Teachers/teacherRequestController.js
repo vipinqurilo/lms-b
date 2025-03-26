@@ -3,6 +3,7 @@ const TeacherProfileModel = require("../../model/teacherProfileModel");
 const CalendarModel = require("../../model/calenderModel");
 const UserModel = require("../../model/UserModel");
 const { defaultAvailability } = require("../../utils/calendar");
+const walletModel = require("../../model/walletModel");
 
 exports.createTeacherRequest = async (req, res) => {
   try {
@@ -45,10 +46,10 @@ exports.createTeacherRequest = async (req, res) => {
       languagesSpoken,
     });
     console.log(newRequest, "sdf");
-    await UserModel.findOneAndUpdate(
-      { id: userId },
-      { ...personalInfo, profilePhoto, introVideo, bio }
-    );
+    // await UserModel.findOneAndUpdate(
+    //   { id: userId },
+    //   { ...personalInfo, profilePhoto, introVideo, bio }
+    // );
     res.status(201).json({
       success: true,
       message: "Your request has been submitted for approval.",
@@ -96,9 +97,24 @@ exports.getTeacherRequests = async (req, res) => {
       {
         $match: query,
       },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails"
+        }
+      },
+      {
+        $unwind: "$userDetails"
+      },
+      {
+        $project: {
+          "userDetails.password": 0,
+          "userDetails.__v": 0
+        }
+      },
       { $sort: { createdAt: 1 } },
-
-      // // Pagination
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -121,13 +137,15 @@ exports.getTeacherRequests = async (req, res) => {
     });
   }
 };
-
 exports.getTeacherRequestsById = async (req, res) => {
   try {
     console.log(req.user.role);
     const query = {};
-    if (req.user.role == "admin" && req.params.requestId)
-      query._id = req.params.requestId;
+    if (req.user.role == "admin" && req.params.requestId) {
+      if (req.params.requestId !== "all") {
+        query._id = req.params.requestId;
+      }
+    }
     if (req.user.role == "teacher") query.userId = req.user.id;
     console.log(query);
     const teacherRequest = await TeacherRequestModel.findOne(query);
@@ -196,12 +214,10 @@ exports.approvedTeacherRequest = async (req, res) => {
       });
     }
 
-    // Approve request
-    request.approvalStatus = "approved";
-    await request.save();
+   
 
     // Create Teacher Profile
-    const teacherProfile = new TeacherProfileModel({
+    const teacherProfile = await TeacherProfileModel.create({
       userId: request.userId._id,
       education: request.education,
       experience: request.experience,
@@ -213,7 +229,7 @@ exports.approvedTeacherRequest = async (req, res) => {
       userId: request.userId._id,
       availability: defaultAvailability,
     });
-    const wallet = await WalletModel.create({ userId: request.userId._id });
+    const wallet = await walletModel.create({ userId: request.userId._id });
 
     teacherProfile.calendar = calendar._id;
     await teacherProfile.save();
@@ -229,6 +245,9 @@ exports.approvedTeacherRequest = async (req, res) => {
       },
       { new: true }
     );
+     // Approve request
+     request.approvalStatus = "approved";
+     await request.save();
     res.status(200).json({
       success: true,
       message: "Teacher request approved successfully.",

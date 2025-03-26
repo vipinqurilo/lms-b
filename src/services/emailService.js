@@ -18,7 +18,7 @@ const createTransporter = () => {
  * @param {Object} options - Email options
  * @param {string} options.to - Recipient email
  * @param {string} options.subject - Email subject
- * @param {Object} options.templateData - Data to be passed to the template
+ * @param {Object} options.  - Data to be passed to the template
  * @returns {Promise} - Nodemailer send result
  */
 const sendTemplatedEmail = async (options) => {
@@ -63,25 +63,44 @@ const sendBookingConfirmation = async (bookingData) => {
     endTime,
     courseName,
     logoUrl,
-    courseImage
+    courseImage,
+    meetingLink,
+    meetingPlatform,
+    amount
   } = bookingData;
-
+  console.log(bookingData,'bookingData');
   // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
-    throw new Error("Missing required fields for booking confirmation email");
+  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !meetingPlatform || !meetingLink || !amount) {
+    const missingFields = [
+      !studentEmail && 'studentEmail',
+      !studentName && 'studentName', 
+      !teacherName && 'teacherName',
+      !teacherEmail && 'teacherEmail',
+      !bookingDate && 'bookingDate',
+      !startTime && 'startTime',
+      !endTime && 'endTime',
+      !courseName && 'courseName',
+      !meetingPlatform && 'meetingPlatform',
+      !meetingLink && 'meetingLink',
+      !amount && 'amount'
+    ].filter(Boolean);
+    throw new Error(`Missing required fields for booking confirmation email: ${missingFields.join(', ')}`);
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742290473/luxe/vqyts6joemuxzrlqv4uj.png",
     bookingDate,
     startTime,
     endTime,
     courseName,
+    meetingPlatform,
+    meetingLink,
+    amount,
     address: "123 Education Street, Learning City, 12345",
     year: new Date().getFullYear(),
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail,
+    teacherEmail,
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
@@ -113,15 +132,15 @@ const sendBookingConfirmation = async (bookingData) => {
       title: "Booking Confirmation",
       studentName,
       teacherName,
-      nextStepOne: "A new session has been confirmed. Please prepare for the scheduled time.",
-      nextStepTwo: "The student has been notified of the confirmation.",
-      buttonText: "View Booking Details"
+      nextStepOne: "A new session has been confirmed. Please be available 5 minutes before the scheduled time.",
+      nextStepTwo: "You will get a reminder 15 minutes before the session starts.",
+      buttonText: "View Calendar"
     }
   });
 
   return { success: true, message: "Booking confirmation emails sent successfully" };
 };
- 
+
 /**
  * Send booking cancellation emails to both student and teacher
  */
@@ -138,17 +157,30 @@ const sendBookingCancellation = async (bookingData) => {
     cancelledBy,
     cancellationReason,
     logoUrl,
-    courseImage
+    courseImage,
+    meetingPlatform,
+    meetingLink,
+    amount
   } = bookingData;
 
   // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
-    throw new Error("Missing required fields for booking cancellation email");
+  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !amount) {
+    throw new Error(`Missing required fields for booking cancellation email. Required fields: ${[
+      !studentEmail && 'studentEmail',
+      !studentName && 'studentName', 
+      !teacherName && 'teacherName',
+      !teacherEmail && 'teacherEmail',
+      !bookingDate && 'bookingDate',
+      !startTime && 'startTime',
+      !endTime && 'endTime',
+      !courseName && 'courseName',
+      !amount && 'amount'
+    ].filter(Boolean).join(', ')}`);
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302660/luxe/k1b9kalcufrxti3rcjvs.png",
     bookingDate,
     startTime,
     endTime,
@@ -157,8 +189,11 @@ const sendBookingCancellation = async (bookingData) => {
     year: new Date().getFullYear(),
     cancelledBy,
     cancellationReason: cancellationReason || "No reason provided",
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail,
+    teacherEmail,
+    meetingPlatform: meetingPlatform || null,
+    meetingLink: meetingLink || null,
+    amount,
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
@@ -176,7 +211,7 @@ const sendBookingCancellation = async (bookingData) => {
       studentName, 
       teacherName,
       nextStepOne: `Your booking has been cancelled ${cancelledBy === 'student' ? 'by you' : 'by the teacher'}.`,
-      nextStepTwo: "You can reschedule or book another session at your convenience.",
+      nextStepTwo: "100% refund for the cancelled session will be processed within 7-10 working days.",
       buttonText: "Book Another Session"
     }
   });
@@ -218,30 +253,33 @@ const sendRescheduleRequest = async (bookingData) => {
     rescheduleReason,
     requestedBy,
     logoUrl,
-    courseImage
+    courseImage,
+    amount
   } = bookingData;
 
   // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime) {
+  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !newBookingDate || !newStartTime || !newEndTime || !amount) {
     throw new Error("Missing required fields for reschedule request email");
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate,
     startTime,
     endTime,
     courseName,
     address: "123 Education Street, Learning City, 12345",
     year: new Date().getFullYear(),
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail, 
+    teacherEmail, 
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
       { url: "https://example.com/instagram.png", alt: "Instagram" }
-    ]
+    ],
+    amount,
+    cancellationReason: rescheduleReason
   };
 
   const requestedByStudent = requestedBy === "student";
@@ -275,7 +313,7 @@ const sendRescheduleRequest = async (bookingData) => {
       requestedBy,
       nextStepOne: `${requestedBy === 'teacher' ? 'You have' : `${studentName} has`} requested to reschedule this session.`,
       nextStepTwo: `Proposed new time: ${newBookingDate} from ${newStartTime} to ${newEndTime}. Reason: ${rescheduleReason}`,
-      buttonText: "View Calendar"
+      buttonText: "Accept or Decline"
     }
   });
 
@@ -301,30 +339,32 @@ const sendRescheduleConfirmation = async (bookingData) => {
     rescheduleReason,
     requestedBy,
     logoUrl,
-    courseImage
+    courseImage,
+    amount
   } = bookingData;
 
   // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !newBookingDate || !newStartTime || !newEndTime || !courseName) {
+  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !newBookingDate || !newStartTime || !newEndTime || !courseName || !amount) {
     throw new Error("Missing required fields for reschedule confirmation email");
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate: newBookingDate,
     startTime: newStartTime,
     endTime: newEndTime,
     courseName,
     address: "123 Education Street, Learning City, 12345",
     year: new Date().getFullYear(),
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail, 
+    teacherEmail, 
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
       { url: "https://example.com/instagram.png", alt: "Instagram" }
-    ]
+    ],
+    amount
   };
 
   const requestedByStudent = requestedBy === "student";
@@ -366,6 +406,7 @@ const sendRescheduleConfirmation = async (bookingData) => {
 /**
  * Send reschedule rejection emails to both student and teacher
  */
+
 const sendRescheduleRejection = async (bookingData) => {
   const {
     studentEmail,
@@ -383,30 +424,32 @@ const sendRescheduleRejection = async (bookingData) => {
     rejectionReason,
     requestedBy,
     logoUrl,
-    courseImage
+    courseImage,
+    amount
   } = bookingData;
 
   // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
+  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName || !amount) {
     throw new Error("Missing required fields for reschedule rejection email");
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742302524/luxe/qwq6d4zaigxlgs6mumoz.png",
     bookingDate,
     startTime,
     endTime,
     courseName,
     address: "123 Education Street, Learning City, 12345",
     year: new Date().getFullYear(),
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail, 
+    teacherEmail, 
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
       { url: "https://example.com/instagram.png", alt: "Instagram" }
-    ]
+    ],
+    amount
   };  
 
   const requestedByStudent = requestedBy === "student";
@@ -451,7 +494,7 @@ const sendRescheduleRejection = async (bookingData) => {
 
   return { success: true, message: "Reschedule rejection emails sent successfully" };
 };
-
+ 
 /**
  * Send booking scheduled emails to both student and teacher
  * This is sent at the very first stage when a student attempts to book a session
@@ -467,30 +510,43 @@ const sendBookingScheduled = async (bookingData) => {
     endTime,
     courseName,
     logoUrl,
-    courseImage
+    courseImage,
+    amount
   } = bookingData;
 
-  // Validate required fields
-  if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
-    throw new Error("Missing required fields for booking scheduled email");
+  // Validate required fields - removed meetingPlatform and meetingLink from required fields
+  const missingFields = [];
+  if (!studentEmail) missingFields.push('studentEmail');
+  if (!studentName) missingFields.push('studentName');
+  if (!teacherName) missingFields.push('teacherName');
+  if (!teacherEmail) missingFields.push('teacherEmail');
+  if (!bookingDate) missingFields.push('bookingDate');
+  if (!startTime) missingFields.push('startTime');
+  if (!endTime) missingFields.push('endTime');
+  if (!courseName) missingFields.push('courseName');
+  if (!amount) missingFields.push('amount');
+
+  if (missingFields.length > 0) {
+    throw new Error(`Missing required fields for booking scheduled email: ${missingFields.join(', ')}`);
   }
 
   const defaultData = {
     logoUrl: logoUrl || "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1741257733/luxe/eqrqi2liqecayk6rwtfh.png",
+    courseImage: courseImage || "http://res.cloudinary.com/daprkakyk/image/upload/v1742281964/luxe/jdpsyhelqvy74p1qvxw4.png",
     bookingDate,
     startTime,
     endTime,
     courseName,
     address: "123 Education Street, Learning City, 12345",
     year: new Date().getFullYear(),
-    studentEmail, // Add studentEmail to defaultData
-    teacherEmail, // Add teacherEmail to defaultData
+    studentEmail, 
+    teacherEmail, 
     socialIcons: [
       { url: "https://example.com/facebook.png", alt: "Facebook" },
       { url: "https://example.com/twitter.png", alt: "Twitter" },
       { url: "https://example.com/instagram.png", alt: "Instagram" }
-    ]
+    ],
+    amount
   };
 
   // 1. Send email to Student
@@ -502,7 +558,7 @@ const sendBookingScheduled = async (bookingData) => {
       title: "Booking Scheduled",
       studentName,
       teacherName,
-      nextStepOne: "Your booking request has been scheduled and is awaiting teacher confirmation.",
+      nextStepOne: "Your booking request has been scheduled and is awaiting for teacher confirmation.",
       nextStepTwo: "You'll receive a confirmation email once the teacher accepts your booking request.",
       buttonText: "View Booking Details"
     }
@@ -517,8 +573,8 @@ const sendBookingScheduled = async (bookingData) => {
       title: "Booking Scheduled",
       studentName,
       teacherName,
-      nextStepOne: "Please accept or decline this booking request.",
-      nextStepTwo: "The student will be notified of your decision.",
+      nextStepOne: "Please confirm or decline this booking session by providing meeting details. ",
+      nextStepTwo: "The student will be notified about the confirmation of session.",
       buttonText: "Respond to Request"
     }
   });
