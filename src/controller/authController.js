@@ -77,8 +77,8 @@ const transporter = nodemailer.createTransport({
 
 exports.registerUser = async (req, res) => {
   try {
-    let newUser;
     const data = req.body;
+
 
     let userName = '';
     
@@ -95,33 +95,41 @@ exports.registerUser = async (req, res) => {
       verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
       isVerified: false,
       userName: userName,
+
     };
 
+    // Generate username for non-teachers
+    if (data.role !== "teacher") {
+      const randomNumber = Math.floor(1000 + Math.random() * 9000);
+      userObj.userName = `${data.firstName.toLowerCase()}${randomNumber}`;
+      userObj.firstName = data.firstName;
+      userObj.lastName = data.lastName;
+    }
+
     // Check if email already exists
-    const existingUserWithEmail = await UserModel.findOne({
-      email: userObj.email,
-    });
-    if (existingUserWithEmail) {
+    const existingUser = await UserModel.findOne({ email: userObj.email });
+    if (existingUser) {
       return res.status(400).json({
         status: "failed",
         message: "Email already registered",
       });
     }
 
-    // Create user based on role
     if (data.role === "teacher") {
       userObj.userStatus = "pending";
-      newUser = await UserModel.create(userObj);
-    } else if (data.role === "student") {
-      newUser = await UserModel.create(userObj);
+    }
+
+    let newUser = await UserModel.create(userObj);
+
+    // If role is student, create student profile
+    if (data.role === "student") {
       const studentProfile = await StudentProfileModel.create({
         userId: newUser._id,
       });
       newUser.studentProfile = studentProfile._id;
       await newUser.save();
-    } else {
-      newUser = await UserModel.create(userObj);
     }
+
 
     // Send verification email
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
@@ -133,12 +141,14 @@ exports.registerUser = async (req, res) => {
              <a href="${verificationLink}">Verify Email</a>`
     });
 
+
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
       process.env.JWT_SECRET
     );
 
     res.cookie("token", token, {
+
       samesite: "none",
       secure: process.env.COOKIE_SECURE,
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
@@ -153,6 +163,7 @@ exports.registerUser = async (req, res) => {
         email: newUser.email,
         role: newUser.role,
         userName: newUser.userName,
+
         userStatus: newUser.userStatus,
         name:!newUser.firstName?`${newUser.role.toUpperCase()}`:`${newUser.firstName} ${newUser.lastName||""}`
       },
@@ -373,6 +384,7 @@ exports.userLogin = async (req, res) => {
       );
 
       res.cookie("token", token, {
+
         samesite: "none",
         secure: process.env.COOKIE_SECURE,
         expires: new Date(Date.now() + 24 * 60 * 60 * 1000),

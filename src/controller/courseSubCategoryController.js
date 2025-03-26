@@ -3,7 +3,7 @@ const CourseSubCategoryModel = require("../model/courseSubCategoryModel");
 
 exports.courseSubCategoryAdd = async (req, res) => {
   try {
-    const { name, pricePerHour, courseCategory } = req.body;
+    const { name, pricePerHour, courseCategory, icon } = req.body;
 
     // Ensure the category exists
     let findCategory = await CourseCategoryModel.findById(courseCategory);
@@ -19,6 +19,7 @@ exports.courseSubCategoryAdd = async (req, res) => {
       name,
       pricePerHour: pricePerHour || 100,
       courseCategory,
+      icon
     });
     // Push the ObjectId (not the entire object)
     findCategory.courseSubCategory.push(courseSubCategoryAdd._id);
@@ -96,7 +97,7 @@ exports.filterCourseSubCategory = async (req, res) => {
 exports.courseSubCategoryEdit = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, courseCategory, pricePerHour } = req.body;
+    const { name, courseCategory, pricePerHour, icon } = req.body;
 
     let subCategory = await CourseSubCategoryModel.findById(id);
     if (!subCategory) {
@@ -121,7 +122,8 @@ exports.courseSubCategoryEdit = async (req, res) => {
       subCategory.courseCategory = courseCategory;
     }
     if (name) subCategory.name = name;
-    if (pricePerHour) subCategory.pricePerHour = pricePerHour;
+    if (pricePerHour !== undefined) subCategory.pricePerHour = pricePerHour;
+    if(icon) subCategory.icon = icon;
 
     await subCategory.save();
     res.json({

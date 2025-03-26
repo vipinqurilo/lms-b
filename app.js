@@ -30,6 +30,8 @@ const routereeee = require("./src/route/testing");
 
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
+
+const cookieParser = require("cookie-parser");
 const frontendSettingRouter = require("./src/route/frontendSettingRoute");
 const emailSettingRouter = require("./src/route/emailSettingRoute");
 const paymentSettingRouter = require("./src/route/paymentSettingRoute");
@@ -50,6 +52,8 @@ const corsOption = {
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOption));
+
+app.use(cookieParser())
 
 app.use((req, res, next) => {
   // console.log(req)
@@ -111,7 +115,10 @@ app.get("/template", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
+
+
 });
+
 app.use("/api/admin", adminRoute);
 
 app.use("/api/payment", paymentRouter);

@@ -8,6 +8,7 @@ const CourseSubCategorySchema = new mongoose.Schema(
       ref: "CourseCategory",
       required: true,
     },
+    icon:{type:String,required:true},
     deletedAt: { type: Date, default: null },
     pricePerHour: { type: Number, required: true,default:100 },
 }, { timestamps: true });

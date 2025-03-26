@@ -3,6 +3,7 @@ const CalenderModel = require("../../model/calenderModel");
 const StudentProfileModel = require("../../model/studentProfileModel");
 const TeacherProfileModel = require("../../model/teacherProfileModel");
 const UserModel = require("../../model/UserModel");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.getTeacherProfile = async (req, res) => {
   try {
@@ -354,32 +355,252 @@ exports.editAvailabilityCalendar = async (req, res) => {
 
 exports.editPaymentInfo = async (req, res) => {
   try {
-    console.log(req.user, "user");
     const userId = req.user.id;
+    const useremail = req.user.email;
 
     const { paymentInfo } = req.body;
-    const user = await TeacherProfileModel.findOneAndUpdate(
-      { userId },
-      {
-        paymentInfo,
-      }
-    );
-    if (!user)
-      res.status(404).json({ success: false, message: "User not found" });
-    res.json({
+
+    if (
+      !paymentInfo.accountNumber ||
+      !paymentInfo.ifscCode ||
+      !paymentInfo.bankName
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Bank details are incomplete",
+      });
+    }
+
+    const user = await TeacherProfileModel.findOne({ userId });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.paymentInfo = paymentInfo;
+    await user.save();
+
+    let stripeResponse;
+
+    if (!user.paymentInfo.stripeBankAccountId) {
+      console.log("Creating new Stripe connected account...");
+      stripeResponse = await createConnectedAccount(
+        userId,
+        useremail,
+        paymentInfo
+      );
+    } else {
+      console.log("Updating existing Stripe account...");
+      stripeResponse = await updateBankAccount(
+        user.stripeAccountId,
+        paymentInfo
+      );
+    }
+
+    if (!stripeResponse.success) {
+      return res.status(500).json({
+        success: false,
+        message: "Payment Info updated, but Stripe beneficiary creation failed",
+        error: stripeResponse.error,
+      });
+    }
+
+    return res.json({
       success: true,
-      message: "Payment Info Updated successfully",
+      message: "Payment Info updated and Stripe account handled successfully",
       data: user,
+      stripeResponse: stripeResponse.message,
     });
   } catch (error) {
-    console.log(error);
-    res.json({
+    console.error("Error updating payment info:", error);
+    return res.status(500).json({
       success: false,
       message: "Something went wrong",
       error: error.message,
     });
   }
 };
+
+const createConnectedAccount = async (userId, email, paymentInfo) => {
+  try {
+    console.log(userId, "userId samosa");
+
+    // ✅ Create a Connected Account
+    const account = await stripe.accounts.create({
+      type: "custom",
+      country: "US",
+      email,
+      business_type: "individual",
+      capabilities: {
+        transfers: { requested: true },
+      },
+      // tos_acceptance: {
+      //   service_agreement: "recipient",
+      // },
+    });
+
+    // console.log("Stripe account created successfully: by kd", account);
+
+    if (!account || !account.id) {
+      throw new Error("Failed to retrieve Stripe account ID.");
+    }
+
+    if (
+      !paymentInfo ||
+      !paymentInfo.bankName ||
+      !paymentInfo.accountNumber ||
+      !paymentInfo.ifscCode
+    ) {
+      throw new Error("Bank details are missing or incomplete.");
+    }
+
+    // ✅ Attach Bank Account to the Connected Account
+    const bankAccount = await stripe.accounts.createExternalAccount(
+      account.id,
+      {
+        external_account: {
+          object: "bank_account",
+          country: "US",
+          currency: "USD",
+          account_holder_name: paymentInfo.name,
+          account_holder_type: "individual",
+          account_number: paymentInfo.accountNumber,
+          routing_number: paymentInfo.ifscCode,
+        },
+      }
+    );
+
+    // console.log("Bank account added successfully:", bankAccount.id);
+
+    // ✅ Save Stripe Account ID & Bank Account ID in Database
+    const updatedProfile = await TeacherProfileModel.findOneAndUpdate(
+      { userId: new mongoose.Types.ObjectId(userId) }, 
+      {
+        "paymentInfo.stripeBankAccountId": bankAccount.id,
+        stripeAccountId: account.id,
+      },
+      { new: true }
+    );
+    console.log(updatedProfile, "updatedProfile");
+
+    return {
+      success: true,
+      message: "Stripe account and bank details added successfully",
+      account,
+      bankAccount,
+    };
+  } catch (error) {
+    console.error("Error creating Stripe account:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+const updateBankAccount = async (stripeAccountId, paymentInfo) => {
+  try {
+    const account = await stripe.accounts.retrieve(stripeAccountId);
+    if (!account) {
+      return { success: false, error: "Stripe account not found" };
+    }
+
+    const newBankAccount = await stripe.accounts.createExternalAccount(
+      stripeAccountId,
+      {
+        external_account: {
+          object: "bank_account",
+          country: "ZA",
+          currency: "ZAR",
+          account_holder_name: paymentInfo.name,
+          account_holder_type: "individual",
+          account_number: paymentInfo.accountNumber,
+          routing_number: paymentInfo.ifscCode,
+        },
+      }
+    );
+
+    return {
+      success: true,
+      message: "Stripe bank details updated successfully",
+      newBankAccount,
+    };
+  } catch (error) {
+    console.error("Error updating Stripe bank details:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+
+exports.getBankAccountDetails = async (req, res) => {
+  try {
+    const userId = req.user.id; 
+
+    const teacherProfile = await TeacherProfileModel.findOne({ userId });
+
+    if (!teacherProfile || !teacherProfile.stripeAccountId || !teacherProfile.paymentInfo.stripeBankAccountId) {
+      return res.status(404).json({
+        success: false,
+        message: "Stripe account or bank account not found for this user",
+      });
+    }
+
+    const { stripeAccountId, paymentInfo } = teacherProfile;
+
+    // ✅ Retrieve the bank account details from Stripe
+    const bankAccount = await stripe.accounts.retrieveExternalAccount(
+      stripeAccountId, // The connected Stripe account ID
+      paymentInfo.stripeBankAccountId // The external bank account ID
+    );
+
+    res.json({
+      success: true,
+      message: "Bank account details retrieved successfully",
+      data: bankAccount,
+    });
+
+  } catch (error) {
+    console.error("Error retrieving bank account details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve bank account details",
+      error: error.message,
+    });
+  }
+};
+
+// exports.editPaymentInfo = async (req, res) => {
+//   try {
+//     console.log(req.user, "user");
+//     const userId = req.user.id;
+
+//     const { paymentInfo } = req.body;
+
+//     const user = await TeacherProfileModel.findOneAndUpdate(
+//       { userId },
+//       {
+//        $set:{ paymentInfo},
+//       },
+//       {
+//         new: true,
+//       }
+//     );
+//     if (!user)
+//       res.status(404).json({ success: false, message: "User not found" });
+//     res.json({
+//       success: true,
+//       message: "Payment Info Updated successfully",
+//       data: user,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.json({
+//       success: false,
+//       message: "Something went wrong",
+//       error: error.message,
+//     });
+//   }
+// };
 
 exports.editTutionSlots = async (req, res) => {
   try {
