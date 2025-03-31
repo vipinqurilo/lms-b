@@ -15,6 +15,7 @@ const bookingSchema=new mongoose.Schema({
     meetingLink: { type: String, default: null },
     meetingUsername: { type: String, default: null },
     meetingPassword: { type: String, default: null },
+    hasBeenRescheduled: { type: Boolean, default: false },
     rescheduleRequest: {
       newTime: { type: String, default: null },
       reason: { type: String, default: null },
@@ -25,9 +26,21 @@ const bookingSchema=new mongoose.Schema({
       },
       status: {
         type: String,
-        enum: ["pending", "accepted", "denied"],
+        enum: ["pending", "accepted_by_party", "accepted_by_admin", "completed", "denied"],
         default: null,
       },
+      adminResponse: {
+        status: { type: String, enum: ["pending", "accepted", "denied"], default: "pending" },
+        respondedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        responseDate: { type: Date },
+        reason: { type: String }
+      },
+      partyResponse: {
+        status: { type: String, enum: ["pending", "accepted", "denied"], default: "pending" },
+        respondedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        responseDate: { type: Date },
+        reason: { type: String }
+      }
     },
     cancellationReason: { type: String },
     cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

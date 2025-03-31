@@ -135,7 +135,7 @@ exports.getTeachers = async (req, res) => {
           pendingCourses: {
             $size: {
               $filter: {
-                input: "$courses",
+                input: { $ifNull: ["$courses", []] },
                 as: "course",
                 cond: { $eq: ["$$course.status", "pending"] },
               },
@@ -144,7 +144,7 @@ exports.getTeachers = async (req, res) => {
           publishedCourses: {
             $size: {
               $filter: {
-                input: "$courses",
+                input: { $ifNull: ["$courses", []] },
                 as: "course",
                 cond: { $eq: ["$$course.status", "published"] },
               },
@@ -153,17 +153,17 @@ exports.getTeachers = async (req, res) => {
           unpublishedCourses: {
             $size: {
               $filter: {
-                input: "$courses",
+                input: { $ifNull: ["$courses", []] },
                 as: "course",
                 cond: { $eq: ["$$course.status", "unpublished"] },
               },
             },
           },
-          totalEnrolledStudents: { $sum: "$courses.enrolledStudents" },
+          totalEnrolledStudents: { $sum: { $ifNull: ["$courses.enrolledStudents", []] } },
           cancelledSessions: {
             $size: {
               $filter: {
-                input: "$tutionBookings",
+                input: { $ifNull: ["$tutionBookings", []] },
                 as: "booking",
                 cond: { $eq: ["$$booking.status", "cancelled"] },
               },
@@ -172,17 +172,17 @@ exports.getTeachers = async (req, res) => {
           completedSessions: {
             $size: {
               $filter: {
-                input: "$tutionBookings",
+                input: { $ifNull: ["$tutionBookings", []] },
                 as: "booking",
                 cond: { $eq: ["$$booking.status", "completed"] },
               },
             },
           },
-          totalSessions: { $size: "$tutionBookings" },
+          totalSessions: { $size: { $ifNull: ["$tutionBookings", []] } },
           scheduledSessions: {
             $size: {
               $filter: {
-                input: "$tutionBookings",
+                input: { $ifNull: ["$tutionBookings", []] },
                 as: "booking",
                 cond: { $eq: ["$$booking.status", "scheduled"] },
               },
@@ -191,7 +191,7 @@ exports.getTeachers = async (req, res) => {
           confirmedSessions: {
             $size: {
               $filter: {
-                input: "$tutionBookings",
+                input: { $ifNull: ["$tutionBookings", []] },
                 as: "booking",
                 cond: { $eq: ["$$booking.status", "confirmed"] },
               },
@@ -200,7 +200,7 @@ exports.getTeachers = async (req, res) => {
           rescheuledSessions: {
             $size: {
               $filter: {
-                input: "$tutionBookings",
+                input: { $ifNull: ["$tutionBookings", []] },
                 as: "booking",
                 cond: { $eq: ["$$booking.status", "rescheduled"] },
               },

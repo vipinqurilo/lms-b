@@ -7,6 +7,7 @@ const walletModel = require("../../model/walletModel");
 
 exports.createTeacherRequest = async (req, res) => {
   try {
+    console.log("Creating teacher request...");
     const {
       personalInfo,
       profilePhoto,
@@ -19,8 +20,10 @@ exports.createTeacherRequest = async (req, res) => {
     } = req.body;
 
     const userId = req.user.id;
+    console.log(`User ID: ${userId}`);
     const teacherProfile = await TeacherProfileModel.findOne({ userId });
     if (teacherProfile) {
+      console.log("User is already a teacher.");
       return res.status(400).json({ message: "You are already a teacher." });
     }
     // Check if the user already has a pending request
@@ -28,6 +31,7 @@ exports.createTeacherRequest = async (req, res) => {
       userId,
     });
     if (existingRequest) {
+      console.log("User already has a pending request.");
       return res
         .status(400)
         .json({ message: "Your request is already under review or approved." });
@@ -45,7 +49,7 @@ exports.createTeacherRequest = async (req, res) => {
       subjectsTaught,
       languagesSpoken,
     });
-    console.log(newRequest, "sdf");
+    console.log("New request created:", newRequest);
     // await UserModel.findOneAndUpdate(
     //   { id: userId },
     //   { ...personalInfo, profilePhoto, introVideo, bio }
@@ -56,6 +60,7 @@ exports.createTeacherRequest = async (req, res) => {
       data: newRequest,
     });
   } catch (error) {
+    console.log("Error creating teacher request:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -194,7 +199,7 @@ exports.editTeacherRequest = async (req, res) => {
       message: "Something went wrong",
       error: error.message,
     });
-  }
+  } 
 };
 exports.approvedTeacherRequest = async (req, res) => {
   try {

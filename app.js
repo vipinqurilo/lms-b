@@ -24,10 +24,8 @@ const paymentRouter = require("./src/route/paymentRoutes");
 const tutorReviewRoute = require("./src/route/tutorReviewRoute");
 const adminRoute = require("./src/route/adminRoute");
 const emailTestRoutes = require("./src/routes/emailTestRoutes");
-
 const passwordRouter = require("./src/route/forgotPasswordRoutes");
 const routereeee = require("./src/route/testing");
-
 const earningRouter = require("./src/route/earningRoutes");
 const saleRouter = require("./src/route/saleRoutes");
 
