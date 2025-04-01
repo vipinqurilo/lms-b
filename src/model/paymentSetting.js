@@ -40,6 +40,30 @@ const paymentSettingSchema = new mongoose.Schema(
         description: "PayPal Secret Key",
       },
     },
+    payfast: {
+      mode: {
+        type: String,
+        enum: ["test", "production"],
+        required: true,
+        default: "test",
+        description: "PayFast payment mode",
+      },
+      merchantId: {
+        type: String,
+        required: true,
+        description: "PayFast Merchant ID",
+      },
+      merchantKey: {
+        type: String,
+        required: true,
+        description: "PayFast Merchant Key",
+      },
+      passphrase: {
+        type: String,
+        required: false,
+        description: "PayFast Passphrase (optional in test mode)",
+      },
+    },
   },
   { timestamps: true }
 );

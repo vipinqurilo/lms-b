@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema({
     status: { type: String, enum: ["pending", "succeeded", "refunded", "failed","cancelled","expired"], default: "Pending" },
     sessionId: { type: String, required: true, unique: true },
     transactionId: { type: String }, // Payment Gateway Transaction ID
-    paymentMethod: { type: String, enum: ["paypal","stripe", "wallet", "bank_transfer"], required: true },
+    paymentMethod: { type: String, enum: ["paypal","stripe", "wallet", "bank_transfer", "payfast"], required: true },
     refundStatus: { type: String, enum: ["not_initiated", "processing", "completed"] },
     refundAmount: { type: Number, default: 0 },
     paymentStatus:{type:String,enum:["paid","unpaid"],default:"unpaid"},
