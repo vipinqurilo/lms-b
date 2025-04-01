@@ -60,11 +60,31 @@ const generateSignature = (data, passphrase = process.env.PAYFAST_PASSPHRASE || 
 // Create PayFast checkout for courses
 exports.createCourseCheckout = async (req, res) => {
   try {
-    const { courseId, studentId, amount, email, name, returnUrl, cancelUrl, notifyUrl } = req.body;
+    const { 
+      courseId, 
+      studentId, 
+      amount, 
+      email, 
+      name,
+      courseTitle,
+      returnUrl, 
+      cancelUrl, 
+      notifyUrl 
+    } = req.body;
     console.log("Course checkout request received:", req.body);
     
     // Validate required fields
-    const requiredFields = { courseId, studentId, amount, email, name, returnUrl, cancelUrl };
+    const requiredFields = { 
+      courseId, 
+      studentId, 
+      amount, 
+      email, 
+      name,
+      courseTitle,
+      returnUrl, 
+      cancelUrl 
+    };
+    
     const missingFields = Object.entries(requiredFields)
       .filter(([key, value]) => !value)
       .map(([key]) => key);
@@ -130,14 +150,33 @@ exports.createCourseCheckout = async (req, res) => {
     console.log("Cancel URL:", formattedCancelUrl);
     console.log("Notify URL:", formattedNotifyUrl);
     
-    // Create metadata for storing course details
+    // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
+    const data = {
+      // Merchant details
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
+      
+      // Payment details
+      amount: formattedAmount,
+      item_name: 'course'
+    };
+
+    // Generate signature - MUST be done last after all fields are added
+    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '');
+    
+    // Store all other data as metadata in our database
     const metadata = {
       courseId,
       studentId,
-      amount: formattedAmount
+      courseTitle,
+      amount: formattedAmount,
+      return_url: formattedReturnUrl,
+      cancel_url: formattedCancelUrl,
+      notify_url: formattedNotifyUrl,
+      email_address: email,
+      name_first: firstName,
+      name_last: lastName || ''
     };
-    
-    console.log("Created metadata for course:", metadata);
     
     // Create payment record in database
     const payment = await PaymentModel.create({
@@ -154,43 +193,6 @@ exports.createCourseCheckout = async (req, res) => {
     });
     
     console.log("Created payment record:", payment._id);
-    
-    // Create data object for PayFast with required fields first - ONLY include standard supported fields
-    const data = {
-      // Merchant details - required
-      merchant_id: merchantId,
-      merchant_key: merchantKey,
-      
-      // Return URLs - required
-      return_url: formattedReturnUrl,
-      cancel_url: formattedCancelUrl,
-      notify_url: formattedNotifyUrl,
-      
-      // Buyer details - required
-      name_first: firstName,
-      name_last: lastName || '',
-      email_address: email,
-      
-      // Transaction details - required
-      m_payment_id: paymentId,
-      amount: formattedAmount,
-      item_name: `Course Purchase`,
-      
-      // Optional but recommended
-      payment_method: 'cc',
-      
-      // Description is supported by PayFast
-      item_description: `Purchase of course`
-    };
-    
-    // Add custom fields - these are officially supported by PayFast
-    // IMPORTANT: Custom fields must not be empty strings
-    if (studentId) data.custom_str1 = studentId.toString();
-    if (courseId) data.custom_str2 = courseId.toString();
-    data.custom_str3 = 'course';
-    
-    // Generate signature - MUST be done last after all fields are added
-    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '');
     
     // Log everything for debugging
     console.log("Full data object:", data);
@@ -213,7 +215,7 @@ exports.createCourseCheckout = async (req, res) => {
       success: true,
       data: {
         paymentUrl: apiUrl,
-        fullPaymentUrl: fullPayfastUrl, // Add the full URL
+        fullPaymentUrl: fullPayfastUrl,
         paymentData: data,
         paymentId
       }
@@ -232,11 +234,41 @@ exports.createCourseCheckout = async (req, res) => {
 // Create PayFast checkout for bookings
 exports.createBookingCheckout = async (req, res) => {
   try {
-    const { teacherId, studentId, subjectId, sessionDate, sessionStartTime, sessionEndTime, sessionDuration, amount, email, name, returnUrl, cancelUrl, notifyUrl } = req.body;
+    const { 
+      teacherId, 
+      studentId, 
+      subjectId, 
+      sessionDate, 
+      sessionStartTime, 
+      sessionEndTime, 
+      sessionDuration,
+      sessionTitle,
+      amount, 
+      email, 
+      name, 
+      returnUrl, 
+      cancelUrl, 
+      notifyUrl 
+    } = req.body;
     console.log("Booking checkout request received:", req.body);
 
     // Validate required fields
-    const requiredFields = { teacherId, studentId, subjectId, sessionDate, sessionStartTime, sessionEndTime, sessionDuration, amount, email, name, returnUrl, cancelUrl };
+    const requiredFields = { 
+      teacherId, 
+      studentId, 
+      subjectId, 
+      sessionDate, 
+      sessionStartTime, 
+      sessionEndTime, 
+      sessionDuration,
+      sessionTitle,
+      amount, 
+      email, 
+      name, 
+      returnUrl, 
+      cancelUrl 
+    };
+    
     const missingFields = Object.entries(requiredFields)
       .filter(([key, value]) => !value)
       .map(([key]) => key);
@@ -302,76 +334,54 @@ exports.createBookingCheckout = async (req, res) => {
     console.log("Cancel URL:", formattedCancelUrl);
     console.log("Notify URL:", formattedNotifyUrl);
 
-    // Create data object for PayFast with required fields first - ONLY include standard supported fields
+    // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
     const data = {
-      // Merchant details - required
+      // Merchant details
       merchant_id: merchantId,
       merchant_key: merchantKey,
       
-      // Return URLs - required
+      // Payment details
+      amount: formattedAmount,
+      item_name: 'booking'
+    };
+
+    // Generate signature - MUST be done last after all fields are added
+    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '');
+    
+    // Store all other data as metadata in our database
+    const metadata = {
+      teacherId,
+      studentId,
+      subjectId,
+      sessionDate,
+      sessionStartTime,
+      sessionEndTime,
+      sessionDuration,
+      sessionTitle,
+      amount: formattedAmount,
       return_url: formattedReturnUrl,
       cancel_url: formattedCancelUrl,
       notify_url: formattedNotifyUrl,
-      
-      // Buyer details - required
-      name_first: firstName,
-      name_last: lastName || '',
       email_address: email,
-      
-      // Transaction details - required
-      m_payment_id: paymentId,
-      amount: formattedAmount,
-      item_name: `Qurilo Booking: ${sessionDuration} min session`,
-      
-      // Optional but recommended
-      payment_method: 'cc'
+      name_first: firstName,
+      name_last: lastName || ''
     };
     
-    // Add custom fields - these are officially supported by PayFast
-    // IMPORTANT: Custom fields must not be empty strings
-    if (studentId) data.custom_str1 = studentId.toString();
-    if (teacherId) data.custom_str2 = teacherId.toString();
-    if (sessionDate) data.custom_str3 = sessionDate.toString();
-    if (subjectId) data.custom_str4 = subjectId.toString();
+    // Create payment record in database
+    const payment = await PaymentModel.create({
+      userId: studentId,
+      teacherId,
+      amount: parseFloat(formattedAmount),
+      currency: "ZAR",
+      paymentFor: "booking",
+      status: "pending",
+      sessionId: paymentId,
+      paymentMethod: "payfast",
+      paymentStatus: "unpaid",
+      metadata: JSON.stringify(metadata)
+    });
     
-    // PayFast only allows custom_str fields up to 255 chars
-    // Only include if we have the data and keep it under the limit
-    if (sessionStartTime && sessionEndTime && sessionDuration) {
-      // For custom_str5, we need to be extra careful with JSON
-      // PayFast is very particular about signatures, and JSON can cause issues
-      
-      // Option 1: Simplified format without JSON to avoid encoding issues
-      data.custom_str5 = `${sessionStartTime}|${sessionEndTime}|${sessionDuration}`;
-      
-      /* 
-      // Option 2: If JSON is really needed, handle it very carefully
-      const customData = {
-        sessionStartTime,
-        sessionEndTime,
-        sessionDuration
-      };
-      let customDataString;
-      try {
-        // Ensure consistent JSON formatting with no extra spaces
-        customDataString = JSON.stringify(customData);
-        
-        // Make sure it's within PayFast's 255 character limit
-        if (customDataString.length > 255) {
-          console.log("Custom data too long, truncating:", customDataString.length);
-          customDataString = customDataString.substring(0, 255);
-        }
-        
-        data.custom_str5 = customDataString;
-      } catch (error) {
-        console.error("Error stringifying custom data:", error);
-        // Fallback to simple format if JSON fails
-        data.custom_str5 = `${sessionStartTime}|${sessionEndTime}|${sessionDuration}`;
-      }
-      */
-    }
-    
-    // Generate signature - MUST be done last after all fields are added
-    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '');
+    console.log("Created payment record:", payment._id);
     
     // Log everything for debugging
     console.log("Full data object:", data);
@@ -390,49 +400,11 @@ exports.createBookingCheckout = async (req, res) => {
     const fullPayfastUrl = `${apiUrl}?${queryString}`;
     console.log("Full PayFast URL:", fullPayfastUrl);
 
-    // Create metadata for storing booking details (similar to Stripe approach)
-    const metadata = {
-      teacherId,
-      studentId,
-      subjectId,
-      sessionDate,
-      sessionStartTime,
-      sessionEndTime,
-      sessionDuration,
-      amount: formattedAmount
-    };
-    
-    console.log("Created metadata for booking:", metadata);
-
-    // Create payment record in database
-    const newPayment = await PaymentModel.create({
-      userId: studentId,
-      teacherId,
-      studentId,
-      subjectId,
-      sessionDate,
-      sessionStartTime,
-      sessionEndTime,
-      sessionDuration,
-      amount,
-      currency: "ZAR",
-      paymentMethod: "payfast",
-      sessionId: paymentId,
-      status: "pending",
-      paymentStatus: "unpaid",
-      metadata: JSON.stringify(metadata),
-      custom_str1: studentId,
-      custom_str2: teacherId,
-      custom_str4: subjectId
-    });
-    
-    console.log("Created payment record:", newPayment._id);
-    
     res.status(200).json({
       success: true,
       data: {
         paymentUrl: apiUrl,
-        fullPaymentUrl: fullPayfastUrl, // Add the full URL
+        fullPaymentUrl: fullPayfastUrl,
         paymentData: data,
         paymentId
       }
