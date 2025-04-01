@@ -2,14 +2,15 @@ const PaymentSetting = require("../model/paymentSetting");
 
 exports.createOrUpdatePaymentSettings = async (req, res) => {
   try {
-    const { stripe, paypal } = req.body;
+    const { stripe, paypal, payfast } = req.body;
 
     let paymentSetting = await PaymentSetting.findOne();
     if (paymentSetting) {
-      paymentSetting.stripe = stripe;
-      paymentSetting.paypal = paypal;
+      if (stripe) paymentSetting.stripe = stripe;
+      if (paypal) paymentSetting.paypal = paypal;
+      if (payfast) paymentSetting.payfast = payfast;
     } else {
-      paymentSetting = new PaymentSetting({ stripe, paypal });
+      paymentSetting = new PaymentSetting({ stripe, paypal, payfast });
     }
 
     await paymentSetting.save();

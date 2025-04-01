@@ -11,23 +11,232 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const emailService = require("../services/emailService");
 exports.createBooking = async (req, res) => {
   try {
-        const { sessionId } = req.body;
+    const { sessionId } = req.body;
+    console.log("Creating booking with sessionId:", sessionId);
 
-        // Step 1: Retrieve Payment Details from Stripe
-        const session = await stripe.checkout.sessions.retrieve(sessionId);
+    // Check if it's a PayFast payment (booking_ prefix)
+    if (sessionId.startsWith("booking_")) {
+      // Find the payment record
+      const payment = await paymentModel.findOne({ sessionId });
+      console.log("Found payment record:", payment);
+      
+      if (!payment) {
+        console.error("Payment record not found for sessionId:", sessionId);
+        return res.status(400).json({ 
+          success: false,
+          message: "Payment record not found" 
+        });
+      }
 
-        if (!session || session.payment_status != "paid") {
-            return res.status(400).json({ message: "Payment not verified" });
+      // For PayFast, consider 'succeeded' as valid state
+      if (payment.status !== "succeeded") {
+        console.error("Payment not in succeeded state:", payment.status);
+        return res.status(400).json({ 
+          success: false,
+          message: "Payment not verified" 
+        });
+      }
+
+      // Find existing booking with payment ID
+      const existingBooking = await BookingModel.findOne({
+        paymentId: payment._id
+      });
+      console.log("Existing booking check:", existingBooking ? "Found" : "Not found");
+
+      if (existingBooking) {
+        return res.json({
+          success: true,
+          message: "Booking already created",
+          data: existingBooking
+        });
+      }
+
+      // Parse metadata - using similar approach to Stripe
+      let metadata = {};
+      try {
+        if (payment.metadata && typeof payment.metadata === 'string') {
+          metadata = JSON.parse(payment.metadata);
+        } else if (payment.metadata && typeof payment.metadata === 'object') {
+          metadata = payment.metadata;
+        } else {
+          metadata = {};
         }
-        console.log(session,"session");
-        
-        //Update Payment Details
-        const payment=await paymentModel.findOneAndUpdate(
-          {sessionId:session.id},
-          {transactionId:session.payment_intent,status:"succeeded",paymentStatus:"paid"}
-        )
+        console.log("Parsed metadata:", metadata);
+      } catch (e) {
+        console.error("Error parsing metadata:", e);
+        metadata = {};
+      }
 
-        //Find Exsiting Booking wiht payment ID
+      // Get teacher details from metadata
+      const teacherId = metadata.teacherId || payment.teacherId || payment.custom_str2;
+      if (!teacherId) {
+        console.error("Teacher ID not found in payment record");
+        return res.status(400).json({
+          success: false,
+          message: "Teacher ID not found in payment record"
+        });
+      }
+      console.log("Teacher ID:", teacherId);
+      
+      const teacher = await UserModel.findById(teacherId);
+      if (!teacher) {
+        console.error("Teacher not found for ID:", teacherId);
+        return res.status(400).json({
+          success: false,
+          message: "Teacher not found"
+        });
+      }
+      console.log("Teacher found:", teacher.firstName, teacher.lastName);
+
+      // Get student details from metadata
+      const studentId = metadata.studentId || payment.studentId || payment.userId || payment.custom_str1;
+      if (!studentId) {
+        console.error("Student ID not found in payment record");
+        return res.status(400).json({
+          success: false,
+          message: "Student ID not found in payment record"
+        });
+      }
+      console.log("Student ID:", studentId);
+
+      // Get subject ID from metadata
+      const subjectId = metadata.subjectId || payment.subjectId || payment.custom_str4;
+      if (!subjectId) {
+        console.error("Subject ID not found in payment record");
+        return res.status(400).json({
+          success: false,
+          message: "Subject ID not found in payment record"
+        });
+      }
+      console.log("Subject ID:", subjectId);
+
+      // Get subject information
+      let courseName = "Course";
+      try {
+        const subject = await CourseSubCategoryModel.findById(subjectId);
+        if (subject) {
+          courseName = subject.name;
+        }
+      } catch (subjectError) {
+        console.error("Error fetching subject:", subjectError);
+      }
+
+      // Create booking object from metadata (similar to Stripe approach)
+      const bookingData = {
+        teacherId,
+        studentId,
+        subjectId,
+        amount: metadata.amount || payment.amount,
+        sessionDate: new Date(metadata.sessionDate),
+        sessionStartTime: new Date(metadata.sessionStartTime),
+        sessionEndTime: new Date(metadata.sessionEndTime),
+        sessionDuration: metadata.sessionDuration,
+        status: "scheduled",
+        paymentId: payment._id
+      };
+
+      // Validate all required fields are present
+      const requiredFields = ['teacherId', 'studentId', 'subjectId', 'sessionDate', 'sessionStartTime', 'sessionEndTime', 'sessionDuration'];
+      const missingFields = requiredFields.filter(field => !bookingData[field]);
+      
+      if (missingFields.length > 0) {
+        console.error("Missing required fields for booking:", missingFields);
+        console.error("Payment data:", payment);
+        console.error("Metadata:", metadata);
+        return res.status(400).json({
+          success: false,
+          message: `Missing required booking fields: ${missingFields.join(', ')}`
+        });
+      }
+
+      console.log("Creating booking with data:", bookingData);
+      const newBooking = await BookingModel.create(bookingData);
+      console.log("Booking created:", newBooking);
+
+      // Update payment status to mark it as used
+      await paymentModel.findByIdAndUpdate(payment._id, {
+        status: "succeeded",
+        paymentStatus: "paid"
+      });
+
+      // Get student details for email
+      const student = await UserModel.findById(studentId);
+      if (!student) {
+        console.error("Student not found for ID:", studentId);
+      }
+
+      // Add student and teacher profiles to the booking
+      try {
+        // Find student and teacher profiles
+        const studentProfile = await StudentProfileModel.findOne({
+          userId: studentId,
+        });
+        const teacherProfile = await TeacherProfileModel.findOne({
+          userId: teacherId,
+        });
+        
+        // Add the booking to their bookings lists
+        if (studentProfile) {
+          studentProfile.tutionBookings.push(newBooking._id);
+          await studentProfile.save();
+        }
+        
+        if (teacherProfile) {
+          teacherProfile.tutionBookings.push(newBooking._id);
+          await teacherProfile.save();
+        }
+      } catch (error) {
+        console.error("Error updating profiles with booking:", error);
+        // Continue even if this fails
+      }
+
+      // Send booking confirmation emails
+      try {
+        if (student && teacher) {
+          await emailService.sendBookingScheduled({
+            studentEmail: student.email,
+            studentName: student.firstName + ' ' + student.lastName,
+            teacherName: teacher.firstName + ' ' + teacher.lastName,
+            teacherEmail: teacher.email,
+            bookingDate: moment(bookingData.sessionDate).format('MMMM D, YYYY'),
+            startTime: moment(bookingData.sessionStartTime).format('h:mm A'),
+            endTime: moment(bookingData.sessionEndTime).format('h:mm A'),
+            courseName: `${courseName} (${bookingData.sessionDuration} Minutes)`,
+            amount: bookingData.amount
+          });
+          console.log("Booking confirmation emails sent successfully");
+        }
+      } catch (emailError) {
+        console.error("Error sending booking confirmation emails:", emailError);
+      }
+
+      return res.json({
+        success: true,
+        message: "Booking created successfully",
+        data: {
+          sessionTitle: `${courseName} (${bookingData.sessionDuration} Minutes)`,
+          teacherName: teacher.firstName + teacher.lastName,
+          sessionDate: bookingData.sessionDate,
+          sessionStartDate: bookingData.sessionStartTime,
+          ...newBooking.toObject()
+        }
+      });
+    } else {
+      // ===== STRIPE PAYMENT (Original unchanged code) =====
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (!session || session.payment_status != "paid") {
+        return res.status(400).json({ message: "Payment not verified" });
+      }
+      console.log(session,"session");
+      
+      //Update Payment Details
+      const payment=await paymentModel.findOneAndUpdate(
+        {sessionId:session.id},
+        {transactionId:session.payment_intent,status:"succeeded",paymentStatus:"paid"}
+      )
+
+      //Find Exsiting Booking wiht payment ID
       const existingBooking=await BookingModel.findOne({
         paymentId:payment?._id
       })
@@ -76,70 +285,71 @@ exports.createBooking = async (req, res) => {
       paymentId:payment?._id
      }
      
-    const newBooking = await BookingModel.create(newBookingObj)
-    if (newBooking) {
-      const studentProfile = await StudentProfileModel.findOne({
-        userId: studentId,
-      });
-      const teacherProfile = await TeacherProfileModel.findOne({
-        userId: teacherId,
-      });
-      studentProfile?.tutionBookings.push(newBooking._id);
-      await studentProfile?.save();
-      teacherProfile?.tutionBookings.push(newBooking._id);
-      await teacherProfile?.save();
-      
-      // Get student and teacher details for email
-      const student = await UserModel.findById(studentId);
-      const teacher = await UserModel.findById(teacherId);
-      
-      // Format dates for email
-      const formattedDate = moment(session.metadata.sessionDate).format('MMMM D, YYYY');
-      const formattedStartTime = moment(session.metadata.sessionStartTime).format('h:mm A');
-      const formattedEndTime = moment(session.metadata.sessionEndTime).format('h:mm A');
-      
-      // Send booking scheduled emails (not confirmation yet)
-      try {
-        await emailService.sendBookingScheduled({
-          studentEmail: student.email,
-          studentName: student.firstName + ' ' + student.lastName,
-          teacherName: teacher.firstName + ' ' + teacher.lastName,
-          teacherEmail: teacher.email,
-          bookingDate: formattedDate,
-          startTime: formattedStartTime,
-          endTime: formattedEndTime,
-          courseName: sessionTitle,
-          amount: amount
-        });
-        console.log("Booking scheduled emails sent successfully");
-      } catch (emailError) {
-        console.error("Error sending booking scheduled emails:", emailError);
-      }
-      
-      res.json({
-        success: true,
-        message: "Booking created successfully",
-        data:{
-          sessionTitle: sessionTitle,
-          teacherName: teacher.firstName + teacher.lastName,
-          transactionId: session.payment_intent,
-          sessionDate: session.metadata.sessionDate,
-          sessionStartDate: session.metadata.sessionStartTime
-        }
-      });
-    } else {
-      res.json({
-        success: false,
-        message: "Booking not created ",
-      
-      });
+     const newBooking = await BookingModel.create(newBookingObj)
+     if (newBooking) {
+       const studentProfile = await StudentProfileModel.findOne({
+         userId: studentId,
+       });
+       const teacherProfile = await TeacherProfileModel.findOne({
+         userId: teacherId,
+       });
+       studentProfile?.tutionBookings.push(newBooking._id);
+       await studentProfile?.save();
+       teacherProfile?.tutionBookings.push(newBooking._id);
+       await teacherProfile?.save();
+       
+       // Get student and teacher details for email
+       const student = await UserModel.findById(studentId);
+       const teacher = await UserModel.findById(teacherId);
+       
+       // Format dates for email
+       const formattedDate = moment(session.metadata.sessionDate).format('MMMM D, YYYY');
+       const formattedStartTime = moment(session.metadata.sessionStartTime).format('h:mm A');
+       const formattedEndTime = moment(session.metadata.sessionEndTime).format('h:mm A');
+       
+       // Send booking scheduled emails (not confirmation yet)
+       try {
+         await emailService.sendBookingScheduled({
+           studentEmail: student.email,
+           studentName: student.firstName + ' ' + student.lastName,
+           teacherName: teacher.firstName + ' ' + teacher.lastName,
+           teacherEmail: teacher.email,
+           bookingDate: formattedDate,
+           startTime: formattedStartTime,
+           endTime: formattedEndTime,
+           courseName: sessionTitle,
+           amount: amount
+         });
+         console.log("Booking scheduled emails sent successfully");
+       } catch (emailError) {
+         console.error("Error sending booking scheduled emails:", emailError);
+       }
+
+       res.json({
+         success: true,
+         message: "Booking created successfully",
+         data:{
+           sessionTitle: sessionTitle,
+           teacherName: teacher.firstName + teacher.lastName,
+           transactionId: session.payment_intent,
+           sessionDate: session.metadata.sessionDate,
+           sessionStartDate: session.metadata.sessionStartTime
+         }
+       });
+     } else {
+       res.json({
+         success: false,
+         message: "Booking not created ",
+       
+       });
+     }
     }
   } catch (error) {
-    console.log(error)
-    res.json({
-      successs: false,
+    console.error("Error in createBooking:", error);
+    return res.status(500).json({
+      success: false,
       message: "Something went wrong",
-      error: error.message,
+      error: error.message
     });
   }
 };
@@ -205,7 +415,7 @@ exports.getBookings = async (req, res) => {
       {
         $lookup: {
           from: "users",
-          localField: "studentId",
+          localField: "studentId", 
           foreignField: "_id",
           as: "student",
         },
