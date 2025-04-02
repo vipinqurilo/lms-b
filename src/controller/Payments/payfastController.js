@@ -5,17 +5,15 @@ const axios = require('axios');
 const { URLSearchParams } = require('url');
 
 // Function to generate PayFast signature
-const generateSignature = (data, passphrase) => {
-  const keys = Object.keys(data).sort(); // Sort keys alphabetically
-  let signatureString = keys.map(key => `${key}=${data[key]}`).join("&");
-  
-  if (passphrase) {
-    signatureString += `&passphrase=${passphrase}`; // Append passphrase if exists
-  }
-  
-  return crypto.createHash('md5').update(signatureString).digest('hex');
-};
+const generateSignature = (data, passphrase = "") => {
+  const sortedKeys = Object.keys(data).sort();
+  const queryString = sortedKeys
+    .map((key) => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
+    .join("&");
 
+  const finalString = passphrase ? `${queryString}&passphrase=${passphrase}` : queryString;
+  return crypto.createHash("md5").update(finalString).digest("hex");
+};
 // Create PayFast checkout for courses
 exports.createCourseCheckout = async (req, res) => {
   try {
@@ -74,8 +72,8 @@ exports.createCourseCheckout = async (req, res) => {
     }
     
     // PayFast Credentials
-    const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID;
-    const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY;
+    const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
+    const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
     const passphrase = payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '';
     
     const apiUrl = process.env.NODE_ENV !== 'production' 
@@ -240,8 +238,8 @@ exports.createBookingCheckout = async (req, res) => {
     }
     
     // Use settings from database or fall back to environment variables
-    const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID;
-    const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY;
+    const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
+    const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
     const apiUrl = payfastSettings.mode || process.env.NODE_ENV !== 'production' 
       ? 'https://sandbox.payfast.co.za/eng/process' 
       : 'https://www.payfast.co.za/eng/process';
@@ -263,7 +261,7 @@ exports.createBookingCheckout = async (req, res) => {
     // Format callback URLs
     const formattedReturnUrl = returnUrl || `${req.headers.origin}/student-dashboard/booking/payment-success?session_id=${paymentId}`;
     const formattedCancelUrl = cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
-    const formattedNotifyUrl = notifyUrl || `${ "https://8000.loca.lt"}/api/payment/payfast/notify`;
+    const formattedNotifyUrl = notifyUrl || `${ "https://enjoy-capacity-bid-monitors.trycloudflare.com"}/api/payment/payfast/notify`;
     
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
@@ -274,7 +272,7 @@ exports.createBookingCheckout = async (req, res) => {
       // Merchant details
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      
+      notify_url: formattedNotifyUrl,
       // Payment details
       amount: formattedAmount,
       item_name: 'booking',
@@ -282,7 +280,7 @@ exports.createBookingCheckout = async (req, res) => {
     };
 
     // Generate signature - MUST be done last after all fields are added
-    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '');
+    data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE.trim());
     
     // Store all other data as metadata in our database
     const metadata = {
