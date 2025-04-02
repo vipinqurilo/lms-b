@@ -29,7 +29,6 @@ exports.createCourseCheckout = async (req, res) => {
       notifyUrl 
     } = req.body;
     
-    console.log("Course checkout request received:", req.body);
     
     // Validate required fields
     const requiredFields = { 
@@ -41,7 +40,6 @@ exports.createCourseCheckout = async (req, res) => {
       .map(([key]) => key);
     
     if (missingFields.length > 0) {
-      console.error("Missing required fields:", missingFields);
       return res.status(400).json({
         success: false,
         message: `Missing required fields: ${missingFields.join(', ')}`
@@ -67,7 +65,6 @@ exports.createCourseCheckout = async (req, res) => {
       const settings = await PaymentSetting.findOne();
       payfastSettings = settings?.payfast || {};
     } catch (error) {
-      console.error("Error fetching PayFast settings, using defaults", error);
       payfastSettings = {};
     }
     
@@ -80,7 +77,6 @@ exports.createCourseCheckout = async (req, res) => {
       ? 'https://sandbox.payfast.co.za/eng/process' 
       : 'https://www.payfast.co.za/eng/process';
     
-    console.log("Using PayFast settings:", { merchantId, apiUrl, passphrase });
     
     // Format name
     const nameParts = name.split(' ');
@@ -89,16 +85,12 @@ exports.createCourseCheckout = async (req, res) => {
 
     // Ensure notify URL is valid
     if (!notifyUrl.startsWith('https://') && !notifyUrl.startsWith('http://')) {
-      console.error("Invalid notify URL:", notifyUrl);
       return res.status(400).json({
         success: false,
         message: "Invalid notify URL"
       });
     }
-    
-    console.log("Return URL:", returnUrl);
-    console.log("Cancel URL:", cancelUrl);
-    console.log("Notify URL:", notifyUrl); // Make sure this is correct
+
     
     // Prepare PayFast Data
     const data = {
@@ -132,18 +124,15 @@ exports.createCourseCheckout = async (req, res) => {
       metadata: JSON.stringify(data) // Store the full PayFast data
     });
 
-    console.log("Created payment record:", payment._id);
     
     // Generate Query String for PayFast
     let queryString = Object.keys(data)
       .map(key => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
       .join("&");
 
-    console.log("Final query string for PayFast:", queryString);
     
     // Full PayFast URL
     const fullPayfastUrl = `${apiUrl}?${queryString}`;
-    console.log("Full PayFast URL:", fullPayfastUrl);
 
     res.status(200).json({
       success: true,
@@ -155,7 +144,6 @@ exports.createCourseCheckout = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("PayFast course checkout error:", error);
     res.status(500).json({
       success: false,
       message: "Error creating payment",
@@ -183,7 +171,6 @@ exports.createBookingCheckout = async (req, res) => {
       cancelUrl, 
       notifyUrl 
     } = req.body;
-    console.log("Booking checkout request received:", req.body);
 
     // Validate required fields
     const requiredFields = { 
@@ -207,7 +194,6 @@ exports.createBookingCheckout = async (req, res) => {
       .map(([key]) => key);
     
     if (missingFields.length > 0) {
-      console.error("Missing required fields:", missingFields);
       return res.status(400).json({
         success: false,
         message: `Missing required fields: ${missingFields.join(', ')}`
@@ -233,7 +219,6 @@ exports.createBookingCheckout = async (req, res) => {
       const settings = await PaymentSetting.findOne();
       payfastSettings = settings?.payfast || {};
     } catch (error) {
-      console.error("Error fetching PayFast settings, using defaults", error);
       payfastSettings = {};
     }
     
@@ -244,14 +229,9 @@ exports.createBookingCheckout = async (req, res) => {
       ? 'https://sandbox.payfast.co.za/eng/process' 
       : 'https://www.payfast.co.za/eng/process';
       
-    console.log("Using PayFast settings:", { 
-      merchantId, 
-      testMode: payfastSettings.test_mode || process.env.NODE_ENV !== 'production',
-      apiUrl 
-    });
 
-    console.log("Using merchant ID:", merchantId);
-    console.log("PayFast URL:", apiUrl);
+
+
 
     // Format name parts
     const nameParts = name.split(' ');
@@ -272,12 +252,19 @@ exports.createBookingCheckout = async (req, res) => {
       // Merchant details
       merchant_id: merchantId,
       merchant_key: merchantKey,
+      // return_url: formattedReturnUrl,
+      // cancel_url: formattedCancelUrl,
       notify_url: formattedNotifyUrl,
       // Payment details
       amount: formattedAmount,
       item_name: 'booking',
-      m_payment_id: paymentId
+      custom_str1: paymentId,
+      email_address: email,
+      name_first: firstName,
+      name_last: lastName,
+      
     };
+
 
     // Generate signature - MUST be done last after all fields are added
     data.signature = generateSignature(data, payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE.trim());
@@ -315,7 +302,7 @@ exports.createBookingCheckout = async (req, res) => {
       metadata: JSON.stringify(metadata)
     });
     
-    console.log("Created payment record:", payment._id);
+  
     
     // Log everything for debugging
     console.log("Full data object:", data);

@@ -11,7 +11,7 @@ const paymentSchema = new mongoose.Schema({
     paymentMethod: { type: String, enum: ["paypal","stripe", "wallet", "bank_transfer", "payfast"], required: true },
     refundStatus: { type: String, enum: ["not_initiated", "processing", "completed"] },
     refundAmount: { type: Number, default: 0 },
-    paymentStatus:{type:String,enum:["paid","unpaid"],default:"unpaid"},
+    paymentStatus:{type:String,enum:["paid","unpaid",'failed'],default:"unpaid"},
     
 }, { timestamps: true });
 
