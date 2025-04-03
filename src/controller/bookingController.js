@@ -9,6 +9,8 @@ const UserModel = require("../model/UserModel");
 const CourseSubCategoryModel = require("../model/courseSubCategoryModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const emailService = require("../services/emailService");
+
+
 exports.createBooking = async (req, res) => {
   try {
     const { sessionId } = req.body;

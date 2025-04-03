@@ -12,6 +12,7 @@ const paymentSchema = new mongoose.Schema({
     refundStatus: { type: String, enum: ["not_initiated", "processing", "completed"] },
     refundAmount: { type: Number, default: 0 },
     paymentStatus:{type:String,enum:["paid","unpaid",'failed'],default:"unpaid"},
+    metadata:{type:Object,required:true}
     
 }, { timestamps: true });
 
