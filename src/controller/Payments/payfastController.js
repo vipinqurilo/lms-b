@@ -282,9 +282,10 @@ exports.createBookingCheckout = async (req, res) => {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
     // Format callback URLs
-    const formattedReturnUrl =
-    encodeURIComponent(  returnUrl ||
-      `${req.headers.origin}/student-dashboard/booking/payment-success?session_id=${paymentId}`);
+    const formattedReturnUrl = encodeURIComponent(
+      returnUrl ||
+        `${req.headers.origin}/student-dashboard/booking/payment-success?session_id=${paymentId}`
+    );
     const formattedCancelUrl =
       cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
     const formattedNotifyUrl =
@@ -297,19 +298,16 @@ exports.createBookingCheckout = async (req, res) => {
 
     // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
     const data = {
-      // Merchant details
-      merchant_id: merchantId,
-      merchant_key: merchantKey,
-      // return_url: formattedReturnUrl,
-      // cancel_url: formattedCancelUrl,
-      notify_url: formattedNotifyUrl,
-      // Payment details
       amount: formattedAmount,
-      item_name: "booking",
+      cancel_url: formattedCancelUrl,
       custom_str1: paymentId,
       email_address: email,
+      item_name: "booking",
+      merchant_id: merchantId,
+      merchant_key: merchantKey,
       name_first: firstName,
-      // name_last: lastName,
+      notify_url: formattedNotifyUrl,
+      // return_url: formattedReturnUrl,
     };
 
     // Generate signature - MUST be done last after all fields are added
