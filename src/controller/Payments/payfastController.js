@@ -63,11 +63,10 @@ exports.createCourseCheckout = async (req, res) => {
       courseTitle,
       returnUrl,
       cancelUrl,
-      notifyUrl,
     };
 
     const missingFields = Object.entries(requiredFields)
-      .filter(([key, value]) => !value)
+      .filter(([_, value]) => !value)
       .map(([key]) => key);
 
     if (missingFields.length > 0) {
@@ -77,77 +76,67 @@ exports.createCourseCheckout = async (req, res) => {
       });
     }
 
-    // Validate and format amount
+    // Format amount
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid amount",
-      });
+      return res.status(400).json({ success: false, message: "Invalid amount" });
     }
     const formattedAmount = parsedAmount.toFixed(2);
 
-    // Generate a unique payment ID
+    // Generate unique payment ID
     const paymentId = crypto.randomUUID();
 
-    // Fetch PayFast settings from DB or fallback to environment variables
-    let payfastSettings;
+    // Fetch PayFast settings from DB or fallback to env variables
+    let payfastSettings = {};
     try {
       const settings = await PaymentSetting.findOne();
       payfastSettings = settings?.payfast || {};
-    } catch (error) {
-      payfastSettings = {};
-    }
+    } catch (error) {}
 
-    // PayFast Credentials
-    const merchantId =
-      payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
-    const merchantKey =
-      payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
-    const passphrase = (
-      payfastSettings.passphrase ||
-      process.env.PAYFAST_PASSPHRASE ||
-      ""
-    ).trim();
-
+    const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
+    const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
+    const passphrase = (payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || "").trim();
     const apiUrl =
-      process.env.NODE_ENV !== "production"
+      payfastSettings.mode || process.env.NODE_ENV !== "production"
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
 
-    // Format name
+    // Format name parts
     const nameParts = name.split(" ");
     const firstName = nameParts[0] || "Student";
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-    // Ensure notify URL is valid
-    if (!notifyUrl.startsWith("https://") && !notifyUrl.startsWith("http://")) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid notify URL",
-      });
-    }
+    // Format callback URLs
+    const formattedReturnUrl = encodeURIComponent(
+      returnUrl || `${req.headers.origin}/student-dashboard/course/payment-success?session_id=${paymentId}`
+    );
+    const formattedCancelUrl =
+      cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
+    const formattedNotifyUrl =
+      notifyUrl || `${"https://enjoy-capacity-bid-monitors.trycloudflare.com"}/api/payment/payfast/notify`;
 
-    // Prepare PayFast Data
+    console.log("Return URL:", formattedReturnUrl);
+    console.log("Cancel URL:", formattedCancelUrl);
+    console.log("Notify URL:", formattedNotifyUrl);
+
+    // Prepare PayFast data
     const data = {
+      amount: formattedAmount,
+      cancel_url: formattedCancelUrl,
+      custom_str1: paymentId,
+      email_address: email,
+      item_name: courseTitle,
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      amount: formattedAmount,
-      item_name: courseTitle,
-      custom_str1: paymentId,
-      return_url: returnUrl,
-      cancel_url: cancelUrl,
-      notify_url: notifyUrl, // Ensure this is included
       name_first: firstName,
-      name_last: lastName || "",
-      email_address: email,
+      notify_url: formattedNotifyUrl,
     };
 
-    // Generate Signature
+    // Generate signature
     data.signature = generateSignature(data, passphrase);
 
-    // Store metadata in the database
-    const payment = await PaymentModel.create({
+    // Store payment metadata in database
+    await PaymentModel.create({
       userId: studentId,
       courseId,
       amount: parseFloat(formattedAmount),
@@ -157,38 +146,29 @@ exports.createCourseCheckout = async (req, res) => {
       sessionId: paymentId,
       paymentMethod: "payfast",
       paymentStatus: "unpaid",
-      metadata: JSON.stringify(data), // Store the full PayFast data
+      metadata: data,
     });
 
-    // Generate Query String for PayFast
-    let queryString = "";
-    Object.keys(data)
-      .sort()
-      .forEach((key) => {
-        if (data[key] !== "") {
-          queryString += `${key}=${encodeURIComponent(data[key].trim()).replace(
-            /%20/g,
-            "+"
-          )}&`;
-        }
-      });
+    // Generate query string
+    const queryString = Object.keys(data)
+      .map((key) => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
+      .join("&");
 
-    queryString = queryString.slice(0, -1); // Remove last '&'
-
-    console.log("Final Query String:", queryString); // Debugging
-
-    // Full PayFast URL
     const fullPayfastUrl = `${apiUrl}?${queryString}`;
+
+    console.log("Final Query String for PayFast:", queryString);
+    console.log("Full PayFast URL:", fullPayfastUrl);
 
     res.status(200).json({
       success: true,
       data: {
-        paymentUrl: fullPayfastUrl, // Directly return this URL for redirection
+        paymentUrl: fullPayfastUrl,
         paymentData: data,
         paymentId,
       },
     });
   } catch (error) {
+    console.error("PayFast course checkout error:", error);
     res.status(500).json({
       success: false,
       message: "Error creating payment",
@@ -196,6 +176,7 @@ exports.createCourseCheckout = async (req, res) => {
     });
   }
 };
+
 
 // Create PayFast checkout for bookings
 exports.createBookingCheckout = async (req, res) => {

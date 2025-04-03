@@ -31,8 +31,8 @@ exports.createBooking = async (req, res) => {
       }
 
       // For PayFast, consider 'succeeded' as valid state
-      if (payment.status !== "succeeded") {
-        console.error("Payment not in succeeded state:", payment.status);
+      if (payment.paymentStatus !== "paid") {
+        console.error("Payment not in succeeded state:", payment.paymentStatus);
         return res.status(400).json({ 
           success: false,
           message: "Payment not verified" 
@@ -53,22 +53,7 @@ exports.createBooking = async (req, res) => {
         });
       }
 
-      // Parse metadata - using similar approach to Stripe
-      let metadata = {};
-      try {
-        if (payment.metadata && typeof payment.metadata === 'string') {
-          metadata = JSON.parse(payment.metadata);
-        } else if (payment.metadata && typeof payment.metadata === 'object') {
-          metadata = payment.metadata;
-        } else {
-          metadata = {};
-        }
-        console.log("Parsed metadata:", metadata);
-      } catch (e) {
-        console.error("Error parsing metadata:", e);
-        metadata = {};
-      }
-
+      const metadata = payment.metadata;
       // Get teacher details from metadata
       const teacherId = metadata.teacherId || payment.teacherId || payment.custom_str2;
       if (!teacherId) {
@@ -156,10 +141,10 @@ exports.createBooking = async (req, res) => {
       console.log("Booking created:", newBooking);
 
       // Update payment status to mark it as used
-      await paymentModel.findByIdAndUpdate(payment._id, {
-        status: "succeeded",
-        paymentStatus: "paid"
-      });
+      // await paymentModel.findByIdAndUpdate(payment._id, {
+      //   status: "succeeded",
+      //   paymentStatus: "paid"
+      // });
 
       // Get student details for email
       const student = await UserModel.findById(studentId);
@@ -167,7 +152,7 @@ exports.createBooking = async (req, res) => {
         console.error("Student not found for ID:", studentId);
       }
 
-      // Add student and teacher profiles to the booking
+      // Add booking to student and teacher profiles 
       try {
         // Find student and teacher profiles
         const studentProfile = await StudentProfileModel.findOne({
