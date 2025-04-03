@@ -17,9 +17,11 @@ router.post("/paypal/booking/capture", authMiddleware, paypalController.captureB
 // PayFast Routes
 router.post("/payfast/booking", authMiddleware, payfastController.createBookingCheckout);
 router.post("/payfast/course", authMiddleware, payfastController.createCourseCheckout);
-router.post("/payfast/notify", bodyParser.json(), payfastController.handleNotification);
-router.get("/payfast/notify", payfastController.handleNotification);
-router.post("/payfast/verify", bodyParser.json(), payfastController.handleNotification);
+router.post("/payfast/notify", payfastController.handlePayFastIPN);
+router.get("/payfast/success", authMiddleware, payfastController.paymentSuccess);
+// router.post("/payfast/notify", bodyParser.json(), payfastController.handleNotification);
+// router.get("/payfast/notify", payfastController.handleNotification);
+// router.post("/payfast/verify", payfastController.verifyPayment);
 
 // Webhook For handling Payment Status
 router.post("/stripe/webhook", bodyParser.raw({ type: "application/json" }), verifyStripePayment);

@@ -282,9 +282,10 @@ exports.createBookingCheckout = async (req, res) => {
     const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
     // Format callback URLs
-    const formattedReturnUrl =
+    const formattedReturnUrl = encodeURIComponent(
       returnUrl ||
-      `${req.headers.origin}/student-dashboard/booking/payment-success?session_id=${paymentId}`;
+        `${req.headers.origin}/student-dashboard/booking/payment-success?session_id=${paymentId}`
+    );
     const formattedCancelUrl =
       cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
     const formattedNotifyUrl =
@@ -297,18 +298,16 @@ exports.createBookingCheckout = async (req, res) => {
 
     // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
     const data = {
-      // Merchant details
       amount: formattedAmount,
-      // cancel_url: formattedCancelUrl,
+      cancel_url: formattedCancelUrl,
       custom_str1: paymentId,
       email_address: email,
       item_name: "booking",
       merchant_id: merchantId,
       merchant_key: merchantKey,
       name_first: firstName,
-      name_last: lastName,
       notify_url: formattedNotifyUrl,
-      return_url: formattedReturnUrl,
+      // return_url: formattedReturnUrl,
     };
 
     // Generate signature - MUST be done last after all fields are added
@@ -578,74 +577,319 @@ exports.verifyPayment = async (req, res) => {
   }
 };
 
-// Verify PayFast IPN (Instant Payment Notification)
-exports.verifyPayFastIPN = async (req, res) => {
-  try {
-    const { payment_status, m_payment_id, pf_payment_id, amount_gross } = req.body;
+// // Validate PayFast notification
+// const validateNotification = async (data, payfastHost, expectedMerchantId) => {
+//   try {
+//     // 1. Check if all required parameters are present
+//     const requiredParams = ['m_payment_id', 'pf_payment_id', 'payment_status', 'item_name', 'amount_gross'];
+//     for (const param of requiredParams) {
+//       if (!data[param]) {
+//         return { valid: false, reason: `Missing required parameter: ${param}` };
+//       }
+//     }
 
-    // Find the payment in our database
-    const payment = await PaymentModel.findOne({ sessionId: m_payment_id });
-    
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: "Payment not found"
-      });
-    }
+//     // 2. Check if merchant ID matches
+//     if (data.merchant_id !== expectedMerchantId) {
+//       return { valid: false, reason: 'Invalid merchant ID' };
+//     }
 
-    // Update payment status based on PayFast response
-    payment.paymentStatus = payment_status.toLowerCase();
-    payment.transactionId = pf_payment_id;
-    payment.paidAmount = parseFloat(amount_gross);
-    
-    await payment.save();
+//     // 3. Verify signature
+//     const receivedSignature = data.signature;
+//     // Create a copy of data without the signature for verification
+//     const dataForVerification = { ...data };
+//     delete dataForVerification.signature;
 
-    res.status(200).json({
-      success: true,
-      message: "Payment verification processed",
-      data: {
-        paymentStatus: payment.paymentStatus,
-        transactionId: payment.transactionId
-      }
-    });
-  } catch (error) {
-    console.error("PayFast IPN Verification Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error verifying payment",
-      error: error.message
-    });
-  }
-};
+//     // Get passphrase from database or environment
+//     let passphrase = '';
+//     try {
+//       const settings = await PaymentSetting.findOne();
+//       passphrase = settings?.payfast?.passphrase || process.env.PAYFAST_PASSPHRASE || '';
+//     } catch (error) {
+//       console.error("Error fetching passphrase, using environment variable", error);
+//       passphrase = process.env.PAYFAST_PASSPHRASE || '';
+//     }
 
-// Handle PayFast notification
-exports.handleNotification = async (req, res) => {
-  try {
-    const { payment_status, m_payment_id, pf_payment_id, amount_gross, signature } = req.body;
+//     // Generate signature for comparison
+//     const calculatedSignature = generateSignature(dataForVerification, passphrase);
 
-    // Verify the signature (you should implement proper signature verification)
-    // Update payment status in database
-    const payment = await PaymentModel.findOne({ sessionId: m_payment_id });
-    
-    if (!payment) {
-      return res.status(404).json({
-        success: false,
-        message: "Payment not found"
-      });
-    }
+//     if (receivedSignature !== calculatedSignature) {
+//       console.error('Signature mismatch:', {
+//         received: receivedSignature,
+//         calculated: calculatedSignature
+//       });
+//       return { valid: false, reason: 'Invalid signature' };
+//     }
 
-    payment.paymentStatus = payment_status.toLowerCase();
-    payment.transactionId = pf_payment_id;
-    payment.paidAmount = parseFloat(amount_gross);
-    
-    await payment.save();
+//     // 4. Validate that the notification came from PayFast
+//     // Note: In a production environment, we should validate the IP address
+//     // and make a validation request to PayFast's validation service
 
-    // Return 200 to acknowledge receipt of the notification
-    res.status(200).send("OK");
-  } catch (error) {
-    console.error("PayFast Notification Error:", error);
-    res.status(500).send("Error processing notification");
-  }
-};
+//     return { valid: true };
+//   } catch (error) {
+//     console.error('Error validating notification:', error);
+//     return { valid: false, reason: 'Validation error' };
+//   }
+// };
 
-module.exports = exports;
+// // Handle PayFast notification/webhook
+// exports.handlePayfastNotify = async (req, res) => {
+//   try {
+//     console.log('Received PayFast notification:', req.body);
+
+//     // Get PayFast settings from database, fall back to .env variables
+//     let payfastSettings;
+//     try {
+//       const settings = await PaymentSetting.findOne();
+//       payfastSettings = settings?.payfast || {};
+//     } catch (error) {
+//       console.error("Error fetching PayFast settings, using defaults", error);
+//       payfastSettings = {};
+//     }
+
+//     // Use settings from database or fall back to environment variables
+//     const merchantId = payfastSettings.merchant_id || process.env.PAYFAST_MERCHANT_ID;
+//     const payfastHost = payfastSettings.test_mode || process.env.NODE_ENV !== 'production'
+//       ? 'sandbox.payfast.co.za'
+//       : 'www.payfast.co.za';
+
+//     console.log("Using PayFast settings for validation:", {
+//       merchantId,
+//       payfastHost,
+//       testMode: payfastSettings.test_mode || process.env.NODE_ENV !== 'production'
+//     });
+
+//     // Verify the notification is from PayFast
+//     const validationResult = await validateNotification(req.body, payfastHost, merchantId);
+
+//     if (!validationResult.valid) {
+//       console.error('PayFast notification validation failed:', validationResult.reason);
+//       return res.status(400).send('Validation failed');
+//     }
+
+//     // Extract payment details
+//     const { m_payment_id, pf_payment_id, payment_status, amount_gross } = req.body;
+
+//     // Find the payment in the database
+//     const payment = await PaymentModel.findOne({ sessionId: m_payment_id });
+
+//     if (!payment) {
+//       console.error('Payment not found:', m_payment_id);
+//       return res.status(404).send('Payment not found');
+//     }
+
+//     // Update payment status
+//     payment.status = payment_status;
+//     payment.paymentProviderId = pf_payment_id;
+//     payment.updatedAt = new Date();
+
+//     // Additional fields to store
+//     payment.paymentDetails = {
+//       ...payment.paymentDetails || {},
+//       payfast: req.body
+//     };
+
+//     // If payment is successful, process booking or course enrollment
+//     if (payment_status === 'COMPLETE') {
+//       // Extract metadata
+//       const metadata = payment.metadata ?
+//         (typeof payment.metadata === 'string' ? JSON.parse(payment.metadata) : payment.metadata) :
+//         {};
+
+//       console.log('Payment metadata:', metadata);
+
+//       // Check if this is a course or booking payment
+//       if (metadata.courseId) {
+//         // Process course enrollment
+//         // (Implementation would depend on your course model)
+//         console.log('Processing course enrollment for course:', metadata.courseId);
+//       } else if (metadata.teacherId && metadata.studentId && metadata.subjectId) {
+//         // Process booking
+//         try {
+//           // Create booking using metadata
+//           const bookingData = {
+//             teacherId: metadata.teacherId,
+//             studentId: metadata.studentId || payment.userId,
+//             subjectId: metadata.subjectId,
+//             sessionDate: metadata.sessionDate,
+//             sessionStartTime: metadata.sessionStartTime,
+//             sessionEndTime: metadata.sessionEndTime,
+//             sessionDuration: metadata.sessionDuration,
+//             paymentId: payment._id
+//           };
+
+//           console.log('Creating booking with data:', bookingData);
+
+//           // Here you would create the booking in your database
+//           // const booking = await Booking.create(bookingData);
+
+//           // Log success
+//           console.log('Booking created successfully');
+//         } catch (error) {
+//           console.error('Error creating booking:', error);
+//         }
+//       } else {
+//         console.warn('Payment successful but missing metadata for processing:', m_payment_id);
+//       }
+//     }
+
+//     // Save updated payment record
+//     await payment.save();
+
+//     // Always respond with 200 OK to PayFast
+//     return res.status(200).send('OK');
+
+//   } catch (error) {
+//     console.error('PayFast notification handling error:', error);
+//     res.status(500).send('Internal server error');
+//   }
+// };
+
+// // Process PayFast IPN notifications (webhook)
+// exports.handleNotification = async (req, res) => {
+//   try {
+//     console.log(`Received PayFast notification via ${req.method}:`, req.method === 'POST' ? req.body : req.query);
+//     console.log(`Headers:`, req.headers);
+
+//     // Get data based on HTTP method
+//     const pfData = req.method === 'POST' ? { ...req.body } : { ...req.query };
+
+//     // Log all received data for debugging
+//     console.log("All received data:", pfData);
+
+//     // Get PayFast settings from database, fall back to .env variables
+//     let payfastSettings;
+//     try {
+//       const settings = await PaymentSetting.findOne();
+//       payfastSettings = settings?.payfast || {};
+//     } catch (error) {
+//       console.error("Error fetching PayFast settings, using defaults", error);
+//       payfastSettings = {};
+//     }
+
+//     // Use settings from database or fall back to environment variables
+//     const merchantId = payfastSettings.merchant_id || process.env.PAYFAST_MERCHANT_ID;
+//     const passphrase = payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || '';
+//     const isDevMode = payfastSettings.test_mode || process.env.NODE_ENV !== 'production';
+
+//     console.log("Using PayFast settings:", {
+//       merchantId,
+//       testMode: isDevMode,
+//       hasPassphrase: !!passphrase
+//     });
+
+//     // Get signature from the data
+//     const receivedSignature = pfData.signature;
+
+//     // Skip signature validation in dev mode if configured
+//     const skipSignatureValidation = isDevMode && process.env.SKIP_PAYFAST_SIGNATURE === 'true';
+
+//     if (!receivedSignature && !skipSignatureValidation) {
+//       console.error('No signature in request');
+//       if (skipSignatureValidation) {
+//         console.log('Skipping signature validation in dev mode');
+//       } else {
+//         return res.status(200).send('OK'); // Still return 200 to PayFast
+//       }
+//     }
+
+//     // Verify signature if not in dev mode or not skipping validation
+//     if (receivedSignature && !skipSignatureValidation) {
+//       // Remove the signature from the data before generating our own
+//       const pfDataForSignature = { ...pfData };
+//       delete pfDataForSignature.signature;
+
+//       // Generate signature from received data
+//       const calculatedSignature = generateSignature(pfDataForSignature, passphrase);
+
+//       console.log("Received signature:", receivedSignature);
+//       console.log("Calculated signature:", calculatedSignature);
+
+//       // Verify signature
+//       if (receivedSignature !== calculatedSignature) {
+//         console.error('Invalid signature');
+//         console.error('Received:', receivedSignature);
+//         console.error('Calculated:', calculatedSignature);
+//         // Continue processing even with invalid signature in dev mode
+//         if (!isDevMode) {
+//           return res.status(200).send('OK');
+//         } else {
+//           console.log('Continuing despite invalid signature due to dev mode');
+//         }
+//       }
+//     } else if (skipSignatureValidation) {
+//       console.log('Skipped signature validation in dev mode');
+//     }
+
+//     // Verify data
+//     const paymentId = pfData.m_payment_id;
+//     if (!paymentId) {
+//       console.error('No payment ID in request');
+//       return res.status(200).send('OK');
+//     }
+
+//     const paymentStatus = pfData.payment_status || 'COMPLETE'; // Default to COMPLETE in dev mode if missing
+
+//     // Find payment in database
+//     const payment = await PaymentModel.findOne({ sessionId: paymentId });
+
+//     if (!payment) {
+//       console.error('Payment not found:', paymentId);
+//       return res.status(200).send('OK'); // Still return 200 to PayFast
+//     }
+
+//     console.log(`Found payment ${paymentId} with current status ${payment.status}`);
+
+//     // Update payment status if present
+//     if (paymentStatus === 'COMPLETE') {
+//       payment.status = 'succeeded';
+//       payment.paymentStatus = 'paid';
+//       if (pfData.pf_payment_id) payment.transactionId = pfData.pf_payment_id;
+
+//       // Add all PayFast response data to the payment record
+//       payment.paymentDetails = {
+//         ...payment.paymentDetails || {},
+//         payfast: pfData
+//       };
+
+//       await payment.save();
+
+//       // Extract metadata for additional processing
+//       let metadata = {};
+//       try {
+//         if (payment.metadata && typeof payment.metadata === 'string') {
+//           metadata = JSON.parse(payment.metadata);
+//         } else if (payment.metadata && typeof payment.metadata === 'object') {
+//           metadata = payment.metadata;
+//         }
+//       } catch (error) {
+//         console.error('Error parsing metadata:', error);
+//       }
+
+//       console.log('Payment metadata:', metadata);
+
+//       // Process based on payment type (course or booking)
+//       if (payment.paymentFor === 'course' || metadata.courseId) {
+//         // Process course enrollment logic here
+//         console.log(`Processing course enrollment for course ${payment.courseId || metadata.courseId}`);
+//         // Your course enrollment code here
+//       } else {
+//         // Process booking logic here
+//         console.log(`Processing booking for teacher ${payment.teacherId || metadata.teacherId}`);
+//         // Your booking processing code here
+//       }
+
+//       // Log success
+//       console.log(`Payment ${paymentId} successfully updated to succeeded`);
+//     } else {
+//       console.log(`Payment ${paymentId} status is ${paymentStatus}, not updating to succeeded`);
+//     }
+
+//     // PayFast expects a 200 response
+//     res.status(200).send('OK');
+
+//   } catch (error) {
+//     console.error('PayFast IPN error:', error);
+//     // Even on error, return 200 to PayFast as per their requirements
+//     res.status(200).send('OK');
+//   }
+// };
