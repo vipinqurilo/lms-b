@@ -1,5 +1,6 @@
 const PaymentSetting = require("../../model/paymentSetting");
 const PaymentModel = require("../../model/paymentModel");
+const BookingModel = require("../../model/bookingModel");
 const crypto = require("crypto");
 const axios = require("axios");
 const { URLSearchParams } = require("url");
@@ -331,16 +332,11 @@ exports.createBookingCheckout = async (req, res) => {
       sessionDuration,
       sessionTitle,
       amount: formattedAmount,
-      return_url: formattedReturnUrl,
-      cancel_url: formattedCancelUrl,
-      notify_url: formattedNotifyUrl,
       email_address: email,
-      name_first: firstName,
-      name_last: lastName || "",
     };
 
     // Create payment record in database
-    const payment = await PaymentModel.create({
+    await PaymentModel.create({
       userId: studentId,
       teacherId,
       amount: parseFloat(formattedAmount),
@@ -350,7 +346,7 @@ exports.createBookingCheckout = async (req, res) => {
       sessionId: paymentId,
       paymentMethod: "payfast",
       paymentStatus: "unpaid",
-      metadata: JSON.stringify(metadata),
+      metadata: metadata,
     });
 
     // Log everything for debugging
@@ -464,7 +460,7 @@ exports.handlePayFastIPN = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     const { paymentId } = req.body;
-    console.log(paymentId,'payment id ')
+    console.log(paymentId, "payment id ");
 
     const PaymentRecord = await PaymentModel.findOne({ sessionId: paymentId });
 
@@ -477,8 +473,8 @@ exports.verifyPayment = async (req, res) => {
 
     res.status(200).json({
       status: "success",
-      message: "payment status fetched successfully",
-      paymentStatus: PaymentRecord.paymentStatus,
+      message: "payment record fetched successfully",
+      data: PaymentRecord,
     });
   } catch (error) {
     res.status(500).json({
