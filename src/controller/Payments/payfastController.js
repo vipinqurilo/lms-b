@@ -464,6 +464,7 @@ exports.handlePayFastIPN = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
   try {
     const { paymentId } = req.body;
+    console.log(paymentId,'payment id ')
 
     const PaymentRecord = await PaymentModel.findOne({ sessionId: paymentId });
 
