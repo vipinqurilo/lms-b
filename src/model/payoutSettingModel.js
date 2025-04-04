@@ -6,18 +6,15 @@ const payoutSettingSchema = new mongoose.Schema(
       mode: {
         type: String,
         enum: ["test", "production"],
-        required: true,
         default: "test",
         description: "Stripe payment mode",
       },
       clientId: {
         type: String,
-        required: true,
         description: "Stripe Client ID",
       },
       secret: {
         type: String,
-        required: true,
         description: "Stripe Secret Key",
       },
     },
@@ -25,19 +22,22 @@ const payoutSettingSchema = new mongoose.Schema(
       mode: {
         type: String,
         enum: ["test", "production"],
-        required: true,
         default: "test",
         description: "PayPal payment mode",
       },
       clientId: {
         type: String,
-        required: true,
         description: "PayPal Client ID",
       },
       secret: {
         type: String,
-        required: true,
         description: "PayPal Secret Key",
+      },
+    },
+    payfast: {
+      email: {
+        type: String,
+        description: "PayFast registered email",
       },
     },
   },

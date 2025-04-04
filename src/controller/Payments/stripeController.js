@@ -28,7 +28,7 @@ exports.createCoursePayment = async (req, res) => {
         line_items: [
             {
                 price_data: {
-                    currency: "ZAR",
+                    currency: "R",
                     product_data: { name: course.courseTitle },
                     unit_amount: Math.round(amount * 100) // Stripe expects amount in cents
                 },
@@ -102,7 +102,7 @@ exports.createBookingPayment = async (req, res) => {
         line_items: [
             {
                 price_data: {
-                    currency: "ZAR",
+                    currency: "R",
                     product_data: { name: sessionTitle },
                     unit_amount: Math.round(amount * 100) // Stripe expects amount in cents
                 },

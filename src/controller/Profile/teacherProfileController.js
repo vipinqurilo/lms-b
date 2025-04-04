@@ -511,7 +511,7 @@ const updateBankAccount = async (stripeAccountId, paymentInfo) => {
         external_account: {
           object: "bank_account",
           country: "ZA",
-          currency: "ZAR",
+          currency: "R",
           account_holder_name: paymentInfo.name,
           account_holder_type: "individual",
           account_number: paymentInfo.accountNumber,
