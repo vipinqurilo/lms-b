@@ -4,6 +4,7 @@ const BookingModel = require("../../model/bookingModel");
 const crypto = require("crypto");
 const axios = require("axios");
 const { URLSearchParams } = require("url");
+const moment = require("moment");
 
 // Function to generate PayFast signature
 const generateSignature = (data, passPhrase = null) => {
@@ -399,6 +400,7 @@ exports.handlePayFastIPN = async (req, res) => {
       custom_str1,
     } = req.body;
 
+
     if (!payment_status || !pf_payment_id || !amount_gross || !custom_str1) {
       console.error("Missing required fields in PayFast IPN.");
       return res.status(400).send("Invalid request");
@@ -462,5 +464,70 @@ exports.verifyPayment = async (req, res) => {
       status: "failed",
       message: "internal server error ",
     });
+  }
+};
+
+
+exports.processPayout = async (req, res) => {
+  try {
+    const { recipient, amount, reason } = req.body;
+
+    if (!recipient || !amount || !reason) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      return res.status(200).json({
+        success: true,
+        message: "Mock payout success (sandbox not supported)",
+        data: { recipient, amount, reason },
+      });
+    }
+
+    const apiUrl = "https://api.payfast.co.za/transfers";
+
+    const response = await axios.post(
+      apiUrl,
+      {
+        recipient,
+        amount: parseFloat(amount).toFixed(2),
+        reason,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYFAST_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Payout processed successfully",
+      data: response.data,
+    });
+  } catch (error) {
+    console.error("Payout Error:", error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      message: "Error processing payout",
+      error: error.response?.data || error.message,
+    });
+  }
+};
+
+
+exports.payoutWebhook = async (req, res) => {
+  try {
+    console.log("Received Payout Webhook:", req.body);
+
+    // Verify webhook signature (if required)
+
+    // Process webhook data (update database, notify user, etc.)
+    
+    res.status(200).send("Webhook received");
+  } catch (error) {
+    console.error("Webhook Error:", error);
+    res.status(500).send("Webhook processing failed");
   }
 };
