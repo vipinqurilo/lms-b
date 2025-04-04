@@ -113,7 +113,7 @@ exports.createCourseCheckout = async (req, res) => {
     const formattedCancelUrl =
       cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
     const formattedNotifyUrl =
-      notifyUrl || `${"https://enjoy-capacity-bid-monitors.trycloudflare.com"}/api/payment/payfast/notify`;
+      notifyUrl || `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
 
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
@@ -272,7 +272,7 @@ exports.createBookingCheckout = async (req, res) => {
       cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
     const formattedNotifyUrl =
       notifyUrl ||
-      `${"https://enjoy-capacity-bid-monitors.trycloudflare.com"}/api/payment/payfast/notify`;
+      `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
 
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
