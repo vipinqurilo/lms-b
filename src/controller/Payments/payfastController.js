@@ -4,8 +4,11 @@ const BookingModel = require("../../model/bookingModel");
 const crypto = require("crypto");
 const axios = require("axios");
 const { URLSearchParams } = require("url");
+
+const moment = require("moment");
 const StudentProfileModel = require("../../model/studentProfileModel");
 const CourseModel = require("../../model/CourseModel");
+
 
 // Function to generate PayFast signature
 const generateSignature = (data, passPhrase = null) => {
@@ -46,19 +49,17 @@ exports.createCourseCheckout = async (req, res) => {
     const {
       amount,
       courseId,
-      studentId = req.user?.id, 
+      studentId = req.user?.id,
       courseTitle,
       returnUrl,
       cancelUrl,
       notifyUrl,
     } = req.body;
-
     // Validate required fields
     const requiredFields = {
       courseId,
       amount,
     };
-    
     const course = await CourseModel.findById(courseId);
     if (!course) {
       return res
@@ -77,35 +78,29 @@ exports.createCourseCheckout = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Course already enrolled" });
     }
-
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value)
       .map(([key]) => key);
-
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: `Missing required fields: ${missingFields.join(", ")}`,
       });
     }
-
     // Format amount
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: "Invalid amount" });
     }
     const formattedAmount = parsedAmount.toFixed(2);
-
     // Generate unique payment ID
     const paymentId = crypto.randomUUID();
-
     // Fetch PayFast settings from DB or fallback to env variables
     let payfastSettings = {};
     try {
       const settings = await PaymentSetting.findOne();
       payfastSettings = settings?.payfast || {};
     } catch (error) {}
-
     const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
     const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
     const passphrase = (payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || "").trim();
@@ -113,16 +108,13 @@ exports.createCourseCheckout = async (req, res) => {
       payfastSettings.mode || process.env.NODE_ENV !== "production"
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
-
     // Format callback URLs - with fallbacks if not provided
     const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
     const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
     const defaultNotifyUrl = `${process.env.API_URL || 'https://enjoy-capacity-bid-monitors.trycloudflare.com'}/api/payment/payfast/notify`;
-    
     const formattedReturnUrl = returnUrl || defaultReturnUrl;
     const formattedCancelUrl = cancelUrl || defaultCancelUrl;
     const formattedNotifyUrl = notifyUrl || defaultNotifyUrl;
-
     // Prepare PayFast data
     const data = {
       amount: formattedAmount,
@@ -134,10 +126,8 @@ exports.createCourseCheckout = async (req, res) => {
       // return_url: formattedReturnUrl,
       // cancel_url: formattedCancelUrl,
     };
-
     // Generate signature
     data.signature = generateSignature(data, passphrase);
-
     // Store payment metadata in database
     await PaymentModel.create({
       userId: studentId || "guest-user", // Fallback for anonymous purchases
@@ -151,14 +141,11 @@ exports.createCourseCheckout = async (req, res) => {
       paymentStatus: "unpaid",
       metadata: data,
     });
-
     // Generate query string
     const queryString = Object.keys(data)
       .map((key) => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
       .join("&");
-
     const fullPayfastUrl = `${apiUrl}?${queryString}`;
-
     res.status(200).json({
       success: true,
       data: {
@@ -176,7 +163,6 @@ exports.createCourseCheckout = async (req, res) => {
     });
   }
 };
-
 
 // Create PayFast checkout for bookings
 exports.createBookingCheckout = async (req, res) => {
@@ -272,7 +258,7 @@ exports.createBookingCheckout = async (req, res) => {
       cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
     const formattedNotifyUrl =
       notifyUrl ||
-      `${"https://enjoy-capacity-bid-monitors.trycloudflare.com"}/api/payment/payfast/notify`;
+      `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
 
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
@@ -399,6 +385,7 @@ exports.handlePayFastIPN = async (req, res) => {
       custom_str1,
     } = req.body;
 
+
     if (!payment_status || !pf_payment_id || !amount_gross || !custom_str1) {
       console.error("Missing required fields in PayFast IPN.");
       return res.status(400).send("Invalid request");
@@ -462,5 +449,70 @@ exports.verifyPayment = async (req, res) => {
       status: "failed",
       message: "internal server error ",
     });
+  }
+};
+
+
+exports.processPayout = async (req, res) => {
+  try {
+    const { recipient, amount, reason } = req.body;
+
+    if (!recipient || !amount || !reason) {
+      return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    if (process.env.NODE_ENV !== "production") {
+      return res.status(200).json({
+        success: true,
+        message: "Mock payout success (sandbox not supported)",
+        data: { recipient, amount, reason },
+      });
+    }
+
+    const apiUrl = "https://api.payfast.co.za/transfers";
+
+    const response = await axios.post(
+      apiUrl,
+      {
+        recipient,
+        amount: parseFloat(amount).toFixed(2),
+        reason,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYFAST_API_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Payout processed successfully",
+      data: response.data,
+    });
+  } catch (error) {
+    console.error("Payout Error:", error.response?.data || error.message);
+    res.status(500).json({
+      success: false,
+      message: "Error processing payout",
+      error: error.response?.data || error.message,
+    });
+  }
+};
+
+
+exports.payoutWebhook = async (req, res) => {
+  try {
+    console.log("Received Payout Webhook:", req.body);
+
+    // Verify webhook signature (if required)
+
+    // Process webhook data (update database, notify user, etc.)
+    
+    res.status(200).send("Webhook received");
+  } catch (error) {
+    console.error("Webhook Error:", error);
+    res.status(500).send("Webhook processing failed");
   }
 };
