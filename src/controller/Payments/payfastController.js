@@ -111,7 +111,9 @@ exports.createCourseCheckout = async (req, res) => {
     // Format callback URLs - with fallbacks if not provided
     const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
     const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
-    const defaultNotifyUrl = `${process.env.API_URL || 'https://enjoy-capacity-bid-monitors.trycloudflare.com'}/api/payment/payfast/notify`;
+
+    const defaultNotifyUrl = `${'https://dqhcwhfd-8000.inc1.devtunnels.ms'}/api/payment/payfast/notify`;
+
     const formattedReturnUrl = returnUrl || defaultReturnUrl;
     const formattedCancelUrl = cancelUrl || defaultCancelUrl;
     const formattedNotifyUrl = notifyUrl || defaultNotifyUrl;
@@ -128,6 +130,14 @@ exports.createCourseCheckout = async (req, res) => {
     };
     // Generate signature
     data.signature = generateSignature(data, passphrase);
+
+    const metadata = {
+      courseId,
+      courseTitle,
+      studentId,
+      ...data,
+    };
+
     // Store payment metadata in database
     await PaymentModel.create({
       userId: studentId || "guest-user", // Fallback for anonymous purchases
@@ -139,7 +149,7 @@ exports.createCourseCheckout = async (req, res) => {
       sessionId: paymentId,
       paymentMethod: "payfast",
       paymentStatus: "unpaid",
-      metadata: data,
+      metadata: metadata,
     });
     // Generate query string
     const queryString = Object.keys(data)
