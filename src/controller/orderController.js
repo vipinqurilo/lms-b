@@ -36,7 +36,7 @@ exports.createCourseOrder = async (req, res) => {
           message: "Payment not verified" 
         });
       }
-      const course = await CourseModel.findById(payment?.courseId);
+      const course = await CourseModel.findById(payment?.metadata?.courseId);
       if (!course) {
         return res
           .status(400)
