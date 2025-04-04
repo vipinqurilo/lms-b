@@ -72,9 +72,6 @@ const transporter = nodemailer.createTransport({
 });
 
 
-
-
-
 exports.registerUser = async (req, res) => {
   try {
     const data = req.body;
@@ -178,10 +175,6 @@ exports.registerUser = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 async function sendVerificationEmail(user) {
   const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;

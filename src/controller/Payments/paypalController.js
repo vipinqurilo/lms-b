@@ -19,7 +19,7 @@ exports.createBookingPayment = async (req, res) => {
             purchase_units: [
                 {
                     amount: {
-                        currency_code: "ZAR",
+                        currency_code: "R",
                         value: amount.toFixed(2), // PayPal requires amount as a string in decimal format
                     },
                     description: sessionTitle,

@@ -106,8 +106,8 @@ exports.createCourseCheckout = async (req, res) => {
     const passphrase = (payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || "").trim();
     const apiUrl =
       payfastSettings.mode || process.env.NODE_ENV !== "production"
-        ? "https://sandbox.payfast.co.za/eng/process"
-        : "https://www.payfast.co.za/eng/process";
+        ? "https://sandbox.payfast.co.za/eng/process" 
+        : "https://www.payfast.co.za/eng/process"; 
     // Format callback URLs - with fallbacks if not provided
     const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
     const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
@@ -143,7 +143,7 @@ exports.createCourseCheckout = async (req, res) => {
       userId: studentId || "guest-user", // Fallback for anonymous purchases
       courseId,
       amount: parseFloat(formattedAmount),
-      currency: "ZAR",
+      currency: "R",
       paymentFor: "course",
       status: "pending",
       sessionId: paymentId,
@@ -317,7 +317,7 @@ exports.createBookingCheckout = async (req, res) => {
       userId: studentId,
       teacherId,
       amount: parseFloat(formattedAmount),
-      currency: "ZAR",
+      currency: "R",
       paymentFor: "booking",
       status: "pending",
       sessionId: paymentId,
