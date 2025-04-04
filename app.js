@@ -42,7 +42,7 @@ app.set("views", path.join(__dirname, "src", "view"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());  
-require("dotenv").config();
+require("dotenv").config(); 
 const corsOption = {
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   credentials: true,

@@ -4,7 +4,11 @@ const BookingModel = require("../../model/bookingModel");
 const crypto = require("crypto");
 const axios = require("axios");
 const { URLSearchParams } = require("url");
+
 const moment = require("moment");
+const StudentProfileModel = require("../../model/studentProfileModel");
+const CourseModel = require("../../model/CourseModel");
+
 
 // Function to generate PayFast signature
 const generateSignature = (data, passPhrase = null) => {
@@ -43,57 +47,60 @@ const generateSignature = (data, passPhrase = null) => {
 exports.createCourseCheckout = async (req, res) => {
   try {
     const {
-      courseId,
-      studentId,
       amount,
-      email,
-      name,
+      courseId,
+      studentId = req.user?.id,
       courseTitle,
       returnUrl,
       cancelUrl,
       notifyUrl,
     } = req.body;
-
     // Validate required fields
     const requiredFields = {
       courseId,
-      studentId,
       amount,
-      email,
-      name,
-      courseTitle,
-      returnUrl,
-      cancelUrl,
     };
-
+    const course = await CourseModel.findById(courseId);
+    if (!course) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Course not found" });
+    }
+    const student = await StudentProfileModel.findOne({userId: studentId})
+    if(!student){
+      return res.status(400).json({success: false, message: "Student not found"})
+    }
+    const isCourseEnrolled = student.enrolledCourses.some(
+      (enrolledCourse) => enrolledCourse.courseId.toString() === courseId
+    );
+    if (isCourseEnrolled) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Course already enrolled" });
+    }
     const missingFields = Object.entries(requiredFields)
       .filter(([_, value]) => !value)
       .map(([key]) => key);
-
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: `Missing required fields: ${missingFields.join(", ")}`,
       });
     }
-
     // Format amount
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ success: false, message: "Invalid amount" });
     }
     const formattedAmount = parsedAmount.toFixed(2);
-
     // Generate unique payment ID
     const paymentId = crypto.randomUUID();
-
     // Fetch PayFast settings from DB or fallback to env variables
     let payfastSettings = {};
     try {
       const settings = await PaymentSetting.findOne();
       payfastSettings = settings?.payfast || {};
     } catch (error) {}
-
     const merchantId = payfastSettings.merchantId || process.env.PAYFAST_MERCHANT_ID.trim();
     const merchantKey = payfastSettings.merchantKey || process.env.PAYFAST_MERCHANT_KEY.trim();
     const passphrase = (payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || "").trim();
@@ -101,44 +108,29 @@ exports.createCourseCheckout = async (req, res) => {
       payfastSettings.mode || process.env.NODE_ENV !== "production"
         ? "https://sandbox.payfast.co.za/eng/process"
         : "https://www.payfast.co.za/eng/process";
-
-    // Format name parts
-    const nameParts = name.split(" ");
-    const firstName = nameParts[0] || "Student";
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-    // Format callback URLs
-    const formattedReturnUrl = encodeURIComponent(
-      returnUrl || `${req.headers.origin}/student-dashboard/course/payment-success?session_id=${paymentId}`
-    );
-    const formattedCancelUrl =
-      cancelUrl || `${req.headers.origin}/cancel?session_id=${paymentId}`;
-    const formattedNotifyUrl =
-      notifyUrl || `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
-
-    console.log("Return URL:", formattedReturnUrl);
-    console.log("Cancel URL:", formattedCancelUrl);
-    console.log("Notify URL:", formattedNotifyUrl);
-
+    // Format callback URLs - with fallbacks if not provided
+    const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
+    const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
+    const defaultNotifyUrl = `${process.env.API_URL || 'https://enjoy-capacity-bid-monitors.trycloudflare.com'}/api/payment/payfast/notify`;
+    const formattedReturnUrl = returnUrl || defaultReturnUrl;
+    const formattedCancelUrl = cancelUrl || defaultCancelUrl;
+    const formattedNotifyUrl = notifyUrl || defaultNotifyUrl;
     // Prepare PayFast data
     const data = {
       amount: formattedAmount,
-      cancel_url: formattedCancelUrl,
       custom_str1: paymentId,
-      email_address: email,
-      item_name: courseTitle,
+      item_name: courseTitle || `Course ID: ${courseId}`,
       merchant_id: merchantId,
       merchant_key: merchantKey,
-      name_first: firstName,
       notify_url: formattedNotifyUrl,
+      // return_url: formattedReturnUrl,
+      // cancel_url: formattedCancelUrl,
     };
-
     // Generate signature
     data.signature = generateSignature(data, passphrase);
-
     // Store payment metadata in database
     await PaymentModel.create({
-      userId: studentId,
+      userId: studentId || "guest-user", // Fallback for anonymous purchases
       courseId,
       amount: parseFloat(formattedAmount),
       currency: "ZAR",
@@ -149,17 +141,11 @@ exports.createCourseCheckout = async (req, res) => {
       paymentStatus: "unpaid",
       metadata: data,
     });
-
     // Generate query string
     const queryString = Object.keys(data)
       .map((key) => `${key}=${encodeURIComponent(data[key]).replace(/%20/g, "+")}`)
       .join("&");
-
     const fullPayfastUrl = `${apiUrl}?${queryString}`;
-
-    console.log("Final Query String for PayFast:", queryString);
-    console.log("Full PayFast URL:", fullPayfastUrl);
-
     res.status(200).json({
       success: true,
       data: {
@@ -177,7 +163,6 @@ exports.createCourseCheckout = async (req, res) => {
     });
   }
 };
-
 
 // Create PayFast checkout for bookings
 exports.createBookingCheckout = async (req, res) => {

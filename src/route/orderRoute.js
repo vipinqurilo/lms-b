@@ -1,11 +1,11 @@
 const express = require("express")
-const { createOrderViaStripe, getOrders } = require("../controller/orderController")
+const { createCourseOrder, getOrders } = require("../controller/orderController")
 const { authMiddleware } = require("../middleware/authMiddleware")
 
 const OrderRoute = express.Router()
 
 
-OrderRoute.post('/stripe',authMiddleware,createOrderViaStripe)
+OrderRoute.post('/',authMiddleware,createCourseOrder)
 OrderRoute.get('/',authMiddleware,getOrders)
 // OrderRoute.post("/create-payment-intent",authMiddleware,addOrderStripe)
 
