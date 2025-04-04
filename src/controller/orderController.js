@@ -18,79 +18,119 @@ function generateRandomCode() {
   }
   return code;
 }
-exports.createOrderViaStripe = async (req, res) => {
+exports.createCourseOrder = async (req, res) => {
   try {
-    const { sessionId } = req.body;
+    const { sessionId, mode } = req.body;
 
-    // Step 1: Retrieve Payment Details from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (!session || session.payment_status != "paid") {
-      return res.status(400).json({ message: "Payment not verified" });
-    }
-    //console.log(session,"session");
-
-    //Update Payment Details
-    const payment = await paymentModel.findOneAndUpdate(
-      { sessionId: session.id },
-      {
-        transactionId: session.payment_intent,
-        status: "succeeded",
-        paymentStatus: "paid",
+    if (mode === "payfast") {
+      const payment = await paymentModel.findOne({ sessionId });
+      if (!payment) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Payment not found" });
       }
-    );
-    //Find the Course
+      if (payment.paymentStatus !== "paid") {
+        console.error("Payment not in succeeded state:", payment.paymentStatus);
+        return res.status(400).json({ 
+          success: false,
+          message: "Payment not verified" 
+        });
+      }
+      const course = await CourseModel.findById(payment?.courseId);
+      if (!course) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Course not found" });
+      }
+      await StudentProfileModel.findOneAndUpdate(
+        { userId: payment?.userId },
+        { $push: { enrolledCourses: { courseId: course?._id, progress: 0 } } }
+      );
 
-    const { userId, courseId, amount } = session.metadata;
-    const course = await CourseModel.findById(courseId);
-    const existingOrder = await OrderModel.findOne({ userId, courseId });
-    //check for existing order
-    console.log(existingOrder, "existing ");
-    if (existingOrder)
-      return res.json({
-        success: true,
-        message: "Course Already Purchased",
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "Course Bought Successfully",
+          data: {
+            course,
+            orderId: payment?.orderId,
+            amount: payment?.amount,
+            orderDate: payment?.createdAt,
+            transactionId: payment?.transactionId,
+          },
+        });
+    } else {
+      // Step 1: Retrieve Payment Details from Stripe
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      if (!session || session.payment_status != "paid") {
+        return res.status(400).json({ message: "Payment not verified" });
+      }
+      //console.log(session,"session");
+
+      //Update Payment Details
+      const payment = await paymentModel.findOneAndUpdate(
+        { sessionId: session.id },
+        {
+          transactionId: session.payment_intent,
+          status: "succeeded",
+          paymentStatus: "paid",
+        }
+      );
+      //Find the Course
+
+      const { userId, courseId, amount } = session.metadata;
+      const course = await CourseModel.findById(courseId);
+      const existingOrder = await OrderModel.findOne({ userId, courseId });
+      //check for existing order
+      console.log(existingOrder, "existing ");
+      if (existingOrder)
+        return res.json({
+          success: true,
+          message: "Course Already Purchased",
+          data: {
+            course,
+            orderId: existingOrder?.orderId,
+            amount: existingOrder.amount,
+            orderDate: existingOrder?.createdAt,
+            transactionId: payment.transactionId,
+          },
+        });
+
+      const objData = {
+        orderId: generateRandomCode(),
+        userId,
+        courseId,
+        amount,
+        paymentId: payment._id,
+      };
+
+      const newOrder = await OrderModel.create(objData);
+      const studentProfile = await StudentProfileModel.findOneAndUpdate(
+        { userId },
+        {
+          $push: {
+            enrolledCourses: {
+              courseId: new mongoose.Types.ObjectId(courseId),
+              progress: 0,
+            },
+          },
+        },
+        { new: true }
+      );
+      res.json({
+        success: "true",
+        message: "Course Bought Successfully",
         data: {
           course,
-          orderId: existingOrder?.orderId,
-          amount: existingOrder.amount,
-          orderDate: existingOrder?.createdAt,
+          orderId: newOrder?.orderId,
+          amount: newOrder.amount,
+          orderDate: newOrder?.createdAt,
           transactionId: payment.transactionId,
         },
       });
-
-    const objData = {
-      orderId: generateRandomCode(),
-      userId,
-      courseId,
-      amount,
-      paymentId: payment._id,
-    };
-
-    const newOrder = await OrderModel.create(objData);
-    const studentProfile = await StudentProfileModel.findOneAndUpdate(
-      { userId },
-      {
-        $push: {
-          enrolledCourses: {
-            courseId: new mongoose.Types.ObjectId(courseId),
-            progress: 0,
-          },
-        },
-      },
-      { new: true }
-    );
-    res.json({
-      success: "true",
-      message: "Course Bought Successfully",
-      data: {
-        course,
-        orderId: newOrder?.orderId,
-        amount: newOrder.amount,
-        orderDate: newOrder?.createdAt,
-        transactionId: payment.transactionId,
-      },
-    });
+    }
   } catch (error) {
     console.log(error);
     res.json({
