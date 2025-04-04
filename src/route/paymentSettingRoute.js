@@ -5,6 +5,6 @@ const authorizeRoles = require("../middleware/roleMiddleware");
 const router = express.Router();
 
 router.get('/',authMiddleware,authorizeRoles("admin"), getPaymentSettings);
-router.post('/',authMiddleware,authorizeRoles("admin"), createOrUpdatePaymentSettings);
+router.post('/',authMiddleware,authorizeRoles("teacher"), createOrUpdatePaymentSettings);
 
 module.exports = router;
