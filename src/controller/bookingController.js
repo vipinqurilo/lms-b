@@ -13,11 +13,11 @@ const emailService = require("../services/emailService");
 
 exports.createBooking = async (req, res) => {
   try {
-    const { sessionId, mode } = req.body;
+    const { sessionId, mode="payfast" } = req.body;
     console.log("Creating booking with sessionId:", sessionId);
 
     // Check if it's a PayFast payment (booking_ prefix)
-    if ( mode === "payfast") {
+    if ( mode === "payfast") { 
       // Find the payment record
       const payment = await paymentModel.findOne({ sessionId });
       console.log("Found payment record:", payment);
