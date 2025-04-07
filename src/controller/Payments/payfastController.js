@@ -121,7 +121,7 @@ exports.createCourseCheckout = async (req, res) => {
     const data = {
       amount: formattedAmount,
       custom_str1: paymentId,
-      item_name: courseTitle || `Course ID: ${courseId}`,
+      item_name: courseTitle || `${courseId}`,
       merchant_id: merchantId,
       merchant_key: merchantKey,
       notify_url: formattedNotifyUrl,
