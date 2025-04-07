@@ -66,7 +66,7 @@ const getEnrolledCourses = async (req, res) => {
         select: "-__v",
         populate: {
           path: "courseInstructor",
-          select: "name email profileImage",
+          select: "name email profileImage firstName lastName",
         },
       });
 
