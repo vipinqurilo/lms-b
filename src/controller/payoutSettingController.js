@@ -2,12 +2,13 @@ const PayoutSetting = require("../model/payoutSettingModel");
 
 exports.createOrUpdatePayoutSettings = async (req, res) => {
   try {
-    const { stripe, paypal } = req.body;
+    const { stripe, paypal, payfast } = req.body;
 
     let payoutSetting = await PayoutSetting.findOne();
     if (payoutSetting) {
       payoutSetting.stripe = stripe;
       payoutSetting.paypal = paypal;
+      payoutSetting.payfast = paypal;
     } else {
       payoutSetting = new PayoutSetting({ stripe, paypal });
     }
