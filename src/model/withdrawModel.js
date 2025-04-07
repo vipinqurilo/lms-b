@@ -5,6 +5,7 @@ const withdrawalSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     paymentMethod: { type: String, enum: ["paypal", "bank_transfer"], required: true },
     paypalEmail: { type: String },  // Required if PayPal
+    payfastEmail: { type: String },  // Required if PayPal
     bankDetails: {
         accountName: String,
         accountNumber: String,
