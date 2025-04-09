@@ -109,9 +109,8 @@ exports.createCourseCheckout = async (req, res) => {
         ? "https://sandbox.payfast.co.za/eng/process" 
         : "https://www.payfast.co.za/eng/process"; 
     // Format callback URLs - with fallbacks if not provided
-    const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
-    const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
-
+    const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-success?session_id=${paymentId}`;
+    const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-failed?session_id=${paymentId}`;
     const defaultNotifyUrl = `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
 
     const formattedReturnUrl = returnUrl || defaultReturnUrl;
@@ -125,8 +124,8 @@ exports.createCourseCheckout = async (req, res) => {
       merchant_id: merchantId,
       merchant_key: merchantKey,
       notify_url: formattedNotifyUrl,
+      cancel_url: formattedCancelUrl,
       // return_url: formattedReturnUrl,
-      // cancel_url: formattedCancelUrl,
     };
     // Generate signature
     data.signature = generateSignature(data, passphrase);
@@ -273,7 +272,7 @@ exports.createBookingCheckout = async (req, res) => {
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
     console.log("Notify URL:", formattedNotifyUrl);
-
+ 
     // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
     const data = {
       amount: formattedAmount,
