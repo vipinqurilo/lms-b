@@ -2,15 +2,20 @@ const PayoutSetting = require("../model/payoutSettingModel");
 
 exports.createOrUpdatePayoutSettings = async (req, res) => {
   try {
+
+    console.log("Request body: ", req.body);
     const { stripe, paypal, payfast } = req.body;
 
     let payoutSetting = await PayoutSetting.findOne();
     if (payoutSetting) {
+      console.log("Updating existing payout setting");
       payoutSetting.stripe = stripe;
       payoutSetting.paypal = paypal;
-      payoutSetting.payfast = paypal;
+
+      payoutSetting.payfast = payfast;
     } else {
-      payoutSetting = new PayoutSetting({ stripe, paypal });
+      console.log("Creating new payout setting");
+      payoutSetting = new PayoutSetting({ stripe, paypal, payfast });
     }
 
     await payoutSetting.save();
@@ -20,6 +25,7 @@ exports.createOrUpdatePayoutSettings = async (req, res) => {
       data: payoutSetting,
     });
   } catch (error) {
+    console.error("Error in createOrUpdatePayoutSettings: ", error);
     res
       .status(500)
       .json({

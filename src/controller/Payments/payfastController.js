@@ -106,12 +106,13 @@ exports.createCourseCheckout = async (req, res) => {
     const passphrase = (payfastSettings.passphrase || process.env.PAYFAST_PASSPHRASE || "").trim();
     const apiUrl =
       payfastSettings.mode || process.env.NODE_ENV !== "production"
-        ? "https://sandbox.payfast.co.za/eng/process"
-        : "https://www.payfast.co.za/eng/process";
+        ? "https://sandbox.payfast.co.za/eng/process" 
+        : "https://www.payfast.co.za/eng/process"; 
     // Format callback URLs - with fallbacks if not provided
-    const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/student-dashboard/course/payment-success?session_id=${paymentId}`;
-    const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/cancel?session_id=${paymentId}`;
-    const defaultNotifyUrl = `${process.env.API_URL || 'https://enjoy-capacity-bid-monitors.trycloudflare.com'}/api/payment/payfast/notify`;
+    const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-success?session_id=${paymentId}`;
+    const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-failed?session_id=${paymentId}`;
+    const defaultNotifyUrl = `${process.env.BACKEND_URL}/api/payment/payfast/notify`;
+
     const formattedReturnUrl = returnUrl || defaultReturnUrl;
     const formattedCancelUrl = cancelUrl || defaultCancelUrl;
     const formattedNotifyUrl = notifyUrl || defaultNotifyUrl;
@@ -119,27 +120,35 @@ exports.createCourseCheckout = async (req, res) => {
     const data = {
       amount: formattedAmount,
       custom_str1: paymentId,
-      item_name: courseTitle || `Course ID: ${courseId}`,
+      item_name: courseTitle || `${courseId}`,
       merchant_id: merchantId,
       merchant_key: merchantKey,
       notify_url: formattedNotifyUrl,
+      cancel_url: formattedCancelUrl,
       // return_url: formattedReturnUrl,
-      // cancel_url: formattedCancelUrl,
     };
     // Generate signature
     data.signature = generateSignature(data, passphrase);
+
+    const metadata = {
+      courseId,
+      courseTitle,
+      studentId,
+      ...data,
+    };
+
     // Store payment metadata in database
     await PaymentModel.create({
       userId: studentId || "guest-user", // Fallback for anonymous purchases
       courseId,
       amount: parseFloat(formattedAmount),
-      currency: "ZAR",
+      currency: "R",
       paymentFor: "course",
       status: "pending",
       sessionId: paymentId,
       paymentMethod: "payfast",
       paymentStatus: "unpaid",
-      metadata: data,
+      metadata: metadata,
     });
     // Generate query string
     const queryString = Object.keys(data)
@@ -263,7 +272,7 @@ exports.createBookingCheckout = async (req, res) => {
     console.log("Return URL:", formattedReturnUrl);
     console.log("Cancel URL:", formattedCancelUrl);
     console.log("Notify URL:", formattedNotifyUrl);
-
+ 
     // Create data object for PayFast with ONLY essential fields - MATCH DASHBOARD EXACTLY
     const data = {
       amount: formattedAmount,
@@ -307,7 +316,7 @@ exports.createBookingCheckout = async (req, res) => {
       userId: studentId,
       teacherId,
       amount: parseFloat(formattedAmount),
-      currency: "ZAR",
+      currency: "R",
       paymentFor: "booking",
       status: "pending",
       sessionId: paymentId,

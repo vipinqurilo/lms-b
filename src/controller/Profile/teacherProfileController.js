@@ -363,11 +363,30 @@ exports.editPaymentInfo = async (req, res) => {
     if (
       !paymentInfo.accountNumber ||
       !paymentInfo.ifscCode ||
-      !paymentInfo.bankName
+      !paymentInfo.bankName ||
+      !paymentInfo.accountHolderName
     ) {
+      // Only validate bank details if they are being provided
+      if (Object.keys(paymentInfo).some(key => ['accountNumber', 'ifscCode', 'bankName', 'accountHolderName'].includes(key))) {
+        return res.status(400).json({
+          success: false,
+          message: "Bank details are incomplete",
+        });
+      }
+    }
+
+    // Validate PayPal or PayFast email if provided
+    if (paymentInfo.paypalEmail && !isValidEmail(paymentInfo.paypalEmail)) {
       return res.status(400).json({
         success: false,
-        message: "Bank details are incomplete",
+        message: "Invalid PayPal email address",
+      });
+    }
+
+    if (paymentInfo.payfastEmail && !isValidEmail(paymentInfo.payfastEmail)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid PayFast email address",
       });
     }
 
@@ -511,7 +530,7 @@ const updateBankAccount = async (stripeAccountId, paymentInfo) => {
         external_account: {
           object: "bank_account",
           country: "ZA",
-          currency: "ZAR",
+          currency: "R",
           account_holder_name: paymentInfo.name,
           account_holder_type: "individual",
           account_number: paymentInfo.accountNumber,
@@ -627,3 +646,8 @@ exports.editTutionSlots = async (req, res) => {
     });
   }
 };
+
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
