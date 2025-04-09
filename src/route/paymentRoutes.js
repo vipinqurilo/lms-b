@@ -19,7 +19,7 @@ router.post("/payfast/booking", authMiddleware, payfastController.createBookingC
 router.post("/payfast/course", authMiddleware, payfastController.createCourseCheckout);
 router.post("/payfast/notify", payfastController.handlePayFastIPN);
 router.post("/payfast/verify", payfastController.verifyPayment);
-router.post("/payfast/payout", payfastController.processPayout);
+// router.post("/payfast/payout", payfastController.processPayout);
 // router.post("/payfast/notify", bodyParser.json(), payfastController.handleNotification);
 // router.get("/payfast/notify", payfastController.handleNotification);
 // router.post("/payfast/verify", payfastController.verifyPayment);

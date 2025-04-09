@@ -462,55 +462,6 @@ exports.verifyPayment = async (req, res) => {
 };
 
 
-exports.processPayout = async (req, res) => {
-  try {
-    const { recipient, amount, reason } = req.body;
-
-    if (!recipient || !amount || !reason) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
-    }
-
-    if (process.env.NODE_ENV !== "production") {
-      return res.status(200).json({
-        success: true,
-        message: "Mock payout success (sandbox not supported)",
-        data: { recipient, amount, reason },
-      });
-    }
-
-    const apiUrl = "https://api.payfast.co.za/transfers";
-
-    const response = await axios.post(
-      apiUrl,
-      {
-        recipient,
-        amount: parseFloat(amount).toFixed(2),
-        reason,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYFAST_API_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Payout processed successfully",
-      data: response.data,
-    });
-  } catch (error) {
-    console.error("Payout Error:", error.response?.data || error.message);
-    res.status(500).json({
-      success: false,
-      message: "Error processing payout",
-      error: error.response?.data || error.message,
-    });
-  }
-};
-
-
 exports.payoutWebhook = async (req, res) => {
   try {
     console.log("Received Payout Webhook:", req.body);

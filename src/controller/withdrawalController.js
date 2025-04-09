@@ -4,6 +4,7 @@ const withdrawalModel = require("../model/withdrawModel");
 const moment = require("moment");
 const mongoose = require("mongoose");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const processPayoutPayfast = require("../utils/processPayoutPayfast");
 
 exports.requestWithdrawal = async (req, res) => {
   try {
@@ -297,6 +298,21 @@ exports.approveOrRejectWithdrawals = async (req, res) => {
 
       if (withdrawal.paymentMethod === "paypal") {
         // await processPayPalPayment(withdrawal.paypalEmail, withdrawal.amount);
+      }
+      if (withdrawal.paymentMethod === "payfast") {
+        const payout = await processPayoutPayfast(
+          withdrawal.payfastEmail,
+          withdrawal.amount,
+          "Withdrawal Payout"
+        );
+
+        if (payout.success) {
+          withdrawal.payoutStatus = "success";
+        } else {
+          withdrawal.payoutStatus = "failed";
+        }
+
+        await withdrawal.save();
       }
       if (withdrawal.paymentMethod === "bank_transfer") {
         // await processBankTransfer(withdrawal.paypalEmail, withdrawal.amount);
