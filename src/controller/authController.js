@@ -92,7 +92,6 @@ exports.registerUser = async (req, res) => {
       verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
       isVerified: false,
       userName: userName,
-
     };
 
     // Generate username for non-teachers
@@ -186,10 +185,6 @@ async function sendVerificationEmail(user) {
            <a href="${verificationLink}">Verify Email</a>`
   });
 }
-
-
-
-
 
 // Function to resend verification email
 // exports.resendVerificationEmail = async (req, res) => { 
@@ -488,9 +483,6 @@ exports.generateLoginToken = async (req, res) => {
 };
 
 
-
-
-
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -519,10 +511,6 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 
 exports.validateToken = async (req, res) => {
