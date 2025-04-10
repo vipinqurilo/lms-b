@@ -4,7 +4,7 @@ const nodemailer = require("nodemailer");
 const UserModel = require("../model/UserModel");
 require("dotenv").config();
 const getEmailSettings = require("../utils/emailSetting");
-const settings = getEmailSettings();
+
 
 
 
