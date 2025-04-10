@@ -3,6 +3,10 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const UserModel = require("../model/UserModel");
 require("dotenv").config();
+const getEmailSettings = require("../utils/emailSetting");
+const settings = getEmailSettings();
+
+
 
 // Function to send a reset password email
 // exports.forgotPassword = async (req, res) => {
@@ -103,14 +107,14 @@ exports.forgotPassword = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword ||  process.env.EMAIL_PASS,
       },
     });
 
     // Email content
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset Request",
       html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,

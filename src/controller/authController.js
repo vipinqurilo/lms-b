@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
+const getEmailSettings = require("../utils/emailSetting");
 
 
 // exports.registerUser = async (req, res) => {
@@ -63,11 +64,13 @@ const StudentProfileModel = require("../model/studentProfileModel");
 // };
 
 
+const settings = await getEmailSettings();
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS, // Your email password or app password
+    user: settings.smtpUsername || process.env.EMAIL_USER, // Your email
+    pass: settings.smtpPassword || process.env.EMAIL_PASS, // Your email password or app password
   },
 });
 
@@ -130,7 +133,7 @@ exports.registerUser = async (req, res) => {
     // Send verification email
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: newUser.email,
       subject: "Verify Your Email",
       html: `<p>Click the link below to verify your email:</p>
@@ -178,7 +181,7 @@ exports.registerUser = async (req, res) => {
 async function sendVerificationEmail(user) {
   const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
   await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+    from:settings.smtpUsername || process.env.EMAIL_USER,
     to: user.email,
     subject: "Verify Your Email",
     html: `<p>Click the link below to verify your email:</p>

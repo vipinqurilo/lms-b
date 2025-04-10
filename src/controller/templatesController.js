@@ -2,8 +2,9 @@ const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const path = require("path");
 require("dotenv").config();
+const getEmailSettings = require("../utils/emailSetting");
+const settings = getEmailSettings();
  
-
 
 
 const signup = async (req, res) => {
@@ -20,13 +21,13 @@ const signup = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: teacherEmail,
       subject: "Signup Confirmation",
       html: emailTemplate,
@@ -57,13 +58,13 @@ const verifyEmail = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Verification Email",
       html: emailTemplate,
@@ -105,13 +106,13 @@ const signupUser = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail", 
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Signup Confirmation",
       html: emailTemplate,
@@ -151,13 +152,13 @@ const handleCourseRequest = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject:
         status === "approved"
@@ -198,13 +199,13 @@ const teacherRequest = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject:
         status === "approved"
@@ -251,13 +252,13 @@ const sendMoney = async (req, res) => {
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user:settings.smtpUsername || process.env.EMAIL_USER,
+          pass:settings.smtpPassword || process.env.EMAIL_PASS,
         },
       });
   
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from:settings.smtpUsername || process.env.EMAIL_USER,
         to: teacherEmail,
         subject: "Payment Settlement Confirmation",
         html: emailTemplate,
@@ -301,8 +302,8 @@ const sendBookingConfirmation = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user:settings.smtpUsername || process.env.EMAIL_USER,
+        pass:settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
@@ -335,7 +336,7 @@ const sendBookingConfirmation = async (req, res) => {
     console.log('Student email template rendered successfully');
 
     const studentMailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: studentEmail,
       subject: "Booking Confirmation - Your Session is Confirmed!",
       html: studentEmailTemplate,
@@ -374,7 +375,7 @@ const sendBookingConfirmation = async (req, res) => {
     console.log('Teacher email template rendered successfully');
 
     const teacherMailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: teacherEmail,
       subject: "New Booking Alert - Session Scheduled!",
       html: teacherEmailTemplate,

@@ -110,7 +110,6 @@ app.get("/template", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
-  
 });
 
 app.use("/api/admin", adminRoute);
