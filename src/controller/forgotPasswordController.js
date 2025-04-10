@@ -102,6 +102,7 @@ exports.forgotPassword = async (req, res) => {
 
     // Reset password link
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  const settings = await getEmailSettings();
 
     // Configure email transport
     const transporter = nodemailer.createTransport({

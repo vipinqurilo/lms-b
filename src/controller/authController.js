@@ -64,22 +64,7 @@ const getEmailSettings = require("../utils/emailSetting");
 // };
 
 
-let transporter;
 
-(async () => {
-  const settings = await getEmailSettings();
-
-  transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: settings.smtpUsername || process.env.EMAIL_USER,
-      pass: settings.smtpPassword || process.env.EMAIL_PASS,
-    },
-  });
-
-  // If you want to export the transporter after it's initialized
-  module.exports = transporter;
-})();
 
 
 exports.registerUser = async (req, res) => {
@@ -139,6 +124,15 @@ exports.registerUser = async (req, res) => {
 
     // Send verification email
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
+    const settings = await getEmailSettings();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: settings.smtpUsername || process.env.EMAIL_USER, // Your email
+    pass: settings.smtpPassword || process.env.EMAIL_PASS, // Your email password or app password
+  },
+});
     await transporter.sendMail({
       from: settings.smtpUsername || process.env.EMAIL_USER,
       to: newUser.email,
@@ -187,6 +181,14 @@ exports.registerUser = async (req, res) => {
 
 async function sendVerificationEmail(user) {
   const settings = await getEmailSettings();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: settings.smtpUsername || process.env.EMAIL_USER, // Your email
+    pass: settings.smtpPassword || process.env.EMAIL_PASS, // Your email password or app password
+  },
+});
   const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
   await transporter.sendMail({
     from:settings.smtpUsername || process.env.EMAIL_USER,
