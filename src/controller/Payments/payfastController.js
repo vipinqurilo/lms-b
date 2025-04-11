@@ -9,7 +9,6 @@ const moment = require("moment");
 const StudentProfileModel = require("../../model/studentProfileModel");
 const CourseModel = require("../../model/CourseModel");
 
-
 // Function to generate PayFast signature
 const generateSignature = (data, passPhrase = null) => {
   let pfOutput = "";
@@ -107,7 +106,7 @@ exports.createCourseCheckout = async (req, res) => {
     const apiUrl =
       payfastSettings.mode || process.env.NODE_ENV !== "production"
         ? "https://sandbox.payfast.co.za/eng/process" 
-        : "https://www.payfast.co.za/eng/process"; 
+        : "https://www.payfast.co.za/eng/process";  
     // Format callback URLs - with fallbacks if not provided
     const defaultReturnUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-success?session_id=${paymentId}`;
     const defaultCancelUrl = `${req.headers.origin || 'http://localhost:3000'}/courses/payment-failed?session_id=${paymentId}`;
@@ -460,7 +459,6 @@ exports.verifyPayment = async (req, res) => {
     });
   }
 };
-
 
 exports.payoutWebhook = async (req, res) => {
   try {
