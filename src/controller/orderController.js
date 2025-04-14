@@ -29,14 +29,14 @@ exports.createCourseOrder = async (req, res) => {
       if (!payment) {
         return res
           .status(400)
-          .json({ success: false, message: "Payment not found" });
+          .json({ success: false, message: "Payment not found" }); 
       }
 
       if (payment.paymentStatus !== "paid") {
         console.error("Payment not in succeeded state:", payment.paymentStatus);
         return res.status(400).json({ 
           success: false,
-          message: "Payment not verified" 
+          message: "Payment not verified"  
         });
       }
       const course = await CourseModel.findById(payment?.metadata?.courseId);

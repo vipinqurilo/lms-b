@@ -33,19 +33,12 @@
           <div class="content" style="width: 100%;">
             <div style="width: 85%;  margin: 16px auto;">
              
-                
-                
                 <h3 class="greeting" style=" font-size: 16px; font-weight: bold; color: #808080; text-align: left;">Hi <%= userName %> ,</h3>
                 <p class="message" style="font-size: 14px; color: #4B5563; margin-top: 12px; padding: 0; text-align: left;">
-                  Your verification email has been sent again successfully. Please check your inbox and spam folder.  
-
-                  If you do not receive the email within a few minutes, please try again or contact support.
+                  Please click the button below to verify your email address and activate your account. If you did not create an account, please ignore this email.
                 </p>
                
             </div>
-       
-           
-             
             <div style="position: relative; width: full; height: 150px; background-repeat: no-repeat; background-image: url('https://res.cloudinary.com/daprkakyk/image/upload/v1741352854/luxe/tqfcqsu7qupogitjybfu.png');"
               class="background-image"
             >
@@ -58,9 +51,11 @@
                 }
               </style>
               <!--<![endif]-->
-              <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
-                Verify
-              </button>
+              <a href="<%= verificationLink %>" style="text-decoration: none; display: inline-block;">
+                <button class="button" style="z-index: 1; position: relative; background-color: #000000; color: #FFFFFF; padding: 8px 24px; border-radius: 4px; font-size: 14px; border: none; cursor: pointer; margin-top: 40px;">
+                  <%= buttonText %>
+                </button>
+              </a>
             </div>
           </div>
         </div>
@@ -70,38 +65,42 @@
             alt="STEAM Institute"
             style="max-width: 100%; height: auto; width: 96px; margin: 0 auto;"
           />
-          <div style="margin: 16px 0; color:#000000">Address - 65 Rz- London, United Kingdom Nd-</div>
+          <div style="margin: 16px 0; color:#000000">Address - <%= address %></div>
           <div style="width:fit-content; margin: 4px auto; display: flex;  align-items: center;">
             <div style="text-align: center; margin-right: 16px;">
-              <div>Copyright &copy; 2025</div>
+              <div>Copyright &copy; <%= year %></div>
             </div>
-            <div >
-              <% [
-              {
-                type: "Email",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
-                alt: "Email",
-                link: "mailto:info@steaminstitute.online"
-              },
-              {
-                type: "Phone",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
-                alt: "Phone",
-                link: "tel:+1234567890" // Replace with actual phone number
-              },
-              {
-                type: "Twitter",
-                imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
-                alt: "Twitter",
-                link: "https://twitter.com/yourhandle" // Replace with actual Twitter handle
-              },
-              {
-                type: "Instagram",
-                imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
-                alt: "Instagram",
-                link: "https://instagram.com/yourhandle" // Replace with actual Instagram handle
-              }
-            ].forEach(function(icon) { %>
+            <div>
+              <% 
+              const socialIcons = [
+                {
+                  type: "Email",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340472/luxe/ufeltgfvhtavkw33lxpo.png",
+                  alt: "Email",
+                  link: "mailto:info@steaminstitute.online"
+                },
+                {
+                  type: "Phone",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741340452/luxe/loj3zsuxiv0vittz1dor.png",
+                  alt: "Phone",
+                  link: "tel:+1234567890"
+                },
+                {
+                  type: "Twitter",
+                  imageUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741339966/luxe/quwwconumvn1zim50zpp.png",
+                  alt: "Twitter",
+                  link: "https://twitter.com/yourhandle"
+                },
+                {
+                  type: "Instagram",
+                  imageUrl: "http://res.cloudinary.com/daprkakyk/image/upload/v1741340046/luxe/knllqvkduyjtdsoxyntz.png",
+                  alt: "Instagram",
+                  link: "https://instagram.com/yourhandle"
+                }
+              ];
+              
+              socialIcons.forEach(function(icon) { 
+              %>
                 <a href="<%= icon.link %>" style="text-decoration: none;">
                   <img style="width: <%= icon.type === 'Email' ? '20px' : (icon.type === 'Instagram' ? '25px' : '16px') %>; display: inline-block; margin: 0 8px; vertical-align: middle; opacity: 0.8; transition: opacity 0.2s;"
                     src="<%= icon.imageUrl %>"
