@@ -1722,12 +1722,6 @@ exports.rescheduleResponseBooking = async (req, res) => {
       if (action === "accept") {
         // Update booking details with new time
         const newTimeObj = new Date(booking.rescheduleRequest.newTime);
-        console.log("Admin reschedule - Original booking details:", {
-          originalStartTime: booking.sessionStartTime,
-          originalEndTime: booking.sessionEndTime,
-          sessionDuration: booking.sessionDuration,
-          newRequestedTime: booking.rescheduleRequest.newTime
-        });
         
         // Store original session duration in minutes
         const sessionDurationMinutes = booking.sessionDuration;
@@ -1739,19 +1733,11 @@ exports.rescheduleResponseBooking = async (req, res) => {
         const newEndTime = new Date(newTimeObj.getTime() + (sessionDurationMinutes * 60 * 1000));
         booking.sessionEndTime = newEndTime;
         
-        console.log("Admin reschedule - Updated booking times:", {
-          newStartTime: booking.sessionStartTime,
-          newEndTime: booking.sessionEndTime,
-          calculatedDuration: (booking.sessionEndTime - booking.sessionStartTime) / (60 * 1000) + " minutes"
-        });
-        
         booking.sessionDate = moment(newTimeObj).startOf('day').toDate();
         
         booking.status = "rescheduled";
         booking.hasBeenRescheduled = true;
         booking.rescheduleRequest.status = "completed";
-        
-        console.log("Admin reschedule - Booking successfully updated with new schedule");
       } else {
         booking.status = "scheduled";
         booking.rescheduleRequest.status = "denied";
