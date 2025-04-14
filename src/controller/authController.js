@@ -5,6 +5,7 @@ const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
+const getEmailSettings = require("../utils/emailSetting");
 
 const ejs = require("ejs");
 const path = require("path");
@@ -169,7 +170,6 @@ exports.registerUser = async (req, res) => {
 };
 
 async function sendVerificationEmail(user) {
-
   try {
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
     
@@ -180,14 +180,12 @@ async function sendVerificationEmail(user) {
     const templateData = {
       userName: user.userName || user.firstName || user.email.split('@')[0],
       email: user.email,
-      title: "Email Verification",
-      title1: "Please Verify Your Email",
-      nextStepOne: "Check your email inbox and spam folder",
-      nextStepTwo: "Click the verification link to complete your registration",
+      verificationLink: verificationLink,
       buttonText: "Verify Email",
-      year: currentYear,
       address: "65 Rz- London, United Kingdom Nd-",
-      verificationLink: verificationLink
+      year: currentYear,
+      title: "Email Verification",
+      message: "Please click the button below to verify your email address and activate your account. If you did not create an account, please ignore this email."
     };
     
     // Render the email template
@@ -196,9 +194,21 @@ async function sendVerificationEmail(user) {
       templateData
     );
     
+    // Get email settings
+    const settings = await getEmailSettings();
+    
+    // Configure Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
+      },
+    });
+    
     // Send the email
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: user.email,
       subject: "Verify Your Email",
       html: emailTemplate
@@ -207,7 +217,6 @@ async function sendVerificationEmail(user) {
     console.error("Error sending verification email:", error);
     throw error;
   }
-
 }
 
 // Function to resend verification email
