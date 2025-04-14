@@ -5,6 +5,8 @@ const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
+const ejs = require("ejs");
+const path = require("path");
 
 
 // exports.registerUser = async (req, res) => {
@@ -129,14 +131,7 @@ exports.registerUser = async (req, res) => {
 
 
     // Send verification email
-    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${newUser.verificationToken}`;
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: newUser.email,
-      subject: "Verify Your Email",
-      html: `<p>Click the link below to verify your email:</p>
-             <a href="${verificationLink}">Verify Email</a>`
-    });
+    await sendVerificationEmail(newUser);
 
 
     const token = jwt.sign(
@@ -177,14 +172,43 @@ exports.registerUser = async (req, res) => {
 };
 
 async function sendVerificationEmail(user) {
-  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: user.email,
-    subject: "Verify Your Email",
-    html: `<p>Click the link below to verify your email:</p>
-           <a href="${verificationLink}">Verify Email</a>`
-  });
+  try {
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
+    
+    // Get the current year for the template
+    const currentYear = new Date().getFullYear();
+    
+    // Prepare template data
+    const templateData = {
+      userName: user.userName || user.firstName || user.email.split('@')[0],
+      email: user.email,
+      title: "Email Verification",
+      title1: "Please Verify Your Email",
+      nextStepOne: "Check your email inbox and spam folder",
+      nextStepTwo: "Click the verification link to complete your registration",
+      buttonText: "Verify Email",
+      year: currentYear,
+      address: "65 Rz- London, United Kingdom Nd-",
+      verificationLink: verificationLink
+    };
+    
+    // Render the email template
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/verifyEmail.ejs"),
+      templateData
+    );
+    
+    // Send the email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Verify Your Email",
+      html: emailTemplate
+    });
+  } catch (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
+  }
 }
 
 
@@ -277,7 +301,7 @@ exports.resendVerificationEmail = async (req, res) => {
     user.verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1m" });
     await user.save();
 
-    // Send verification email
+    // Send verification email using the EJS template
     await sendVerificationEmail(user);
 
     res.status(200).json({
