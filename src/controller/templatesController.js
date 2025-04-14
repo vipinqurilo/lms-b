@@ -2,8 +2,8 @@ const nodemailer = require("nodemailer");
 const ejs = require("ejs");
 const path = require("path");
 require("dotenv").config();
+const getEmailSettings = require("../utils/emailSetting");
  
-
 
 
 const signup = async (req, res) => {
@@ -15,18 +15,19 @@ const signup = async (req, res) => {
       path.join(__dirname, "../emailTemplates/signup.ejs"),
       { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
     );
+    const settings = await getEmailSettings();
 
     // Configure Nodemailer transportera
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: teacherEmail,
       subject: "Signup Confirmation",
       html: emailTemplate,
@@ -52,18 +53,19 @@ const verifyEmail = async (req, res) => {
       path.join(__dirname, "../emailTemplates/verifyEmail.ejs"),
       { teacherEmail, courseName, teacherName, status, userName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,email ,Commission,NetEarnings}
     );
+    const settings = await getEmailSettings();
 
     // Configure Nodemailer transportera
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Verification Email",
       html: emailTemplate,
@@ -100,18 +102,19 @@ const signupUser = async (req, res) => {
       path.join(__dirname, "../view/login.ejs"),
       { name: email.split("@")[0] ,title ,userName ,nextStepTwo,nextStepOne ,buttonText ,address ,year ,teacherName , welcomeTittle} // Extract username from email
     );
+    const settings = await getEmailSettings();
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
       service: "gmail", 
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Signup Confirmation",
       html: emailTemplate,
@@ -146,18 +149,19 @@ const handleCourseRequest = async (req, res) => {
       path.join(__dirname, "../emailTemplates/coursePublish.ejs"),
       { courseName,  status ,teacherName  ,title ,nextStepOne ,nextStepTwo ,reason ,publishDate ,category , }
     );
+    const settings = await getEmailSettings();
 
     // Configure Nodemailer transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject:
         status === "approved"
@@ -198,13 +202,13 @@ const teacherRequest = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: settings.smtpUsername || process.env.EMAIL_USER,
+        pass: settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject:
         status === "approved"
@@ -246,18 +250,19 @@ const sendMoney = async (req, res) => {
         path.join(__dirname, "../emailTemplates/settlement.ejs"),
         { teacherEmail, courseName, teacherName, status, studentName, startDate, endDate ,title ,title1 ,nextStepOne ,bookingDate ,year, buttonText ,address  ,nextStepTwo ,publishDate ,startTime ,endTime ,TotalEarnings,Commission,NetEarnings}
       );
-  
+      const settings = await getEmailSettings();
+
       // Configure Nodemailer transporter
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user:settings.smtpUsername || process.env.EMAIL_USER,
+          pass:settings.smtpPassword || process.env.EMAIL_PASS,
         },
       });
   
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from:settings.smtpUsername || process.env.EMAIL_USER,
         to: teacherEmail,
         subject: "Payment Settlement Confirmation",
         html: emailTemplate,
@@ -295,14 +300,15 @@ const sendBookingConfirmation = async (req, res) => {
     if (!studentEmail || !studentName || !teacherName || !teacherEmail || !bookingDate || !startTime || !endTime || !courseName) {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
+    const settings = await getEmailSettings();
 
     // Configure Nodemailer transporter
     console.log('Configuring email transporter...');
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user:settings.smtpUsername || process.env.EMAIL_USER,
+        pass:settings.smtpPassword || process.env.EMAIL_PASS,
       },
     });
 
@@ -335,7 +341,7 @@ const sendBookingConfirmation = async (req, res) => {
     console.log('Student email template rendered successfully');
 
     const studentMailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: studentEmail,
       subject: "Booking Confirmation - Your Session is Confirmed!",
       html: studentEmailTemplate,
@@ -374,7 +380,7 @@ const sendBookingConfirmation = async (req, res) => {
     console.log('Teacher email template rendered successfully');
 
     const teacherMailOptions = {
-      from: process.env.EMAIL_USER,
+      from:settings.smtpUsername || process.env.EMAIL_USER,
       to: teacherEmail,
       subject: "New Booking Alert - Session Scheduled!",
       html: teacherEmailTemplate,

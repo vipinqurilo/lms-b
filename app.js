@@ -50,7 +50,6 @@ const corsOption = {
 };
 app.use(cors(corsOption));
 
-
 app.use((req, res, next) => {
   // console.log(req)
   next();
@@ -111,7 +110,6 @@ app.get("/template", (req, res) => {
 
 app.get("/login", (req, res) => {
   res.render("login");
-
 });
 
 app.use("/api/admin", adminRoute);

@@ -53,7 +53,7 @@ exports.createCourseCheckout = async (req, res) => {
       returnUrl,
       cancelUrl,
       notifyUrl,
-    } = req.body;
+    } = req.body; 
     // Validate required fields
     const requiredFields = {
       courseId,

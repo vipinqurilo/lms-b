@@ -4,11 +4,12 @@ const EarningModel = require("../model/earningModel");
 const OrderModel = require("../model/orderModel");
 const paymentModel = require("../model/paymentModel");
 const StudentProfileModel = require("../model/studentProfileModel");
-const moment = require("moment");
+const moment = require("moment"); 
 
 const stripe = require("stripe")(
   "sk_test_51QsH7dPMQ11XQz7t9MpL7LScJgFX7wCAzCScqZXrYlMZUN6hrKPuxZmEFLYg8si74hSQM9i4DrdCKnk4HEHLEpbF00LCULZN5a"
 );
+
 function generateRandomCode() {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -83,6 +84,16 @@ exports.createCourseOrder = async (req, res) => {
         });
       }
 
+      const objData = {
+        orderId: generateRandomCode(),
+        userId:req.user.id,
+        courseId: course._id,
+        amount:payment?.amount,
+        paymentId: payment._id,
+      };
+
+      const newOrder = await OrderModel.create(objData);
+    
       await StudentProfileModel.findOneAndUpdate(
         { userId: payment?.userId },
         { $push: { enrolledCourses: { courseId: course?._id, progress: 0 } } }
@@ -97,6 +108,7 @@ exports.createCourseOrder = async (req, res) => {
           amount: payment?.amount,
           orderDate: payment?.createdAt,
           transactionId: payment?.transactionId,
+          order:newOrder
         },
       });
     } else {

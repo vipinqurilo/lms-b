@@ -5,8 +5,10 @@ const nodemailer = require("nodemailer");
 const { isValidPassword, getPasswordHash } = require("../utils/password");
 const { generateUsername } = require("../utils/username");
 const StudentProfileModel = require("../model/studentProfileModel");
+
 const ejs = require("ejs");
 const path = require("path");
+
 
 
 // exports.registerUser = async (req, res) => {
@@ -65,13 +67,7 @@ const path = require("path");
 // };
 
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER, // Your email
-    pass: process.env.EMAIL_PASS, // Your email password or app password
-  },
-});
+
 
 
 exports.registerUser = async (req, res) => {
@@ -94,7 +90,6 @@ exports.registerUser = async (req, res) => {
       verificationToken: jwt.sign({ email: data.email }, process.env.JWT_SECRET, { expiresIn: "1m" }),
       isVerified: false,
       userName: userName,
-
     };
 
     // Generate username for non-teachers
@@ -131,7 +126,9 @@ exports.registerUser = async (req, res) => {
 
 
     // Send verification email
+
     await sendVerificationEmail(newUser);
+
 
 
     const token = jwt.sign(
@@ -172,6 +169,7 @@ exports.registerUser = async (req, res) => {
 };
 
 async function sendVerificationEmail(user) {
+
   try {
     const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${user.verificationToken}`;
     
@@ -209,11 +207,8 @@ async function sendVerificationEmail(user) {
     console.error("Error sending verification email:", error);
     throw error;
   }
+
 }
-
-
-
-
 
 // Function to resend verification email
 // exports.resendVerificationEmail = async (req, res) => { 
@@ -512,9 +507,6 @@ exports.generateLoginToken = async (req, res) => {
 };
 
 
-
-
-
 exports.changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -543,10 +535,6 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 
 exports.validateToken = async (req, res) => {
