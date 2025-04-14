@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const UserModel = require("../model/UserModel");
 const ejs = require("ejs");
@@ -7,25 +7,22 @@ const path = require("path");
 require("dotenv").config();
 const getEmailSettings = require("../utils/emailSetting");
 
-
-
-
 // Function to send a reset password email
 // exports.forgotPassword = async (req, res) => {
 //     try {
 //       const { email } = req.body;
 //       const user = await UserModel.findOne({ email });
-  
+
 //       if (!user) {
 //         return res.status(404).json({ message: "User not found" });
 //       }
-  
+
 //       // Generate a JWT token (valid for 1 hour)
 //       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1m" });
-  
+
 //       // Reset password link
 //       const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
-  
+
 //       // Configure email transport
 //       const transporter = nodemailer.createTransport({
 //         service: "Gmail",
@@ -34,7 +31,7 @@ const getEmailSettings = require("../utils/emailSetting");
 //           pass: process.env.EMAIL_PASS,
 //         },
 //       });
-  
+
 //       // Email content
 //       const mailOptions = {
 //         from: process.env.EMAIL_USER,
@@ -42,16 +39,15 @@ const getEmailSettings = require("../utils/emailSetting");
 //         subject: "Password Reset Request",
 //         html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
 //       };
-  
+
 //       // Send email
 //       await transporter.sendMail(mailOptions);
-  
+
 //       res.status(200).json({ message: "Reset password link sent to your email" });
 //     } catch (error) {
 //       res.status(500).json({ message: "Server error", error: error.message });
 //     }
 //   };
-
 
 // Function to reset password
 // exports.resetPassword = async (req, res) => {
@@ -95,7 +91,9 @@ exports.forgotPassword = async (req, res) => {
     }
 
     // Generate a JWT token (valid for 1 hour)
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     // Save token to the database
     user.forgotPasswordToken = token;
@@ -149,36 +147,47 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
- 
 exports.resetPassword = async (req, res) => {
   try {
-      const { token } = req.params;
-      const { newPassword, confirmPassword } = req.body;
+    const { token } = req.params;
+    const { newPassword, confirmPassword } = req.body;
 
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await UserModel.findOne({ _id: decoded.id, forgotPasswordToken: token });
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await UserModel.findOne({
+      _id: decoded.id,
+      forgotPasswordToken: token,
+    });
 
-      if (!user) {
-          return res.status(400).json({ message: "Invalid or expired token" });
-      }
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
 
-      // Check if newPassword and confirmPassword match
-      if (newPassword !== confirmPassword) {
-          return res.status(400).json({ message: "Passwords do not match" });
-      }
+    // Check if newPassword and confirmPassword match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
+    }
 
-      // Update password without hashing
-      user.password = newPassword;
-      user.forgotPasswordUsed = true;
-      user.forgotPasswordToken = ""; // Clear token after use
-      await user.save();
+    // check if the new password matches with the old password
+    const isSame = await bcrypt.compare(newPassword, user.password);
+    if (isSame) {
+      return res.status(400).json({
+        status: "failed",
+        message: "New password cannot be the same as the old password",
+      });
+    }
 
-      res.status(200).json({ message: "Password updated successfully" });
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password without hashing
+    user.password = hashedPassword;
+    user.forgotPasswordUsed = true;
+    user.forgotPasswordToken = ""; // Clear token after use
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
-      res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-  
-  
