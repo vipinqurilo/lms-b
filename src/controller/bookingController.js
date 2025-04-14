@@ -1722,10 +1722,16 @@ exports.rescheduleResponseBooking = async (req, res) => {
       if (action === "accept") {
         // Update booking details with new time
         const newTimeObj = new Date(booking.rescheduleRequest.newTime);
+        
+        // Store original session duration in minutes
+        const sessionDurationMinutes = booking.sessionDuration;
+        
+        // Set the new start time
         booking.sessionStartTime = newTimeObj;
         
-        const originalDuration = booking.sessionEndTime - booking.sessionStartTime;
-        booking.sessionEndTime = new Date(newTimeObj.getTime() + originalDuration);
+        // Calculate new end time based on session duration
+        const newEndTime = new Date(newTimeObj.getTime() + (sessionDurationMinutes * 60 * 1000));
+        booking.sessionEndTime = newEndTime;
         
         booking.sessionDate = moment(newTimeObj).startOf('day').toDate();
         

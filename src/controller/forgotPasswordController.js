@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const UserModel = require("../model/UserModel");
+const ejs = require("ejs");
+const path = require("path");
 require("dotenv").config();
 const getEmailSettings = require("../utils/emailSetting");
 
@@ -102,6 +104,23 @@ exports.forgotPassword = async (req, res) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
     const settings = await getEmailSettings();
 
+    // Get user name or use email as fallback
+    const userName = user.firstName || email.split('@')[0];
+
+    // Render the EJS template
+    const emailTemplate = await ejs.renderFile(
+      path.join(__dirname, "../emailTemplates/verifyEmail.ejs"),
+      { 
+        userName,
+        buttonText: "Reset Password",
+        verificationLink: resetLink,
+        address: "123 Education Street, Learning City, 12345",
+        year: new Date().getFullYear(),
+        title: "Password Reset",
+        message: "Please click the button below to reset your password. If you did not request a password reset, please ignore this email."
+      }
+    );
+
     // Configure email transport
     const transporter = nodemailer.createTransport({
       service: "Gmail",
@@ -116,7 +135,7 @@ exports.forgotPassword = async (req, res) => {
       from: settings.smtpUsername || process.env.EMAIL_USER,
       to: email,
       subject: "Password Reset Request",
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
+      html: emailTemplate,
     };
 
     // Send email
