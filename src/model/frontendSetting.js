@@ -5,6 +5,8 @@ const frontendSettingSchema = new mongoose.Schema(
     logo: { type: String, required: true },
     description: { type: String, required: true },
     title:{type:String,required:true},
+    favicon: { type: String },
+    favtitle: { type: String },
     contactDetails: [
       {
         type: {
