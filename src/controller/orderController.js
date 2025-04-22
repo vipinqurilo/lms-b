@@ -6,9 +6,7 @@ const paymentModel = require("../model/paymentModel");
 const StudentProfileModel = require("../model/studentProfileModel");
 const moment = require("moment"); 
 
-const stripe = require("stripe")(
-  "sk_test_51QsH7dPMQ11XQz7t9MpL7LScJgFX7wCAzCScqZXrYlMZUN6hrKPuxZmEFLYg8si74hSQM9i4DrdCKnk4HEHLEpbF00LCULZN5a"
-);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 function generateRandomCode() {
   const chars =
