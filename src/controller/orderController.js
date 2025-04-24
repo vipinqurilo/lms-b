@@ -4,8 +4,7 @@ const EarningModel = require("../model/earningModel");
 const OrderModel = require("../model/orderModel");
 const paymentModel = require("../model/paymentModel");
 const StudentProfileModel = require("../model/studentProfileModel");
-const moment = require("moment"); 
-
+const moment = require("moment");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
  
 function generateRandomCode() {

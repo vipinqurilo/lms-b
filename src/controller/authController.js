@@ -124,13 +124,9 @@ exports.registerUser = async (req, res) => {
       newUser.studentProfile = studentProfile._id;
       await newUser.save();
     }
-
-
     // Send verification email
 
     await sendVerificationEmail(newUser);
-
-
 
     const token = jwt.sign(
       { email: newUser.email, role: newUser.role, id: newUser._id },
@@ -165,7 +161,7 @@ exports.registerUser = async (req, res) => {
       status: "error",
       message: "Something went wrong",
       error: error.message,
-    });
+    }); 
   }
 };
 
@@ -329,21 +325,18 @@ exports.resendVerificationEmail = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const { token } = req.params;
-    console.log(token, "opppoo");
 
     if (!token) {
       return res.status(400).json({ message: "Verification token is required" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(decoded, "popooopoo");
 
     if (!decoded) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     const user = await UserModel.findOne({ email: decoded.email, verificationToken: token });
-    console.log(user, "popooopoo");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
