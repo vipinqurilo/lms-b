@@ -3,6 +3,7 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const courseRouter = require("./src/route/courseRoutes");
+const contactRouter = require("./src/route/contactRoutes");
 const authController = require("./src/route/authRoutes");
 const categoryRouter = require("./src/route/categoryRoute");
 const languageRouter = require("./src/route/languageRoute");
@@ -82,32 +83,6 @@ app.use("/api/frontend-settings", frontendSettingRouter);
 app.use("/api/email-settings", emailSettingRouter);
 app.use("/api/payment-settings", paymentSettingRouter);
 app.use("/api/payout-settings", payoutSettingRouter);
-
-app.get("/template", (req, res) => {
-  const templateData = {
-    logoUrl: "https://res.cloudinary.com/daprkakyk/image/upload/v1741260445/luxe/uiiqdcle3kayym5qg1kp.png",
-    title: "Verification Email",
-    courseImage: "http://res.cloudinary.com/daprkakyk/image/upload/v1742284693/luxe/nuud24kdorki4v1ry2jl.png",
-    studentName: "Diana",
-    teacherName: "John Doe",
-    bookingDate: "Monday, January 15, 2024",
-    startTime: "10:00 AM",
-    endTime: "11:00 AM",
-    courseName: "Introduction to Mathematics",
-    nextStepOne: "You will receive a meeting link 15 minutes before the session.",
-    nextStepTwo: "Please ensure you have a stable internet connection and required materials ready.",
-    buttonText: "View Booking Details",
-    address: "Address - 65 Rz- London, United Kingdom Nd-",
-    year: new Date().getFullYear(),
-    recipientEmail: "nethead321@gmail.com", // Student email from memory
-    studentEmail: "nethead321@gmail.com", // Student email from memory
-    teacherEmail: "sakshi04002@gmail.com", // Teacher email from memory
-    meetingPlatform: "Zoom",
-    meetingLink: "https://zoom.us/j/example" // Example meeting link
-  };
-  res.render("template", templateData);
-});
-
 app.get("/login", (req, res) => {
   res.render("login");
 });
@@ -121,5 +96,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/earnings", earningRouter);
 
 app.use("/api/sales", saleRouter);
+
+app.use("/api/contact", contactRouter);
 
 module.exports = app;

@@ -542,7 +542,7 @@ exports.changePassword = async (req, res) => {
 exports.validateToken = async (req, res) => {
   try {
     const user = await UserModel.findById(req.user.id).select(
-      "email role _id userStatus firstName lastName"
+      "email role _id userStatus firstName lastName profilePhoto"
     );
      
     if (!user) {
@@ -552,13 +552,14 @@ exports.validateToken = async (req, res) => {
       });
     }
 
-    const { userStatus, role, email, firstName, lastName, _id } = user;
+    const { userStatus, role, email, firstName, lastName, _id ,profilePhoto} = user;
     const userData = {
       _id,
       name: firstName + " " + lastName,
       userStatus,
       role,
       email,
+      profilePhoto
     };
     
     return res.json({
